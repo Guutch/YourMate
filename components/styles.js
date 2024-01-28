@@ -11,11 +11,12 @@ const reusableStyles = StyleSheet.create({
         backgroundColor: 'white'
     },
     headerText: {
-        fontSize: 24,
+        fontSize: 30,
+        color: "#000",
         fontWeight: 'bold',
         // marginBottom: 30, // Space below the header text
         textAlign: 'left', // Center the text
-      },
+    },
     button: {
         width: 300,
         height: 45,
@@ -25,10 +26,11 @@ const reusableStyles = StyleSheet.create({
         alignItems: 'center',
     },
     labelText: {
-        fontSize: 16,
-        fontWeight: 'normal',
+        fontSize: 20,
+        color: "#000",
+        fontWeight: 'bold',
         marginTop: 9, // Space above the label text
-      },
+    },
     lessRounded: {
         borderRadius: 10,
     },
@@ -44,6 +46,20 @@ const reusableStyles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
         color: 'white'
+    },
+    commonView: {
+        height: 53,
+        borderRadius: 40,
+        borderWidth: 1,
+        justifyContent: 'center',
+        marginBottom: 9
+    },
+    overlay: {
+        bottom: 0,
+        position: "absolute",
+        borderTopLeftRadius: 10,
+        borderTopRightRadius: 10,
+        width: "100%"
     }
 });
 
@@ -69,4 +85,72 @@ const landing = StyleSheet.create({
     }
 });
 
-export { reusableStyles, landing };
+const signUpSwipe = StyleSheet.create({
+    wrapper: {},
+    slide: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+    },
+    slide2: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+    },
+    text: {
+        color: '#000',
+        fontSize: 30,
+        fontWeight: 'bold',
+    },
+    description: {
+        color: '#000',
+        fontSize: 20,
+        marginTop: 15,
+    },
+});
+
+const signUp = StyleSheet.create({
+    halfInput: {
+        width: 160
+    },
+    row: {
+        flexDirection: 'row',
+        // justifyContent: 'space-between'
+    },
+    smallText: {
+        color: "#000",
+        fontSize: 12
+    }
+});
+
+const username = StyleSheet.create({
+    subtitle: {
+        fontSize: 14,
+        marginTop: 0,
+    }
+});
+
+const goalStyles = StyleSheet.create({
+    category: {
+        width: 162,
+        height: 104,
+        borderColor: "#000",
+        borderWidth: 2,
+        marginTop: 10,
+        justifyContent: 'center', alignItems: 'center'
+    },
+    container: {
+        flexDirection: 'row', // Lays out children in a row
+        flexWrap: 'wrap',     // Allows items to wrap to the next line
+        justifyContent: 'space-around', // Adjusts spacing around items
+        // Add more styling as needed
+    },
+    highlighted: {
+        borderWidth: 3,
+        borderColor: "#0077FF"
+    }
+});
+
+export { reusableStyles, landing, signUpSwipe, signUp, username, goalStyles };
