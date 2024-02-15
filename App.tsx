@@ -16,7 +16,10 @@ import ActualGoals from './screens/ActualGoals'; // Adjust the path as per your 
 import CreateGoal from './screens/CreateGoal'; // Adjust the path as per your directory structure
 import MilestoneAdd from './screens/MilestoneAdd'; // Adjust the path as per your directory structure
 import MilestoneInfo from './screens/MIlestoneInfo'; // Adjust the path as per your directory structure
+import Housekeeping from './screens/Housekeeping'; // Adjust the path as per your directory structure
 
+
+import Settings from './screens/MainFlow/Settings'; // Adjust the path as per your directory structure
 import MainFlow from './MainFlow';
 
 const Stack = createNativeStackNavigator();
@@ -79,18 +82,18 @@ const App = () => {
           options={({ navigation }) => ({
             headerTitle: '',
             headerShadowVisible: false,
-            headerRight: () => (
-              <View style={{ flexDirection: 'row' }}>
-                <TouchableOpacity
-                  onPress={() => navigation.setParams({ color: 'red' })}
-                  style={{ padding: 10, borderRadius: 5 }}
-                >
-                  <Text style={{ color: 'Black', textAlign: 'center', fontSize: 16 }}>
-                    Skip
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ),
+            // headerRight: () => (
+            //   <View style={{ flexDirection: 'row' }}>
+            //     <TouchableOpacity
+            //       onPress={() => navigation.setParams({ color: 'red' })}
+            //       style={{ padding: 10, borderRadius: 5 }}
+            //     >
+            //       <Text style={{ color: 'Black', textAlign: 'center', fontSize: 16 }}>
+            //         Skip
+            //       </Text>
+            //     </TouchableOpacity>
+            //   </View>
+            // ),
           })}
           
         />
@@ -98,28 +101,15 @@ const App = () => {
           headerTitle: '', // Removes the title
           headerShadowVisible: false
         }} />
+        <Stack.Screen name="Housekeeping" component={Housekeeping} options={{
+          headerTitle: '', // Removes the title
+          headerShadowVisible: false
+        }} />
         <Stack.Screen name="CreateGoal" component={CreateGoal}
                   options={({ navigation }) => ({
           headerTitle: '', // Removes the title
           headerShadowVisible: false,
-          headerRight: () => (
-            <View style={{ flexDirection: 'row' }}>
-            <TouchableOpacity
-              onPress={() => {
-                // Navigate to the next screen
-                navigation.navigate('MilestoneInfo'); // Replace 'NextScreen' with the actual screen name you want to navigate to
-              }}
-              style={{
-                padding: 10,
-                borderRadius: 5,
-              }}
-            >
-              <Text style={{ color: 'Black', textAlign: 'center', fontSize: 16 }}>
-                Next
-              </Text>
-            </TouchableOpacity>
-          </View>
-          ),
+          
         })} />
         <Stack.Screen name="MilestoneInfo" component={MilestoneInfo} options={{
           headerTitle: '', // Removes the title
@@ -142,7 +132,10 @@ const App = () => {
   //     ),
   // })}
 />
-
+<Stack.Screen name="Settings" component={Settings} options={{
+          headerTitle: '', // Removes the title
+          headerShadowVisible: false
+        }} />
 
       </Stack.Navigator>
     </NavigationContainer>

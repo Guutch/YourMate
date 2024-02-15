@@ -2,8 +2,40 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StatusBar, TextInput } from 'react-native';
 import { reusableStyles, goalStyles, signUp, signUpSwipe } from '../components/styles'; // Adjust the path
 
+import { setGlobalData } from '../components/GoalStore'
+
 const ActualGoals = ({ route, navigation }) => {
-    const { goal } = route.params;
+    const { goal, fromMain } = route.params;
+
+    setGlobalData(goal);
+    
+
+    console.log(fromMain)
+    // If fromMain then don't go to MIlestoneInfo. Else, we go to MilestoneInfo
+    useEffect(() => {
+        navigation.setOptions({
+            headerRight: () => (
+              <View style={{ flexDirection: 'row' }}>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate(
+                    fromMain ? 'MilestoneAdd' : 'MilestoneInfo', 
+                    { 
+                        goal: goal,
+                      fromMain: fromMain // Ensure the key matches what you access in MilestoneAdd
+                    }
+                  )}
+                  style={{ padding: 10, borderRadius: 5 }}
+                >
+                  <Text style={{ color: 'Black', textAlign: 'center', fontSize: 16 }}>
+                    {fromMain ? 'Add' : 'Next'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ),
+          });
+          
+
+    }, [navigation]);
 
     return (
         <View style={[reusableStyles.container]}>

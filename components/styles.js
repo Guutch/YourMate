@@ -34,6 +34,9 @@ const reusableStyles = StyleSheet.create({
     lessRounded: {
         borderRadius: 10,
     },
+    moreRounded: {
+        borderRadius: 40,
+    },
     textInput: {
         borderColor: "#000",
         borderWidth: 2,
@@ -132,6 +135,89 @@ const username = StyleSheet.create({
     }
 });
 
+const homeMain = StyleSheet.create({
+    dateBorder: {
+        height: 56,
+        width: 39,
+        borderColor: "#000",
+        borderWidth: 2,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 10,
+    },
+    dateText: {
+        color: "#000",
+        fontWeight: 'bold'
+    },
+    timeCircle: {
+        width: 100, // Adjust the width and height to your desired circle size
+        height: 100, // The width and height should be equal to create a circle
+        borderRadius: 50, // Half of the width and height to make it a circle
+        justifyContent: 'center', // Center the text vertically
+        alignItems: 'center', // Center the text horizontally
+        borderWidth: 2,
+        borderColor: '#000',
+    },
+    title: {
+        fontSize: 20,
+        marginBottom: 10,
+    },
+    pickerContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    scrollPicker: {
+        height: 150, // Fixed height for the scrollable area
+        width: 100, // Fixed width for each picker
+    },
+    item: {
+        paddingVertical: 10, // Spacing for each item
+        alignItems: 'center',
+    },
+    itemText: {
+        fontSize: 18,
+    },
+    noBlocksContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    blocksContainer: {
+        flex: 1,
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        marginTop: 9
+    },
+    noBlocks: {
+        textAlign: 'center',
+        color: '#000'
+    }
+});
+
+const goalMain = StyleSheet.create({
+    settings: {
+        // width: 30,  // You can adjust this value to make it smaller
+        // height: 30, // You can adjust this value to make it smaller
+        padding: 3,
+        borderWidth: 2,
+        borderRadius: 15, // Set half of the width/height value for a perfect circle
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    bottomBit: {
+        position: 'absolute',
+        bottom: 0,
+        left: 5,
+        right: 5,
+        height: "20%",
+        borderTopColor: 'rgba(0,0,0,0.2)',
+        borderTopWidth: 1,
+        alignSelf: 'center',
+    },
+
+
+});
+
 const goalStyles = StyleSheet.create({
     category: {
         width: 162,
@@ -153,4 +239,13 @@ const goalStyles = StyleSheet.create({
     }
 });
 
-export { reusableStyles, landing, signUpSwipe, signUp, username, goalStyles };
+export {
+    reusableStyles,
+    landing,
+    signUpSwipe,
+    signUp,
+    username,
+    goalStyles,
+    goalMain,
+    homeMain
+};

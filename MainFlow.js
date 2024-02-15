@@ -79,7 +79,7 @@ function MainFlow() {
                 })}
             />
 
-            <Tab.Screen name="Goals" component={GoalScreen} options={({ navigation }) => ({
+            <Tab.Screen name="Goals" component={GoalScreen} options={({ route, navigation }) => ({
                 headerShadowVisible: false,
                 headerTitleAlign: 'center', // Center-align the title
             })} />

@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StatusBar, TextInput } from 'react-native
 import { reusableStyles, goalStyles, signUp, signUpSwipe } from '../components/styles'; // Adjust the path
 
 const ActualGoals = ({ route, navigation }) => {
-    const { category } = route.params;
+    const { category, fromMain } = route.params;
 
     const handleSelection = (goal) => {
         // if (selected === viewId) {
@@ -13,7 +13,7 @@ const ActualGoals = ({ route, navigation }) => {
         //     // Set the selected view
         //     setSelected(viewId);
         // }
-        navigation.navigate('CreateGoal', {goal})
+        navigation.navigate('CreateGoal', {goal, fromMain})
     };
 
     const goalsBySubcategory = {

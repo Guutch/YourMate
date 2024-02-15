@@ -4,14 +4,30 @@ import { reusableStyles, goalStyles, signUp, signUpSwipe } from '../components/s
 import { Overlay } from 'react-native-elements';
 
 const GoalSelector = ({ route, navigation }) => {
-    const { selected, showOverlay, setShowOverlay } = route.params;
-  
+    const { selected, showOverlay, setShowOverlay, fromMain } = route.params;
+
     const [color, setColor] = useState('blue');
 
-    // Porn - Health, rel;ationships, personhal growth
-    // Procrastination - work, growth, money, recreatopom
-    // Gambling - money, growth, recreation, health
-    // General - lifestyle, health, recreation, relationships
+    useEffect(() => {
+        if (!fromMain) {
+            navigation.setOptions({
+                headerRight: () => (
+                    <View style={{ flexDirection: 'row' }}>
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate('Housekeeping')}
+                            // onPress={() => navigation.setParams({ color: 'red' })}
+                            style={{ padding: 10, borderRadius: 5 }}
+                        >
+                            <Text style={{ color: 'Black', textAlign: 'center', fontSize: 16 }}>
+                                Skip
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                ),
+            })
+        }
+
+    }, [navigation]);
 
     const categoryStyles = {
         porn: {
@@ -36,23 +52,23 @@ const GoalSelector = ({ route, navigation }) => {
         //     // Set the selected view
         //     setSelected(viewId);
         // }
-        navigation.navigate('ActualGoals', {category})
+        navigation.navigate('ActualGoals', { category, fromMain: true })
     };
 
     const handleSkipPress = () => {
         setOverlayVisible(true);
-      };
-    
-      // Function to navigate to the next screen
-      const navigateToNextScreen = () => {
+    };
+
+    // Function to navigate to the next screen
+    const navigateToNextScreen = () => {
         // Your navigation logic
         setShowOverlay(false); // Hide overlay after navigation
-      };
+    };
 
     return (
         <View style={[reusableStyles.container]}>
 
-{/* {showOverlay && (
+            {/* {showOverlay && (
         <Overlay isVisible={showOverlay} onBackdropPress={() => setShowOverlay(false)}>
           <Text>Are you sure you want to skip?</Text>
           <TouchableOpacity onPress={navigateToNextScreen}>
@@ -85,7 +101,7 @@ const GoalSelector = ({ route, navigation }) => {
                         : {}, // This is your default border color
 
                 ]}
-                onPress={() => handleSelection('Work & Career')}
+                    onPress={() => handleSelection('Work & Career')}
                 >
                     <Text style={[reusableStyles.buttonText, { color: "#000" }]}>Work & Career</Text>
                 </TouchableOpacity>
@@ -98,7 +114,7 @@ const GoalSelector = ({ route, navigation }) => {
                         : {}, // This is your default border color
 
                 ]}
-                onPress={() => handleSelection('Health')}
+                    onPress={() => handleSelection('Health')}
                 >
                     <Text style={[reusableStyles.buttonText, { color: "#000" }]}>Health</Text>
                 </TouchableOpacity>
@@ -111,7 +127,7 @@ const GoalSelector = ({ route, navigation }) => {
                         : {}, // This is your default border color
 
                 ]}
-                onPress={() => handleSelection('Relationships')}
+                    onPress={() => handleSelection('Relationships')}
                 >
                     <Text style={[reusableStyles.buttonText, { color: "#000" }]}>Relationships</Text>
                 </TouchableOpacity>
@@ -124,7 +140,7 @@ const GoalSelector = ({ route, navigation }) => {
                         : {}, // This is your default border color
 
                 ]}
-                onPress={() => handleSelection('Lifestyle')}
+                    onPress={() => handleSelection('Lifestyle')}
                 >
                     <Text style={[reusableStyles.buttonText, { color: "#000" }]}>Lifestyle</Text>
                 </TouchableOpacity>
@@ -137,7 +153,7 @@ const GoalSelector = ({ route, navigation }) => {
                         : {}, // This is your default border color
 
                 ]}
-                onPress={() => handleSelection('Spirituality')}
+                    onPress={() => handleSelection('Spirituality')}
                 >
                     <Text style={[reusableStyles.buttonText, { color: "#000" }]}>Spirituality</Text>
                 </TouchableOpacity>
@@ -150,7 +166,7 @@ const GoalSelector = ({ route, navigation }) => {
                         : {}, // This is your default border color
 
                 ]}
-                onPress={() => handleSelection('Recreation')}
+                    onPress={() => handleSelection('Recreation')}
                 >
                     <Text style={[reusableStyles.buttonText, { color: "#000" }]}>Recreation</Text>
                 </TouchableOpacity>
@@ -163,7 +179,7 @@ const GoalSelector = ({ route, navigation }) => {
                         : {}, // This is your default border color
 
                 ]}
-                onPress={() => handleSelection('Personal Growth')}
+                    onPress={() => handleSelection('Personal Growth')}
                 >
                     <Text style={[reusableStyles.buttonText, { color: "#000" }]}>Personal Growth</Text>
                 </TouchableOpacity>
@@ -176,7 +192,7 @@ const GoalSelector = ({ route, navigation }) => {
                         : {}, // This is your default border color
 
                 ]}
-                onPress={() => handleSelection('Money')}
+                    onPress={() => handleSelection('Money')}
                 >
                     <Text style={[reusableStyles.buttonText, { color: "#000" }]}>Money</Text>
                 </TouchableOpacity>
@@ -189,7 +205,7 @@ const GoalSelector = ({ route, navigation }) => {
                         : {}, // This is your default border color
 
                 ]}
-                onPress={() => handleSelection('Other')}
+                    onPress={() => handleSelection('Other')}
                 >
                     <Text style={[reusableStyles.buttonText, { color: "#000" }]}>Other</Text>
                 </TouchableOpacity>
