@@ -135,6 +135,13 @@ const username = StyleSheet.create({
     }
 });
 
+const communityMain = StyleSheet.create({
+    updatedCircle: {
+        width: 50,
+        height: 50
+    }
+});
+
 const homeMain = StyleSheet.create({
     dateBorder: {
         height: 56,
@@ -247,5 +254,6 @@ export {
     username,
     goalStyles,
     goalMain,
-    homeMain
+    homeMain,
+    communityMain
 };

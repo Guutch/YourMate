@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useLayoutEffect } from 'react';
 import { View, Text, TouchableOpacity, KeyboardAvoidingView, TextInput, Keyboard, ScrollView, Platform } from 'react-native';
-import { reusableStyles, landing, signUp } from '../../components/styles'; // Adjust the path
+import { reusableStyles, homeMain, communityMain } from '../../components/styles'; // Adjust the path
 
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
@@ -43,8 +43,44 @@ const CommunityScreen = ({ navigation }) => {
 
     return (
         <View style={[reusableStyles.container]}>
-           
+            {/* Top piece */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, padding: 10, borderBottomColor: 'black' }}>
 
+                <View>
+                    {/* Profile icon */}
+                    <View style={[homeMain.timeCircle, communityMain.updatedCircle]}>
+                        <FontAwesome5 name="user" size={30} color="#000" onPress={() => setShowOverlay(true)} />
+                    </View>
+                    {/* Name */}
+                    <Text>This is the</Text>
+                </View>
+                <View>
+                    {/* Icons for habit */}
+                    <Text>icon</Text>
+                    {/* Joined month and year */}
+                    <Text>Joined xxx</Text>
+                    {/* Username */}
+                    <Text>Username</Text>
+                </View>
+
+
+            </View>
+            {/* Friends piece */}
+            <View style={{ marginTop: 10, padding: 10 }}>
+                <Text>Friends</Text>
+            </View>
+            {/* Friends Quest piece */}
+            <View style={{ marginTop: 10, padding: 10 }}>
+                <Text>Friends Quest</Text>
+                <View style={[reusableStyles.textInput, { height: 128, alignContent: 'center', justifyContent: 'center' }, reusableStyles.lessRounded]}>
+                    <View style={{ justifyContent: 'space-around', alignItems: 'center' }}>
+                        <Text>You have no active friend quest</Text>
+                        <View style={[reusableStyles.button, reusableStyles.lessRounded, { backgroundColor: '#0077FF' }]}></View>
+                    </View>
+
+                </View>
+
+            </View>
         </View>
     );
 };
