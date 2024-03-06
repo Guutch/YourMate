@@ -226,6 +226,7 @@ const goalMain = StyleSheet.create({
 });
 
 const goalStyles = StyleSheet.create({
+
     category: {
         width: 162,
         height: 104,
@@ -246,6 +247,18 @@ const goalStyles = StyleSheet.create({
     }
 });
 
+const journalStyles = StyleSheet.create({
+    textInput: {
+        // your default text input style
+        borderColor: 'black', // Default border color
+        borderWidth: 1,
+    },
+    errorInput: {
+        // style for error state
+        borderColor: 'red', // Change border color to red on error
+    },
+});
+
 export {
     reusableStyles,
     landing,
@@ -255,5 +268,6 @@ export {
     goalStyles,
     goalMain,
     homeMain,
-    communityMain
+    communityMain,
+    journalStyles
 };

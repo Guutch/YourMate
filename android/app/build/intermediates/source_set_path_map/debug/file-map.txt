@@ -37,5 +37,7 @@ com.yourmate.app-packageDebugResources-35 /home/simon/Documents/University/Disse
 com.yourmate.app-merged_res-36 /home/simon/Documents/University/Dissertation/YourMate/android/app/build/intermediates/merged_res/debug
 com.yourmate.app-debug-37 /home/simon/Documents/University/Dissertation/YourMate/android/app/src/debug/res
 com.yourmate.app-main-38 /home/simon/Documents/University/Dissertation/YourMate/android/app/src/main/res
-com.yourmate.app-packaged_res-39 /home/simon/Documents/University/Dissertation/YourMate/node_modules/react-native-safe-area-context/android/build/intermediates/packaged_res/debug
-com.yourmate.app-packaged_res-40 /home/simon/Documents/University/Dissertation/YourMate/node_modules/react-native-screens/android/build/intermediates/packaged_res/debug
+com.yourmate.app-packaged_res-39 /home/simon/Documents/University/Dissertation/YourMate/node_modules/@react-native-community/datetimepicker/android/build/intermediates/packaged_res/debug
+com.yourmate.app-packaged_res-40 /home/simon/Documents/University/Dissertation/YourMate/node_modules/react-native-safe-area-context/android/build/intermediates/packaged_res/debug
+com.yourmate.app-packaged_res-41 /home/simon/Documents/University/Dissertation/YourMate/node_modules/react-native-screens/android/build/intermediates/packaged_res/debug
+com.yourmate.app-packaged_res-42 /home/simon/Documents/University/Dissertation/YourMate/node_modules/react-native-vector-icons/android/build/intermediates/packaged_res/debug

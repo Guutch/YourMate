@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, KeyboardAvoidingView, TextInput, Keyboard, ScrollView, Platform } from 'react-native';
 import { reusableStyles, landing, signUp } from '../components/styles'; // Adjust the path
 
+import UserModel from '../firebase/UserModel';
+
 import { app } from '../firebase/firebase'
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 
@@ -144,6 +146,17 @@ const SignUp = ({ navigation }) => {
         }
     };
 
+    const handleSignUp = async () => {
+        try {
+          const user = await UserModel.createUser(email, password);
+          console.log('Valid form input - can create user');
+          navigation.navigate('HabitSelector');
+        } catch (error) {
+          console.error('Error creating user:', error);
+          // Handle error
+        }
+      };
+
     const validation = () => {
         let isFormInvalid = false;
 
@@ -159,8 +172,10 @@ const SignUp = ({ navigation }) => {
             console.log("Invalid Form"); // All inputs are valid
             // Proceed with form submission
         } else {
-            console.log("Valid form input - can create user")
-            navigation.navigate('HabitSelector')
+            handleSignUp();
+            // const user = await UserModel.createUser(email, password);
+            // console.log("Valid form input - can create user")
+            // navigation.navigate('HabitSelector')
             // onPress={() => 
         }
     };

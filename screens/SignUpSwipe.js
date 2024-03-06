@@ -9,16 +9,16 @@ const SignUpSwipe = ({ navigation }) => {
 
     const [count, setCount] = React.useState(0);
 
-    React.useEffect(() => {
-        // Use `setOptions` to update the button that we previously specified
-        // Now the button includes an `onPress` handler to update the count
-        navigation.setOptions({
-            headerRight: () => (
-                <FontAwesome5 name="cog" size={30} color="#000" onPress={() => setCount((c) => c + 1)}/>
-                // <Button onPress={() => setCount((c) => c + 1)} title="Update count" />
-            ),
-        });
-    }, [navigation]);
+    // React.useEffect(() => {
+    //     // Use `setOptions` to update the button that we previously specified
+    //     // Now the button includes an `onPress` handler to update the count
+    //     navigation.setOptions({
+    //         headerRight: () => (
+    //             <FontAwesome5 name="cog" size={30} color="#000" onPress={() => setCount((c) => c + 1)}/>
+    //             // <Button onPress={() => setCount((c) => c + 1)} title="Update count" />
+    //         ),
+    //     });
+    // }, [navigation]);
 
     const swiperRef = useRef(null);
 
@@ -31,11 +31,11 @@ const SignUpSwipe = ({ navigation }) => {
             {/* Screen 1 */}
             <View style={signUpSwipe.slide} key="slide1">
                 <Text style={signUpSwipe.text}>Track Habits</Text>
-                <Text style={signUpSwipe.description}>Grow with others {count} in the community</Text>
+                <Text style={signUpSwipe.description}>Grow with others in the community</Text>
                 <Image source={require('../components/assets/blob.png')} />
-                <TouchableOpacity style={reusableStyles.button} onPress={() => navigation.navigate('HabitSelector')}>
+                {/* <TouchableOpacity style={reusableStyles.button} onPress={() => navigation.navigate('HabitSelector')}>
                     <Text style={reusableStyles.buttonText}>Let's Go!</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View>
 
             {/* Screen 2 */}

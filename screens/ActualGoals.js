@@ -13,7 +13,7 @@ const ActualGoals = ({ route, navigation }) => {
         //     // Set the selected view
         //     setSelected(viewId);
         // }
-        navigation.navigate('CreateGoal', {goal, fromMain})
+        navigation.navigate('CreateGoal', {goal, fromMain, category})
     };
 
     const goalsBySubcategory = {

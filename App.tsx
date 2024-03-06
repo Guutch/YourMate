@@ -52,10 +52,10 @@ const App = () => {
         }} />
         <Stack.Screen name="SignUpSwipe" component={SignUpSwipe} options={{
           headerTitle: '', // Removes the title
-          headerRight: () => (
-            <FontAwesome5 name="cog" size={30} color="#000" />
-            // <Button title="Update count" />
-          ),
+          // headerRight: () => (
+          //   <FontAwesome5 name="cog" size={30} color="#000" />
+          //   // <Button title="Update count" />
+          // ),
           // FOR INFO ON HOW TO
           // https://reactnavigation.org/docs/header-buttons/
         }} />

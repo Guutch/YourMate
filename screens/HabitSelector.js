@@ -9,6 +9,8 @@ const HabitSelector = ({ navigation }) => {
     const [selected, setSelected] = useState('');
     const [visible, setVisible] = useState(false);
 
+    const [inputValue, setInputValue] = useState('');
+
     const toggleOverlay = () => {
         setVisible(!visible);
     };
@@ -23,14 +25,16 @@ const HabitSelector = ({ navigation }) => {
         }
     };
 
-    const handleNav = (selected) => {
-        if (selected == "other") {
-            toggleOverlay()
-        } else {
-            navigation.navigate('GoalSelector', { selected: selected })
+    const handleNav = (inputValue) => {
+        if (selected === 'other') {
+            // If 'other' is selected, navigate to the next screen with the inputValue
+            // navigation.navigate('GoalSelector', { inputValue });
+            toggleOverlay(); // Close the overlay
+        } else if (selected) {
+            // If a different option is selected, navigate to 'GoalSelector' with the selected value
+            navigation.navigate('GoalSelector', { selected, fromMain: false });
         }
-    }
-
+    };
     return (
         <View style={[reusableStyles.container,]}>
             {/* Header Text */}
@@ -39,23 +43,27 @@ const HabitSelector = ({ navigation }) => {
 
             {/* Overlay */}
             <Overlay isVisible={visible} onBackdropPress={toggleOverlay} overlayStyle={reusableStyles.overlay}>
-                <Text>Hello from Overlay!</Text>
-                <TextInput style={[reusableStyles.textInput, reusableStyles.lessRounded]}></TextInput>
+                <Text>Enter in your habit!</Text>
+                <TextInput
+                    style={[reusableStyles.textInput, reusableStyles.lessRounded]}
+                    onChangeText={(text) => setInputValue(text)}
+                    value={inputValue}
+                />
                 <TouchableOpacity
-                style={[
-                    reusableStyles.button,
-                    {
-                        backgroundColor: selected ? '#0077FF' : '#B0C4DE', // Change color when disabled
-                        marginTop: 15,
-                        borderWidth: 1,
-                        width: 335
-                    }
-                ]}
-                onPress={() => handleNav(selected)}
-                disabled={!selected} // Button is disabled if nothing is selected
-            >
-                <Text style={reusableStyles.buttonText}>Continue</Text>
-            </TouchableOpacity>
+                    style={[
+                        reusableStyles.button,
+                        {
+                            backgroundColor: inputValue ? '#0077FF' : '#B0C4DE', // Change color based on inputValue
+                            marginTop: 15,
+                            borderWidth: 1,
+                            width: 335
+                        }
+                    ]}
+                    onPress={() => navigation.navigate('GoalSelector', { inputValue, fromMain: false })} // Pass inputValue to handleNav
+                    disabled={!inputValue} // Disable button if inputValue is empty
+                >
+                    <Text style={reusableStyles.buttonText}>Continue</Text>
+                </TouchableOpacity>
             </Overlay>
 
             {/* Porn Group */}
@@ -208,14 +216,14 @@ const HabitSelector = ({ navigation }) => {
                 style={[
                     reusableStyles.button,
                     {
-                        backgroundColor: selected ? '#0077FF' : '#B0C4DE', // Change color when disabled
+                        backgroundColor: selected ? '#0077FF' : '#B0C4DE',
                         marginTop: 15,
                         borderWidth: 1,
                         width: 335
                     }
                 ]}
-                onPress={() => handleNav(selected)}
-                disabled={!selected} // Button is disabled if nothing is selected
+                onPress={() => handleNav()} // No arguments passed
+                disabled={!selected}
             >
                 <Text style={reusableStyles.buttonText}>Continue</Text>
             </TouchableOpacity>

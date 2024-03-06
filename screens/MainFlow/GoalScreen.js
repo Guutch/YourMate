@@ -5,9 +5,11 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import GoalItem from '../../components/GoalItem'
+// import LargeGoalOverlay from '../../components/LargeGoalOverlay'
 import { getGlobalData, getJustCreatedGoal, setJustCreatedGoal } from '../../components/GoalStore';
 
 import { Overlay } from 'react-native-elements';
+import LargeGoalOverview from '../../components/LargeGoalOverlay';
 
 
 const GoalScreen = ({ navigation, route }) => {
@@ -43,12 +45,22 @@ const GoalScreen = ({ navigation, route }) => {
     const [overlayContent, setOverlayContent] = useState('options'); // 'options', 'completed', or 'delete'
     const [goals, setGoals] = useState([]); // Blocks on screen
     const [completedGoals, setCompletedGoals] = useState([]); // Blocks on screen
+    const [selectedGoal, setSelectedGoal] = useState(null);
 
 
     const handlePress = () => {
         console.log("Hi")
+        setOverlayContent('options')
         setShowOverlay(!showOverlay); // Toggle the boolean state
     };
+
+    const goalPressed = (selectedGoal) => {
+        console.log("Show Lrg overlay with goal:", selectedGoal);
+        setOverlayContent('lrg');
+        setSelectedGoal(selectedGoal); // Store selected goal in state
+        setShowOverlay(!showOverlay); // Toggle visibility of overlay
+    };
+
 
     // useEffect(() => {
     //     const unsubscribe = navigation.addListener('focus', () => {
@@ -72,7 +84,7 @@ const GoalScreen = ({ navigation, route }) => {
                     {/* To add a new goal */}
                     <TouchableOpacity
                         onPress={() => {
-                            // Navigate to the next screen
+                            // Hard coded porn as the selected habit
                             navigation.navigate('GoalSelector', { selected: 'porn', fromMain: true });
                         }}
                         style={{
@@ -102,6 +114,11 @@ const GoalScreen = ({ navigation, route }) => {
         });
     }, [navigation]);
 
+    const xOutOfOverlay = () => {
+        setShowOverlay(false)
+        // clearSets()
+    }
+
     return (
         <View style={[reusableStyles.container]}>
 
@@ -112,7 +129,7 @@ const GoalScreen = ({ navigation, route }) => {
                         setShowOverlay(false);
                         setOverlayContent('options'); // Reset the overlay content when backdrop is pressed
                     }}
-                    overlayStyle={reusableStyles.overlay}
+                    overlayStyle={[reusableStyles.overlay, { height: overlayContent === 'lrg' ? "100%" : "auto" }]}
                 >
                     {overlayContent === 'options' && (
                         <>
@@ -197,6 +214,9 @@ const GoalScreen = ({ navigation, route }) => {
                             </TouchableOpacity>
                         </>
                     )}
+                    {overlayContent === 'lrg' && (
+                        <LargeGoalOverview xOut={xOutOfOverlay} goal={selectedGoal} />
+                    )}
                 </Overlay>
             )}
 
@@ -213,8 +233,7 @@ const GoalScreen = ({ navigation, route }) => {
                             data={goals}
                             keyExtractor={(item, index) => index.toString()}
                             renderItem={({ item }) => (
-                                <GoalItem goalData={item} onItemPress={handlePress} />
-                            )}
+                                <GoalItem goalData={item} onItemPress={handlePress} onGoalPress={goalPressed} />)}
                         />
                     </View>
 

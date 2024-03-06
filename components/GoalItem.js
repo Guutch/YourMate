@@ -5,8 +5,8 @@ import { View, Text, FlatList, StyleSheet, Touchable, TouchableOpacity } from 'r
 import { goalMain, reusableStyles } from './styles';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
-const GoalItem = ({ goalData, onItemPress }) => (
-    <View style={[reusableStyles.textInput, { height: 128 }, reusableStyles.lessRounded]}>
+const GoalItem = ({ goalData, onItemPress, onGoalPress }) => (
+    <TouchableOpacity style={[reusableStyles.textInput, { height: 128 }, reusableStyles.lessRounded]}  onPress={() => onGoalPress(goalData)}>
 
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <Text >{goalData.title}</Text>
@@ -23,7 +23,7 @@ const GoalItem = ({ goalData, onItemPress }) => (
             </View>
 
         </View>
-    </View>
+    </TouchableOpacity>
 );
 
 export default GoalItem;

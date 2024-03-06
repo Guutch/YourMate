@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useLayoutEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList, TextInput, Keyboard, ScrollView, Platform, Touchable } from 'react-native';
-import { reusableStyles, signUp, homeMain } from '../../components/styles'; // Adjust the path
+import { reusableStyles, signUp, homeMain, journalStyles } from '../../components/styles'; // Adjust the path
 
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import JournalItem from '../../components/JournalItem'
@@ -12,7 +12,21 @@ const JournalScreen = ({ navigation }) => {
     const [showOverlay, setShowOverlay] = useState(false);
     const [journalTitle, setJournalTitle] = useState("");
     const [journalDesc, setJournalDesc] = useState("");
+    const [titleError, setTitleError] = useState(false);
+    const [descError, setDescError] = useState(false);
+    const [selections, setSelections] = useState({
+        trigger: null,
+        engage: null,
+        progress: null,
+    });
 
+
+    const handleSelection = (option, value) => {
+        setSelections(prevSelections => ({
+            ...prevSelections,
+            [option]: prevSelections[option] === value ? null : value,
+        }));
+    };
 
     const xOutOfOverlay = () => {
         setShowOverlay(false)
@@ -25,24 +39,48 @@ const JournalScreen = ({ navigation }) => {
     }
 
     const addJournal = () => {
+        if (!journalTitle || !journalDesc) {
+            // Set error state if title or description is empty
+            setTitleError(!journalTitle);
+            setDescError(!journalDesc);
+            return; // Stop execution if validation fails
+        }
+
         const newJournal = {
-            id: id,
-            time: new Date().toLocaleString(), // Convert Date to a string
+            id,
+            time: new Date().toLocaleString(),
+            title: journalTitle,
             desc: journalDesc,
-            title: journalTitle // Use journalTitle here
         };
-        setId(id + 1); // Increment ID correctly
-        // Add the new journal to the journals state
+
+        setId(id + 1);
         setJournals([...journals, newJournal]);
+
+        // Reset input fields and error states
+        setJournalTitle('');
+        setJournalDesc('');
+        setTitleError(false);
+        setDescError(false);
+
         setShowOverlay(false);
         clearSets()
-    }
+    };
 
     const renderItem = ({ item }) => (
         <View style={homeMain.blocksContainer}>
             <JournalItem title={item.title} date={item.time} desc={item.desc} />
         </View>
     );
+
+    const onTitleChange = (text) => {
+        setJournalTitle(text);
+        if (text) setTitleError(false); // Reset title error state if text is not empty
+    };
+
+    const onDescChange = (text) => {
+        setJournalDesc(text);
+        if (text) setDescError(false); // Reset description error state if text is not empty
+    };
 
     useEffect(() => {
         // Use `setOptions` to update the button that we previously specified
@@ -111,47 +149,102 @@ const JournalScreen = ({ navigation }) => {
                     <View style={{ justifyContent: 'center', paddingHorizontal: 20 }}>
 
                         {/* Add title */}
-                        <Text style={{ alignSelf: 'flex-start' }}>Add a title</Text>
+                        <Text>Add a title</Text>
                         <TextInput
-                            style={reusableStyles.textInput}
+                            style={[reusableStyles.textInput, titleError ? journalStyles.errorInput : null]}
                             value={journalTitle}
-                            onChangeText={text => setJournalTitle(text)} />
+                            onChangeText={onTitleChange}
+                        />
 
                         {/* Add desc */}
-                        <Text style={{ alignSelf: 'flex-start' }}>Add a title</Text>
+                        <Text>Add a description</Text>
                         <TextInput
-                            style={reusableStyles.textInput}
+                            style={[reusableStyles.textInput, descError ? journalStyles.errorInput : null]}
                             value={journalDesc}
-                            onChangeText={text => setJournalDesc(text)} />
+                            onChangeText={onDescChange}
+                        />
 
                         {/* Triggers today */}
                         <Text style={{ alignSelf: 'flex-start' }}>Did anything trigger you today?</Text>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignSelf: 'stretch' }}>
-                            <TouchableOpacity style={[reusableStyles.textInput, signUp.halfInput]}>
+                            <TouchableOpacity
+                                style={[
+                                    reusableStyles.textInput,
+                                    signUp.halfInput,
+                                    {
+                                        borderColor: selections.trigger === 'yes' ? 'blue' : '#000', // Correctly apply for "Yes"
+                                    }
+                                ]}
+                                onPress={() => handleSelection('trigger', 'yes')}>
                                 <Text>Yes</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={[reusableStyles.textInput, signUp.halfInput]}>
+
+                            <TouchableOpacity
+                                style={[
+                                    reusableStyles.textInput,
+                                    signUp.halfInput,
+                                    {
+                                        borderColor: selections.trigger === 'no' ? 'blue' : '#000', // Correctly apply for "No"
+                                    }
+                                ]}
+                                onPress={() => handleSelection('trigger', 'no')}>
                                 <Text>No</Text>
                             </TouchableOpacity>
+
                         </View>
                         <Text style={{ alignSelf: 'flex-start' }}>If 'Yes', please comment</Text>
                         <TextInput style={reusableStyles.textInput} />
                         <Text style={{ alignSelf: 'flex-start' }}>Did you engage in -Habit-</Text>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignSelf: 'stretch' }}>
-                            <TouchableOpacity style={[reusableStyles.textInput, signUp.halfInput]}>
+                            <TouchableOpacity
+                                style={[
+                                    reusableStyles.textInput,
+                                    signUp.halfInput,
+                                    {
+                                        borderColor: selections.engage === 'yes' ? 'blue' : '#000', // Correctly apply for "Yes"
+                                    }
+                                ]}
+                                onPress={() => handleSelection('engage', 'yes')}>
                                 <Text>Yes</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={[reusableStyles.textInput, signUp.halfInput]}>
+
+                            <TouchableOpacity
+                                style={[
+                                    reusableStyles.textInput,
+                                    signUp.halfInput,
+                                    {
+                                        borderColor: selections.engage === 'no' ? 'blue' : '#000', // Correctly apply for "No"
+                                    }
+                                ]}
+                                onPress={() => handleSelection('engage', 'no')}>
                                 <Text>No</Text>
                             </TouchableOpacity>
+
                         </View>
 
                         <Text style={{ alignSelf: 'flex-start' }}>Have you made any progress towards any goals today?</Text>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignSelf: 'stretch' }}>
-                            <TouchableOpacity style={[reusableStyles.textInput, signUp.halfInput]}>
+                            <TouchableOpacity
+                                style={[
+                                    reusableStyles.textInput,
+                                    signUp.halfInput,
+                                    {
+                                        borderColor: selections.progress === 'yes' ? 'blue' : '#000', // Correctly apply for "Yes"
+                                    }
+                                ]}
+                                onPress={() => handleSelection('progress', 'yes')}>
                                 <Text>Yes</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={[reusableStyles.textInput, signUp.halfInput]}>
+
+                            <TouchableOpacity
+                                style={[
+                                    reusableStyles.textInput,
+                                    signUp.halfInput,
+                                    {
+                                        borderColor: selections.progress === 'no' ? 'blue' : '#000', // Correctly apply for "No"
+                                    }
+                                ]}
+                                onPress={() => handleSelection('progress', 'no')}>
                                 <Text>No</Text>
                             </TouchableOpacity>
                         </View>

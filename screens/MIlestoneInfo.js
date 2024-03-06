@@ -36,12 +36,19 @@ const MilestonneInfo = ({ navigation, route }) => {
                     Feel free to add all stepping stones (milestones) that need to be accomplished to achieve the long-term goal!
                 </Text>
 
-            {/* Login Button */}
+            {/* Add Button */}
             <TouchableOpacity style={[reusableStyles.button, { backgroundColor: '#0077FF', marginTop: 15, borderWidth: 1, width: 335 }]}
-                // onPress={validation}
+                // Need to pass the goal data through and that
                 onPress={() => navigation.navigate('MilestoneAdd')}
             >
                 <Text style={reusableStyles.buttonText}>Add New Milestone</Text>
+            </TouchableOpacity>
+            {/* Add Button */}
+            <TouchableOpacity style={[reusableStyles.button, { backgroundColor: '#0077FF', marginTop: 15, borderWidth: 1, width: 335 }]}
+                // Need to pass the goal data through
+                onPress={() => navigation.navigate('MainFlow')}
+            >
+                <Text style={reusableStyles.buttonText}>Skip This Step</Text>
             </TouchableOpacity>
 
         </View>

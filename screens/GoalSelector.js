@@ -4,7 +4,9 @@ import { reusableStyles, goalStyles, signUp, signUpSwipe } from '../components/s
 import { Overlay } from 'react-native-elements';
 
 const GoalSelector = ({ route, navigation }) => {
-    const { selected, showOverlay, setShowOverlay, fromMain } = route.params;
+    const { selected, showOverlay, setShowOverlay, fromMain, inputValue } = route.params;
+
+    console.log(inputValue)
 
     const [color, setColor] = useState('blue');
 
@@ -14,7 +16,8 @@ const GoalSelector = ({ route, navigation }) => {
                 headerRight: () => (
                     <View style={{ flexDirection: 'row' }}>
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('Housekeeping')}
+                            onPress={() => navigation.navigate('MainFlow')}
+                            // onPress={() => navigation.navigate('Housekeeping')}
                             // onPress={() => navigation.setParams({ color: 'red' })}
                             style={{ padding: 10, borderRadius: 5 }}
                         >
@@ -45,14 +48,8 @@ const GoalSelector = ({ route, navigation }) => {
     };
 
     const handleSelection = (category) => {
-        // if (selected === viewId) {
-        //     // If the same view is selected again, reset the selection
-        //     setSelected('');
-        // } else {
-        //     // Set the selected view
-        //     setSelected(viewId);
-        // }
-        navigation.navigate('ActualGoals', { category, fromMain: true })
+        // was fromMain: true but changed to be just 'fromMain'
+        navigation.navigate('ActualGoals', { category, fromMain })
     };
 
     const handleSkipPress = () => {
@@ -85,7 +82,7 @@ const GoalSelector = ({ route, navigation }) => {
                 <Text style={[signUpSwipe.text, { textAlign: 'center' }]}>Goal Setting</Text>
                 <Text style={[signUpSwipe.description, { marginTop: 0, textAlign: 'center' }]}>
                     Categories related to
-                    <Text style={{ color: "#0077FF", fontWeight: 'bold' }}> {selected} </Text>
+                    <Text style={{ color: "#0077FF", fontWeight: 'bold' }}> {selected ? selected : inputValue} </Text>
                     have been highlighted
                 </Text>
             </View>

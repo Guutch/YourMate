@@ -20,10 +20,15 @@ const HomeScreen = ({ navigation }) => {
     const [blocks, setBlocks] = useState([]); // Blocks on screen
     const [difficulty, setDifficulty] = useState(true); // true == medium. false == hard
 
+    const [selectedDate, setSelectedDate] = useState(new Date()); // Initialise to today's date
+    const [selectedStartDate, setSelectedStartDate] = useState(new Date()); // Today's date as default
+
+
     const currentDate = new Date();
     const currentDateString = currentDate.toISOString().split('T')[0];
-    const formattedDate = format(currentDate, 'EEEE | MMM do yyyy');
+    const formattedDate = format(selectedDate, 'EEEE | MMM do yyyy');
 
+    // this was just to tesst time the time circles. Need to remove this
     const startTime = new Date(new Date().getTime() - 3000000);
 
     const [overlayContent, setOverlayContent] = useState('options'); // 'options', 'solo', or 'delete'
@@ -40,25 +45,74 @@ const HomeScreen = ({ navigation }) => {
         return days;
     };
 
+
+
     // You can replace this with the current year and month
     const year = new Date().getFullYear();
     const month = new Date().getMonth();
 
     const days = getDaysInMonth(year, month);
 
-    const [selectedHour, setSelectedHour] = useState('0');
-    const [selectedMinute, setSelectedMinute] = useState('0');
+    const [selectedHour, setSelectedHour] = useState(0);
+    const [selectedMinute, setSelectedMinute] = useState(45);
+
+    const futureTime = new Date();
+    futureTime.setMinutes(futureTime.getMinutes() + 15); // Set to 15 minutes in the future
+
+    const [selectedStartHour, setSelectedStartHour] = useState(futureTime.getHours());
+    const [selectedStartMinute, setSelectedStartMinute] = useState(futureTime.getMinutes());
+
+    const [selectedInitialStartHour, setInitialSelectedStartHour] = useState(futureTime.getHours());
+    const [selectedInitialStartMinute, setInitialSelectedStartMinute] = useState(futureTime.getMinutes());
+
+
+    const [initialHour, setInitialHour] = useState(selectedHour);
+    const [initialMinute, setInitialMinute] = useState(selectedMinute);
 
     const hours = [...Array(24).keys()]; // Array of hours 0-23
     const minutes = [...Array(60).keys()].slice(1); // Array of minutes 0-59
 
+    // Ensure selectedDate is in the correct format, similar to how you store it in blocks
+    const selectedDateStr = selectedDate.toISOString().split('T')[0];
+
+    // Filter blocks for the selected date
+    const blocksForSelectedDate = blocks.filter(block => block.date === selectedDateStr);
+
+    const confirmSelection = () => {
+        // Assuming there's a way to differentiate context, like a currentMode state or similar
+        if (overlayContent === 'when') {
+            // Update initial starting time to match the newly confirmed starting time
+            setInitialSelectedStartHour(selectedStartHour);
+            setInitialSelectedStartMinute(selectedStartMinute);
+        }
+
+        // Log selected time for debugging purposes
+        console.log(`Selected Time: ${selectedStartHour} hours and ${selectedStartMinute} minutes`);
+
+        // Common actions to perform after confirming selection
+        setOverlayContent('solo');
+    };
+
+
+    const formatDate = (date) => {
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return date.toLocaleDateString('en-US', options);
+    };
+
+    const formatTime = (hour, minute) => {
+        const formattedHour = hour.toString().padStart(2, '0');
+        const formattedMinute = minute.toString().padStart(2, '0');
+        return `${formattedHour}:${formattedMinute}`;
+    };
+
     const handleBlockNowPress = () => {
         setShowOverlay(false); // Hide the overlay
         setOverlayContent('options'); // Reset the overlay content to 'options'
-        setUpcomingBlocksCount(prevCount => prevCount + 1); // Increment the count of upcoming blocks
+        // setUpcomingBlocksCount(prevCount => prevCount + 1); // Increment the count of upcoming blocks
         setTitle('Session');
 
         const newBlock = {
+            date: selectedDate.toISOString().split('T')[0], // Store only the date part
             time: new Date().toLocaleString(), // Convert Date to a string
             title: title
         };
@@ -67,17 +121,19 @@ const HomeScreen = ({ navigation }) => {
         setBlocks([...blocks, newBlock]);
     };
 
-    // For when blocks are in the DB
-    // useEffect(() => {
-    //     // Fetch blocks from database
-    //     const fetchBlocks = async () => {
-    //       // Assuming fetchBlocksFromDb is a function that fetches blocks from your DB
-    //       const blocksFromDb = await fetchBlocksFromDb();
-    //       setBlocks(blocksFromDb);
-    //     };
+    useEffect(() => {
+        // Perform actions that depend on the initial selectedHour and selectedMinute
+        // This is just a placeholder; adjust according to your actual needs
+        console.log(`Initial hour: ${selectedHour}, Initial minute: ${selectedMinute}`);
+    }, []); // Empty dependency array means this runs once on mount
 
-    //     fetchBlocks();
-    //   }, []);
+
+    const formatHour = (hour) => {
+        const suffix = hour >= 12 ? 'PM' : 'AM';
+        const formattedHour = hour % 12 === 0 ? 12 : hour % 12; // Converts 0 to 12 for 12 AM
+        return `${formattedHour} ${suffix}`;
+    };
+
 
     const renderItem = ({ item }) => (
         <View style={homeMain.blocksContainer}>
@@ -94,6 +150,22 @@ const HomeScreen = ({ navigation }) => {
     };
 
     useEffect(() => {
+        console.log(blocksForSelectedDate.length)
+        setUpcomingBlocksCount(blocksForSelectedDate.length)
+    }, [blocksForSelectedDate])
+
+    const resetFutureTime = () => {
+        console.log("Here")
+        const rightNow = new Date();
+        rightNow.setMinutes(rightNow.getMinutes() + 15);
+        console.log(rightNow)
+
+        setInitialSelectedStartHour(rightNow.getHours());
+        setInitialSelectedStartMinute(rightNow.getMinutes());
+    };
+
+
+    useEffect(() => {
         // Use `setOptions` to update the button that we previously specified
         // Now the button includes an `onPress` handler to update the count
         navigation.setOptions({
@@ -101,15 +173,17 @@ const HomeScreen = ({ navigation }) => {
                 <View style={{ flexDirection: 'row' }}>
                     <TouchableOpacity
                         onPress={() => {
-                            // Navigate to the next screen
-                            navigation.navigate('Settings'); // Replace 'NextScreen' with the actual screen name you want to navigate to
+                            resetFutureTime();
+                            console.log("lol")
+                            setShowOverlay(true);
                         }}
                         style={{
                             padding: 10,
                             borderRadius: 5,
                         }}
                     >
-                        <FontAwesome5 name="plus" size={30} color="#000" onPress={() => setShowOverlay(true)} />
+                        <FontAwesome5 name="plus" size={30} color="#000"  />
+                        {/* <FontAwesome5 name="clock" size={30} color="#000" onPress={() => setShowOverlay(true)} /> */}
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => {
@@ -137,6 +211,8 @@ const HomeScreen = ({ navigation }) => {
                     isVisible={showOverlay}
                     onBackdropPress={() => {
                         setShowOverlay(false);
+                        setSelectedMinute(45)
+                        setSelectedHour(0)
                         setOverlayContent('options'); // Reset the overlay content when backdrop is pressed
                     }}
                     overlayStyle={reusableStyles.overlay}
@@ -157,7 +233,7 @@ const HomeScreen = ({ navigation }) => {
                             <TextInput
                                 value={title}
                                 onChangeText={handleTextChange}
-                                style={{ padding: 20 }}
+                                style={[reusableStyles.textInput, reusableStyles.lessRounded, { justifyContent: 'center', alignSelf: 'center' }]}
                             />
                             <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginVertical: 10 }}>
 
@@ -186,29 +262,45 @@ const HomeScreen = ({ navigation }) => {
                             >
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                     <Text >Duration</Text>
-                                    <FontAwesome5 name="chevron-right" size={15} color="#000" />
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <Text style={{ marginRight: 10 }}>
+                                            {selectedHour} : {selectedMinute}
+                                        </Text>
+                                        <FontAwesome5 name="chevron-right" size={15} color="#000" />
+                                    </View>
                                 </View>
 
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center', marginTop: 5 }]}
-                            // onPress={() => setOverlayContent('delete')}
+                                onPress={() => setOverlayContent('date')}
                             >
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                    <Text>Apps Blocked</Text>
-                                    <FontAwesome5 name="chevron-right" size={15} color="#000" />
+                                    <Text>Date</Text>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <Text style={{ marginRight: 10 }}>
+                                            {formatDate(selectedDate)}
+                                        </Text>
+                                        <FontAwesome5 name="chevron-right" size={15} color="#000" />
+                                    </View>
                                 </View>
+
 
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center', marginTop: 5 }]}
-                            // onPress={() => setOverlayContent('de lete')}
+                                onPress={() => setOverlayContent('when')}
                             >
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                    <Text>Difficulty</Text>
-                                    <FontAwesome5 name="chevron-right" size={15} color="#000" />
-
+                                    <Text>Starting time</Text>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <Text style={{ marginRight: 10 }}>
+                                            {formatTime(selectedInitialStartHour, selectedInitialStartMinute)}
+                                        </Text>
+                                        <FontAwesome5 name="chevron-right" size={15} color="#000" />
+                                    </View>
                                 </View>
+
 
 
                             </TouchableOpacity>
@@ -238,6 +330,75 @@ const HomeScreen = ({ navigation }) => {
                             </TouchableOpacity>
                         </>
                     )}
+                    {overlayContent === 'when' && (
+                        <View>
+                            <Text style={homeMain.title}>Starting time</Text>
+                            <View style={homeMain.pickerContainer}>
+                                <ScrollView style={homeMain.scrollPicker}>
+                                    {hours.map((hour) => (
+                                        <TouchableOpacity
+                                            key={hour}
+                                            style={homeMain.item}
+                                            onPress={() => setSelectedStartHour(hour)}
+                                        >
+                                            <Text
+                                                style={[
+                                                    homeMain.itemText,
+                                                    selectedStartHour === hour ? { color: '#0077ff' } : { color: '#000' }
+                                                ]}
+                                            >
+                                                {formatHour(hour)}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </ScrollView>
+
+                                <ScrollView style={homeMain.scrollPicker}>
+                                    {minutes.map((minute) => (
+                                        <TouchableOpacity
+                                            key={minute}
+                                            style={homeMain.item}
+                                            onPress={() => setSelectedStartMinute(minute)}
+                                        >
+                                            <Text
+                                                style={[
+                                                    homeMain.itemText,
+                                                    selectedStartMinute === minute ? { color: '#0077ff' } : { color: '#000' }
+                                                ]}
+                                            >
+                                                {minute === 1 ? `${minute} minute` : `${minute} minutes`}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </ScrollView>
+
+                            </View>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 10 }}>
+                                <TouchableOpacity
+                                    style={[reusableStyles.textInput, signUp.halfInput, { borderRadius: 40 }]}
+                                    onPress={() => {
+                                        // Reset the selected start hour and minute to their initial values
+                                        setSelectedStartHour(selectedInitialStartHour);
+                                        setSelectedStartMinute(selectedInitialStartMinute);
+
+                                        // Assuming setOverlayContent changes the overlay/content view
+                                        setOverlayContent('solo');
+                                    }}
+                                >
+                                    <Text style={{ color: '#000', textAlign: 'center' }}>Back</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    style={[reusableStyles.textInput, signUp.halfInput, { borderRadius: 40 }]}
+                                    onPress={confirmSelection}
+                                >
+                                    <Text style={{ color: '#000', textAlign: 'center' }}>Confirm</Text>
+                                </TouchableOpacity>
+
+                            </View>
+
+                        </View>
+                    )}
                     {overlayContent === 'duration' && (
                         <View>
                             <Text style={homeMain.title}>Duration</Text>
@@ -249,8 +410,16 @@ const HomeScreen = ({ navigation }) => {
                                             style={homeMain.item}
                                             onPress={() => setSelectedHour(hour)}
                                         >
-                                            <Text style={homeMain.itemText}>{hour} hours</Text>
+                                            <Text
+                                                style={[
+                                                    homeMain.itemText,
+                                                    selectedHour === hour ? { color: '#0077ff' } : { color: '#000' }
+                                                ]}
+                                            >
+                                                {hour} hours
+                                            </Text>
                                         </TouchableOpacity>
+
                                     ))}
                                 </ScrollView>
                                 <ScrollView style={homeMain.scrollPicker}>
@@ -260,18 +429,36 @@ const HomeScreen = ({ navigation }) => {
                                             style={homeMain.item}
                                             onPress={() => setSelectedMinute(minute)}
                                         >
-                                            <Text style={homeMain.itemText}>{minute} minutes</Text>
+                                            <Text
+                                                style={[
+                                                    homeMain.itemText,
+                                                    selectedMinute === minute ? { color: '#0077ff' } : { color: '#000' }
+                                                ]}
+                                            >
+                                                {minute === 1 ? `${minute} minute` : `${minute} minutes`}
+                                            </Text>
                                         </TouchableOpacity>
                                     ))}
                                 </ScrollView>
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 10 }}>
-                                <TouchableOpacity style={[reusableStyles.textInput, signUp.halfInput, { borderRadius: 40 }]}>
-                                    <Text style={{ color: '#000', textAlign: 'center' }}>Always Active</Text>
+                                <TouchableOpacity style={[reusableStyles.textInput, signUp.halfInput, { borderRadius: 40 }]}
+                                    onPress={() => {
+
+                                        setSelectedHour(initialHour);
+                                        setSelectedMinute(initialMinute);
+                                        setOverlayContent('solo'); // Assuming this changes the overlay/content view
+                                    }}
+                                >
+                                    <Text style={{ color: '#000', textAlign: 'center' }}>Back</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity style={[reusableStyles.textInput, signUp.halfInput, { borderRadius: 40 }]}>
+                                <TouchableOpacity
+                                    style={[reusableStyles.textInput, signUp.halfInput, { borderRadius: 40 }]}
+                                    onPress={confirmSelection}
+                                >
                                     <Text style={{ color: '#000', textAlign: 'center' }}>Confirm</Text>
                                 </TouchableOpacity>
+
                             </View>
 
                         </View>
@@ -292,18 +479,23 @@ const HomeScreen = ({ navigation }) => {
                 <FlatList
                     data={days}
                     renderItem={({ item }) => {
-                        // Check if the item date is today's date
-                        const isToday =
-                            item.getDate() === currentDate.getDate() &&
-                            item.getMonth() === currentDate.getMonth() &&
-                            item.getFullYear() === currentDate.getFullYear();
+                        const isToday = item.getDate() === new Date().getDate() &&
+                            item.getMonth() === new Date().getMonth() &&
+                            item.getFullYear() === new Date().getFullYear();
+
+                        const isSelected = selectedDate && item.getDate() === selectedDate.getDate() &&
+                            item.getMonth() === selectedDate.getMonth() &&
+                            item.getFullYear() === selectedDate.getFullYear();
 
                         return (
-                            <DayItem
-                                day={item.getDate()}
-                                dayName={item.toLocaleString('en-us', { weekday: 'short' })}
-                                isToday={isToday} // Pass this as a prop to DayItem
-                            />
+                            <TouchableOpacity onPress={() => setSelectedDate(item)}>
+                                <DayItem
+                                    day={item.getDate()}
+                                    dayName={item.toLocaleString('en-us', { weekday: 'short' })}
+                                    isToday={isToday}
+                                    isSelected={isSelected} // This prop determines if the item is highlighted
+                                />
+                            </TouchableOpacity>
                         );
                     }}
                     style={{ marginVertical: 15, marginRight: 5 }}
@@ -311,8 +503,8 @@ const HomeScreen = ({ navigation }) => {
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     ItemSeparatorComponent={renderSeparator}
-
                 />
+
                 {/* Text at bottom */}
                 <View style={[{ flexDirection: 'row', justifyContent: 'space-between', color: "#000" }]}>
                     <Text style={[{ color: "#000", fontWeight: 'bold' }]}>
@@ -343,11 +535,12 @@ const HomeScreen = ({ navigation }) => {
                     </View>
                 ) : (
                     <FlatList
-                        data={blocks}
-                        renderItem={renderItem}
-                        keyExtractor={(item) => item.toString()}                     
+                        data={blocksForSelectedDate} // Use the filtered blocks here
+                        renderItem={renderItem} // Assuming renderItem is defined elsewhere to handle rendering each block
+                        keyExtractor={(item, index) => index.toString()} // Updated keyExtractor to use index
                         ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
                     />
+
                 )}
             </View>
 
