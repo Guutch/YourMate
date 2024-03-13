@@ -5,25 +5,39 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import GoalItem from '../../components/GoalItem'
-// import LargeGoalOverlay from '../../components/LargeGoalOverlay'
+import firebase from 'firebase/app';
+import 'firebase/firestore';
+import { app } from '../../firebase/firebase'
+import { getAuth } from 'firebase/auth';
+
+import UserModel from '../../firebase/UserModel'
+
 import { getGlobalData, getJustCreatedGoal, setJustCreatedGoal } from '../../components/GoalStore';
 
 import { Overlay } from 'react-native-elements';
 import LargeGoalOverview from '../../components/LargeGoalOverlay';
 
-
+const auth = getAuth(app);
 const GoalScreen = ({ navigation, route }) => {
+    const [showOverlay, setShowOverlay] = useState(false);
+    const [overlayContent, setOverlayContent] = useState('options'); // 'options', 'completed', or 'delete'
+    const [goals, setGoals] = useState([]); // Blocks on screen
+    const [completedGoals, setCompletedGoals] = useState([]); // Blocks on screen
+    const [selectedGoal, setSelectedGoal] = useState(null);
+
 
     // This will work everytime the screen comes in focus
     // Need boolean to check if we need to add something from within create goal etc
     useFocusEffect(
         React.useCallback(() => {
             // Code to run every time the screen is focused
-            console.log("Here")
+            console.log("Here ")
 
             if (getJustCreatedGoal()) {
                 console.log("New goal created: ", getGlobalData());
                 const newGoal = getGlobalData(); // This is now an object
+                console.log("newGoal")
+                console.log(newGoal)
                 setGoals(currentGoals => [...currentGoals, newGoal]);
                 setJustCreatedGoal(false); // Reset the flag
             } else {
@@ -32,7 +46,7 @@ const GoalScreen = ({ navigation, route }) => {
 
 
             // Optionally, you can return a cleanup function that React will call
-            // when the component is unmounted or before the next time the effect runs.
+            // when the component is unmounted or before the next time the effect runs...
             // This is useful for cleaning up any side effects.
             return () => {
                 // Cleanup actions if needed
@@ -41,11 +55,7 @@ const GoalScreen = ({ navigation, route }) => {
         }, [])
     );
 
-    const [showOverlay, setShowOverlay] = useState(false);
-    const [overlayContent, setOverlayContent] = useState('options'); // 'options', 'completed', or 'delete'
-    const [goals, setGoals] = useState([]); // Blocks on screen
-    const [completedGoals, setCompletedGoals] = useState([]); // Blocks on screen
-    const [selectedGoal, setSelectedGoal] = useState(null);
+    
 
 
     const handlePress = () => {
@@ -62,18 +72,29 @@ const GoalScreen = ({ navigation, route }) => {
     };
 
 
-    // useEffect(() => {
-    //     const unsubscribe = navigation.addListener('focus', () => {
-    //         const routes = navigation.getState().routes;
-
-    //         if (routes.length > 1) { // Check if there are previous routes in the stack
-    //             const previousRoute = routes[routes.length - 1]; // Get the previous route
-    //             console.log(previousRoute.name); // Log the previous route's name
-    //         }
-    //     });
-
-    //     return unsubscribe;
-    // }, [navigation]);
+    useEffect(() => {
+        const fetchGoals = async () => {
+          try {
+            // Get the current user's ID
+            const userUID = auth.currentUser.uid;
+            console.log(userUID);
+            console.log('user');
+    
+            // Fetch the goals using the UserModel
+            const goalData = await UserModel.fetchUserGoals(userUID);
+            console.log(goalData)
+            console.log("goalData")
+    
+            setGoals(goalData);
+            // setLoading(false);
+          } catch (error) {
+            console.error('Error fetchi ng goals:', error);
+            // setLoading(false);
+          }
+        };
+    
+        fetchGoals();
+      }, []);
 
     useEffect(() => {
         // Use `setOptions` to update the button that we previously specified

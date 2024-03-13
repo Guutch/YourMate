@@ -6,6 +6,12 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import JournalItem from '../../components/JournalItem'
 import { Overlay } from 'react-native-elements';
 
+import { app } from '../../firebase/firebase'
+import { getAuth } from 'firebase/auth';
+
+import UserModel from '../../firebase/UserModel'
+
+const auth = getAuth(app);
 const JournalScreen = ({ navigation }) => {
     const [journals, setJournals] = useState([]);
     const [id, setId] = useState(0);
@@ -19,7 +25,8 @@ const JournalScreen = ({ navigation }) => {
         engage: null,
         progress: null,
     });
-
+    const [triggerComment, setTriggerComment] = useState('');
+    const [progressComment, setProgressComment] = useState('');
 
     const handleSelection = (option, value) => {
         setSelections(prevSelections => ({
@@ -38,33 +45,72 @@ const JournalScreen = ({ navigation }) => {
         setJournalDesc(''); // Reset journal title for next entry
     }
 
-    const addJournal = () => {
+    const addJournal = async () => {
         if (!journalTitle || !journalDesc) {
-            // Set error state if title or description is empty
-            setTitleError(!journalTitle);
-            setDescError(!journalDesc);
-            return; // Stop execution if validation fails
+          // Set error state if title or description is empty
+          setTitleError(!journalTitle);
+          setDescError(!journalDesc);
+          return; // Stop execution if validation fails
         }
-
+      
         const newJournal = {
-            id,
-            time: new Date().toLocaleString(),
-            title: journalTitle,
-            desc: journalDesc,
+          time: new Date().toLocaleString(),
+          title: journalTitle,
+          desc: journalDesc,
+          triggeredToday: selections.trigger,
+          triggerComment: selections.trigger ? triggerComment : '',
+          engagedInHabit: selections.engage,
+          madeProgress: selections.progress,
+          progressComment: selections.progress ? progressComment : '',
         };
+      
+        try {
+          const userId = auth.currentUser.uid;
+          // Await the ID from the addJournal method
+          const journalId = await UserModel.addJournal(userId, newJournal);
+      
+          // Include this ID in the journal object added to the local state
+          const newJournalWithId = { ...newJournal, id: journalId };
+      
+          setJournals((prevJournals) => [...prevJournals, newJournalWithId]);
+      
+          // Reset input fields and selections
+          setJournalTitle('');
+          setJournalDesc('');
+          setTitleError(false);
+          setDescError(false);
+          setTriggerComment('');
+          setProgressComment('');
+          setSelections({
+            trigger: null,
+            engage: null,
+            progress: null,
+          });
+      
+          setShowOverlay(false);
+          clearSets();
+        } catch (error) {
+          console.error('Error adding journal:', error);
+          // Handle error as needed
+        }
+      };
+      
 
-        setId(id + 1);
-        setJournals([...journals, newJournal]);
-
-        // Reset input fields and error states
-        setJournalTitle('');
-        setJournalDesc('');
-        setTitleError(false);
-        setDescError(false);
-
-        setShowOverlay(false);
-        clearSets()
-    };
+      useEffect(() => {
+        const fetchJournals = async () => {
+          try {
+            const userId = auth.currentUser.uid;
+            const fetchedJournals = await UserModel.fetchUserJournals(userId);
+            setJournals(fetchedJournals);
+          } catch (error) {
+            console.error('Error fetching journals:', error);
+          } finally {
+            setIsLoading(false);
+          }
+        };
+    
+        fetchJournals();
+      }, []);
 
     const renderItem = ({ item }) => (
         <View style={homeMain.blocksContainer}>
@@ -193,7 +239,11 @@ const JournalScreen = ({ navigation }) => {
 
                         </View>
                         <Text style={{ alignSelf: 'flex-start' }}>If 'Yes', please comment</Text>
-                        <TextInput style={reusableStyles.textInput} />
+                        <TextInput
+                            style={reusableStyles.textInput}
+                            value={triggerComment}
+                            onChangeText={setTriggerComment}
+                        />
                         <Text style={{ alignSelf: 'flex-start' }}>Did you engage in -Habit-</Text>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignSelf: 'stretch' }}>
                             <TouchableOpacity
@@ -249,7 +299,11 @@ const JournalScreen = ({ navigation }) => {
                             </TouchableOpacity>
                         </View>
                         <Text style={{ alignSelf: 'flex-start' }}>If 'Yes', what progress did you make</Text>
-                        <TextInput style={reusableStyles.textInput} />
+                        <TextInput
+                            style={reusableStyles.textInput}
+                            value={progressComment}
+                            onChangeText={setProgressComment}
+                        />
                     </View>
 
 

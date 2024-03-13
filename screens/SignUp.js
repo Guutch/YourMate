@@ -148,14 +148,20 @@ const SignUp = ({ navigation }) => {
 
     const handleSignUp = async () => {
         try {
-          const user = await UserModel.createUser(email, password);
-          console.log('Valid form input - can create user');
-          navigation.navigate('HabitSelector');
+            const user = await UserModel.createUser(
+                firstName,
+                lastName,
+                username,
+                email,
+                password
+            );
+            console.log('User created:', user);
+            // Handle successful user creation
         } catch (error) {
-          console.error('Error creating user:', error);
-          // Handle error
+            console.error('Error creating user:', error);
+            // Handle error
         }
-      };
+    };
 
     const validation = () => {
         let isFormInvalid = false;
@@ -175,7 +181,7 @@ const SignUp = ({ navigation }) => {
             handleSignUp();
             // const user = await UserModel.createUser(email, password);
             // console.log("Valid form input - can create user")
-            // navigation.navigate('HabitSelector')
+            navigation.navigate('HabitSelector')
             // onPress={() => 
         }
     };

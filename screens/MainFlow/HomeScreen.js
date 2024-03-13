@@ -11,7 +11,11 @@ import JourneyTimer from '../../components/JourneyTimer';
 import DayItem from '../../components/DayItem'
 import BlockItem from '../../components/BlockItem'
 
+import { app } from '../../firebase/firebase'
+import { getAuth } from 'firebase/auth';
+import UserModel from '../../firebase/UserModel'
 
+const auth = getAuth(app);
 const HomeScreen = ({ navigation }) => {
     const [showOverlay, setShowOverlay] = useState(false);
     const [upcomingBlocksCount, setUpcomingBlocksCount] = useState(0);
@@ -33,6 +37,23 @@ const HomeScreen = ({ navigation }) => {
 
     const [overlayContent, setOverlayContent] = useState('options'); // 'options', 'solo', or 'delete'
 
+    const [habitName, setHabitName] = useState('');
+    const [habitStartDate, setHabitStartDate] = useState(null);
+
+    useEffect(() => {
+        const fetchHabit = async () => {
+            try {
+                const userId = auth.currentUser.uid;
+                const habitData = await UserModel.fetchUserHabit(userId);
+        setHabitName(habitData.name);
+        setHabitStartDate(habitData.startDate);
+      } catch (error) {
+        console.error('Error fetching habit:', error);
+      }
+        };
+
+        fetchHabit();
+    }, []);
 
     // Helper function to generate days of the month
     const getDaysInMonth = (year, month) => {
@@ -44,6 +65,7 @@ const HomeScreen = ({ navigation }) => {
         }
         return days;
     };
+
 
 
 
@@ -105,21 +127,33 @@ const HomeScreen = ({ navigation }) => {
         return `${formattedHour}:${formattedMinute}`;
     };
 
-    const handleBlockNowPress = () => {
+    const handleBlockNowPress = async () => {
         setShowOverlay(false); // Hide the overlay
         setOverlayContent('options'); // Reset the overlay content to 'options'
-        // setUpcomingBlocksCount(prevCount => prevCount + 1); // Increment the count of upcoming blocks
         setTitle('Session');
-
+      
         const newBlock = {
-            date: selectedDate.toISOString().split('T')[0], // Store only the date part
-            time: new Date().toLocaleString(), // Convert Date to a string
-            title: title
+          date: selectedDate.toISOString().split('T')[0], // Store only the date part
+          time: new Date().toLocaleString(), // Convert Date to a string
+          title: title,
         };
-
-        // Add the new block to the blocks state
-        setBlocks([...blocks, newBlock]);
-    };
+      
+        try {
+          const userId = auth.currentUser.uid; // Assuming you have access to the authenticated user's ID
+          const blockId = await UserModel.addBlock(userId, newBlock); // Add block to Firebase and get the ID
+      
+          // Optionally, include the block ID in your local state if needed
+          const newBlockWithId = { ...newBlock, id: blockId };
+          setBlocks((prevBlocks) => [...prevBlocks, newBlockWithId]);
+      
+          // Other state updates as needed
+          // setUpcomingBlocksCount(prevCount => prevCount + 1); // Increment the count of upcoming blocks, if needed
+        } catch (error) {
+          console.error('Error adding block:', error);
+          // Handle the error as needed
+        }
+      };
+      
 
     useEffect(() => {
         // Perform actions that depend on the initial selectedHour and selectedMinute
@@ -182,7 +216,7 @@ const HomeScreen = ({ navigation }) => {
                             borderRadius: 5,
                         }}
                     >
-                        <FontAwesome5 name="plus" size={30} color="#000"  />
+                        <FontAwesome5 name="plus" size={30} color="#000" />
                         {/* <FontAwesome5 name="clock" size={30} color="#000" onPress={() => setShowOverlay(true)} /> */}
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -469,9 +503,9 @@ const HomeScreen = ({ navigation }) => {
             {/* Top Half */}
             <View>
 
-                <Text style={{ textAlign: 'center', fontWeight: 'bold', color: '#000' }}>Your porn journey started...</Text>
+                <Text style={{ textAlign: 'center', fontWeight: 'bold', color: '#000' }}>Your {habitName} journey started...</Text>
 
-                <JourneyTimer startTime={startTime} />
+                <JourneyTimer startTime={habitStartDate} />
 
                 <Text style={{ textAlign: 'center', fontWeight: 'bold', color: '#000' }}>...ago!</Text>
 

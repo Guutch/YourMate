@@ -4,7 +4,19 @@ import { reusableStyles, homeMain, communityMain } from '../../components/styles
 
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
+import { app } from '../../firebase/firebase'
+import { getAuth } from 'firebase/auth';
+
+import UserModel from '../../firebase/UserModel'
+
+const auth = getAuth(app);
 const CommunityScreen = ({ navigation }) => {
+    const [firstName, setFirstName] = useState("");
+const [lastName, setLastName] = useState("");
+const [userName, setUserName] = useState("");
+const [startedAt, setStartedAt] = useState("");
+    const auth = getAuth();
+    console.log(auth)
 
     useEffect(() => {
         // Use `setOptions` to update the button that we previously specified
@@ -41,6 +53,29 @@ const CommunityScreen = ({ navigation }) => {
         });
     }, [navigation]);
 
+    const fetchUsersData = async () => {
+        try {
+          const userId = auth.currentUser.uid;
+          const userData = await UserModel.fetchUserData(userId);
+      
+            console.log("userData")
+            console.log(userData)
+
+          if (userData) {
+            setFirstName(userData.firstName);
+            setLastName(userData.lastName);
+            setUserName(userData.username);
+            setStartedAt(userData.createdAt);
+          } else {
+            console.log('User data not found');
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
     return (
         <View style={[reusableStyles.container]}>
             {/* Top piece */}
@@ -52,15 +87,15 @@ const CommunityScreen = ({ navigation }) => {
                         <FontAwesome5 name="user" size={30} color="#000" onPress={() => setShowOverlay(true)} />
                     </View>
                     {/* Name */}
-                    <Text>This is the</Text>
+                    <Text>{firstName} {lastName}</Text>
                 </View>
                 <View>
                     {/* Icons for habit */}
                     <Text>icon</Text>
                     {/* Joined month and year */}
-                    <Text>Joined xxx</Text>
+                    <Text>Need to convert this</Text>
                     {/* Username */}
-                    <Text>Username</Text>
+                    <Text>{userName}</Text>
                 </View>
 
 
@@ -75,7 +110,9 @@ const CommunityScreen = ({ navigation }) => {
                 <View style={[reusableStyles.textInput, { height: 128, alignContent: 'center', justifyContent: 'center' }, reusableStyles.lessRounded]}>
                     <View style={{ justifyContent: 'space-around', alignItems: 'center' }}>
                         <Text>You have no active friend quest</Text>
-                        <View style={[reusableStyles.button, reusableStyles.lessRounded, { backgroundColor: '#0077FF' }]}></View>
+                        <TouchableOpacity style={[reusableStyles.button, reusableStyles.lessRounded, { backgroundColor: '#0077FF' }]}
+                        onPress={fetchUsersData}
+                        ></TouchableOpacity>
                     </View>
 
                 </View>

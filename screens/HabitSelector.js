@@ -2,6 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput } from 'react-native';
 import { Overlay } from 'react-native-elements';
 
+
+import UserModel from '../firebase/UserModel';
+import { app } from '../firebase/firebase'
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+
+// Initialize the Firebase Authentication service for the given Firebase app
+const auth = getAuth(app);
+
 import { reusableStyles, landing, signUp, signUpSwipe } from '../components/styles'; // Adjust the path
 
 const HabitSelector = ({ navigation }) => {
@@ -14,6 +22,41 @@ const HabitSelector = ({ navigation }) => {
     const toggleOverlay = () => {
         setVisible(!visible);
     };
+
+    const user = auth.currentUser;
+
+if (user) {
+    console.log("User is signed in", user);
+} else {
+    console.log("No user is signed in.");
+}
+
+const handleHabitSave = async () => {
+    try {
+        console.log(selected)
+        const user = auth.currentUser;
+        if (user) {
+          const userId = user.uid;
+          
+          const habitName = selected === 'other' ? inputValue : selected;
+    
+          await UserModel.addHabit(userId, habitName);
+          console.log('Habit created successfully');
+    
+          // After saving the habit, you can navigate to the next screen
+          if (selected) {
+            navigation.navigate('GoalSelector', { selected, fromMain: false });
+          } else if (inputValue) {
+            navigation.navigate('GoalSelector', { inputValue, fromMain: false });
+          }
+        } else {
+          console.error('User not authenticated');
+        }
+      } catch (error) {
+        console.error('Error creating habit:', error);
+        // Handle error
+      }
+  };
 
     const handleSelection = (viewId) => {
         if (selected === viewId) {
@@ -29,10 +72,12 @@ const HabitSelector = ({ navigation }) => {
         if (selected === 'other') {
             // If 'other' is selected, navigate to the next screen with the inputValue
             // navigation.navigate('GoalSelector', { inputValue });
+            console.log(user.uid)
+            console.log("user.uid")
             toggleOverlay(); // Close the overlay
         } else if (selected) {
             // If a different option is selected, navigate to 'GoalSelector' with the selected value
-            navigation.navigate('GoalSelector', { selected, fromMain: false });
+            handleHabitSave();
         }
     };
     return (
@@ -59,7 +104,7 @@ const HabitSelector = ({ navigation }) => {
                             width: 335
                         }
                     ]}
-                    onPress={() => navigation.navigate('GoalSelector', { inputValue, fromMain: false })} // Pass inputValue to handleNav
+                    onPress={() => handleHabitSave()} // Pass inputValue to handleNav
                     disabled={!inputValue} // Disable button if inputValue is empty
                 >
                     <Text style={reusableStyles.buttonText}>Continue</Text>

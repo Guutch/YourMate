@@ -44,7 +44,7 @@ const LargeGoalOverview = ({ xOut, goal }) => (
       <View style={{ marginTop: 10 }}>
         <View style={[reusableStyles.button, { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: "white", padding: 10, borderColor: "#000", borderWidth: 2, }]}>
           <Text>Started the goal</Text>
-          <Text>xx/xx/xx</Text>
+          <Text>{goal.date.toLocaleDateString('en-GB')}</Text>
         </View>
       </View>
     </View>
