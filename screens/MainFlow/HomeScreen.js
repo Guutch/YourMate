@@ -45,11 +45,11 @@ const HomeScreen = ({ navigation }) => {
             try {
                 const userId = auth.currentUser.uid;
                 const habitData = await UserModel.fetchUserHabit(userId);
-        setHabitName(habitData.name);
-        setHabitStartDate(habitData.startDate);
-      } catch (error) {
-        console.error('Error fetching habit:', error);
-      }
+                setHabitName(habitData.name);
+                setHabitStartDate(habitData.startDate);
+            } catch (error) {
+                console.error('Error fetching habit:', error);
+            }
         };
 
         fetchHabit();
@@ -131,29 +131,29 @@ const HomeScreen = ({ navigation }) => {
         setShowOverlay(false); // Hide the overlay
         setOverlayContent('options'); // Reset the overlay content to 'options'
         setTitle('Session');
-      
+
         const newBlock = {
-          date: selectedDate.toISOString().split('T')[0], // Store only the date part
-          time: new Date().toLocaleString(), // Convert Date to a string
-          title: title,
+            date: selectedDate.toISOString().split('T')[0], // Store only the date part
+            time: new Date().toLocaleString(), // Convert Date to a string
+            title: title,
         };
-      
+
         try {
-          const userId = auth.currentUser.uid; // Assuming you have access to the authenticated user's ID
-          const blockId = await UserModel.addBlock(userId, newBlock); // Add block to Firebase and get the ID
-      
-          // Optionally, include the block ID in your local state if needed
-          const newBlockWithId = { ...newBlock, id: blockId };
-          setBlocks((prevBlocks) => [...prevBlocks, newBlockWithId]);
-      
-          // Other state updates as needed
-          // setUpcomingBlocksCount(prevCount => prevCount + 1); // Increment the count of upcoming blocks, if needed
+            const userId = auth.currentUser.uid; // Assuming you have access to the authenticated user's ID
+            const blockId = await UserModel.addBlock(userId, newBlock); // Add block to Firebase and get the ID
+
+            // Optionally, include the block ID in your local state if needed
+            const newBlockWithId = { ...newBlock, id: blockId };
+            setBlocks((prevBlocks) => [...prevBlocks, newBlockWithId]);
+
+            // Other state updates as needed
+            // setUpcomingBlocksCount(prevCount => prevCount + 1); // Increment the count of upcoming blocks, if needed
         } catch (error) {
-          console.error('Error adding block:', error);
-          // Handle the error as needed
+            console.error('Error adding block:', error);
+            // Handle the error as needed
         }
-      };
-      
+    };
+
 
     useEffect(() => {
         // Perform actions that depend on the initial selectedHour and selectedMinute

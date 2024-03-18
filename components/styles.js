@@ -63,7 +63,13 @@ const reusableStyles = StyleSheet.create({
         borderTopLeftRadius: 10,
         borderTopRightRadius: 10,
         width: "100%"
-    }
+    },
+    input: {
+        borderWidth: 1,
+        borderRadius: 5,
+        padding: 10,
+        marginVertical: 5,
+      },
 });
 
 const landing = StyleSheet.create({
@@ -139,7 +145,27 @@ const communityMain = StyleSheet.create({
     updatedCircle: {
         width: 50,
         height: 50
-    }
+    },
+    friendBox: {
+        height: 100,
+        width: '100%',
+        // flexDirection: 'colu',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#f0f0f0',
+        borderRadius: 5,
+        marginBottom: 10,
+      },
+    nameContainer: {
+        // flex: 1,
+        marginHorizontal: 10,
+        justifyContent: 'center',
+      },
+      userName: {
+        fontWeight: 'bold',
+        fontSize: 16,
+        textAlign: 'center'
+      },
 });
 
 const homeMain = StyleSheet.create({

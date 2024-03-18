@@ -5,6 +5,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import GoalItem from '../../components/GoalItem'
+import MilestoneLrgGoalO from '../../components/MilestoneLrgGoalO'
 import firebase from 'firebase/app';
 import 'firebase/firestore';
 import { app } from '../../firebase/firebase'
@@ -25,6 +26,7 @@ const GoalScreen = ({ navigation, route }) => {
     const [completedGoals, setCompletedGoals] = useState([]); // Blocks on screen
     const [selectedGoal, setSelectedGoal] = useState(null);
 
+    const userUID = auth.currentUser.uid;
 
     // This will work everytime the screen comes in focus
     // Need boolean to check if we need to add something from within create goal etc
@@ -55,7 +57,9 @@ const GoalScreen = ({ navigation, route }) => {
         }, [])
     );
 
-    
+    const handleOverlayContentChange = (newContent) => {
+        setOverlayContent(newContent);
+      };
 
 
     const handlePress = () => {
@@ -88,13 +92,13 @@ const GoalScreen = ({ navigation, route }) => {
             setGoals(goalData);
             // setLoading(false);
           } catch (error) {
-            console.error('Error fetchi ng goals:', error);
+            console.error('Error fetching goals:', error);
             // setLoading(false);
           }
         };
     
         fetchGoals();
-      }, []);
+      }, [userUID]);
 
     useEffect(() => {
         // Use `setOptions` to update the button that we previously specified
@@ -133,12 +137,17 @@ const GoalScreen = ({ navigation, route }) => {
                     </TouchableOpacity>
                 </View>),
         });
-    }, [navigation]);
+    }, [navigation, userUID]);
 
     const xOutOfOverlay = () => {
         setShowOverlay(false)
         // clearSets()
     }
+
+    const updateGoalData = (updatedGoal) => {
+        setSelectedGoal(updatedGoal);
+      };
+      
 
     return (
         <View style={[reusableStyles.container]}>
@@ -236,7 +245,33 @@ const GoalScreen = ({ navigation, route }) => {
                         </>
                     )}
                     {overlayContent === 'lrg' && (
-                        <LargeGoalOverview xOut={xOutOfOverlay} goal={selectedGoal} />
+                        <LargeGoalOverview
+                        xOut={xOutOfOverlay}
+                        goal={selectedGoal}
+                        onOverlayContentChange={handleOverlayContentChange}
+                        userId={userUID}
+                        
+                      />
+                    )}
+                    {overlayContent === 'note' && (
+                        <MilestoneLrgGoalO
+                        xOut={xOutOfOverlay}
+                        goal={selectedGoal}
+                        onOverlayContentChange={handleOverlayContentChange}
+                        mode={"note"}
+                        updateGoalData={updateGoalData}
+                        userId={userUID}
+                      />
+                    )}
+                    {overlayContent === 'milestone' && (
+                        <MilestoneLrgGoalO
+                        xOut={xOutOfOverlay}
+                        goal={selectedGoal}
+                        onOverlayContentChange={handleOverlayContentChange}
+                        mode={"milestone"}
+                        updateGoalData={updateGoalData}
+                        userId={userUID}
+                      />
                     )}
                 </Overlay>
             )}
