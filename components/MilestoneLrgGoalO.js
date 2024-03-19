@@ -37,36 +37,54 @@ const MilestoneLrgGoalO = ({ xOut, goal, onOverlayContentChange, mode, userId, u
             description: desc,
         };
 
-        
+        const dataToShow = {
+            title,
+            description: desc,
+            createdAt: new Date(), // This captures the current date and time
+        };
+
+
 
         if (mode === 'milestone') {
             const isSaved = await UserModel.addMilestone(userId, goal.id, data);
             if (isSaved) {
+                const updatedGoal = {
+                    ...goal,
+                    milestones: goal.milestones ? [...goal.milestones, dataToShow] : [dataToShow],
+                };
+                updateGoalData(updatedGoal);
                 onOverlayContentChange('lrg');
-                setTitle('');
-                setDesc('');
-                setTitleBorderColor('#000');
-                setDescBorderColor('#000');
-                setTitlePlaceholder('Milestone Title');
-                setDescPlaceholder('Milestone Description');
+                resetFormFields();
             } else {
                 console.log('Error saving milestone');
             }
         } else {
-            const isSaved = await UserModel.addNote(userId, goal.id, data);
-            if (isSaved) {                
+            const savedNote = await UserModel.addNote(userId, goal.id, data);
+            if (savedNote) {
+                // Assuming `updateGoalData` is your method to update the goal's state
+                const updatedGoal = {
+                    ...goal,
+                    notes: goal.notes ? [...goal.notes, dataToShow] : [dataToShow],
+                };
+
+                updateGoalData(updatedGoal);
+
                 onOverlayContentChange('lrg');
-                setTitle('');
-                setDesc('');
-                setTitleBorderColor('#000');
-                setDescBorderColor('#000');
-                setTitlePlaceholder('Note Title');
-                setDescPlaceholder('Note Description');
+                resetFormFields();
             } else {
                 console.log('Error saving note');
             }
         }
     };
+
+    function resetFormFields() {
+        setTitle('');
+        setDesc('');
+        setTitleBorderColor('#000');
+        setDescBorderColor('#000');
+        setTitlePlaceholder('Note Title');
+        setDescPlaceholder('Note Description');
+    }
 
     const handleCancel = () => {
         onOverlayContentChange('lrg');

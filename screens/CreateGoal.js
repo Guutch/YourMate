@@ -74,27 +74,29 @@ const ActualGoals = ({ route, navigation }) => {
 
     const handleGoalSave = async () => {
         try {
-            console.log(dateRef.current); // Log the updated date value
-            console.log(targetDateRef.current);
-            console.log("Below");
-            const logData = {
-                goal,
-                category,
-                date: dateRef.current,
-                targetDate: targetDateRef.current,
-                startingValue: startingValueRef.current,
-                numericalTarget: numericalTargetRef.current,
-                unit: unitRef.current,
-            };
+            // console.log(dateRef.current); // Log the updated date value
+            // console.log(targetDateRef.current);
+            // console.log("Below");
 
-            console.log(logData);
-            console.log("Above");
+
+            // const logData = {
+            //     goal,
+            //     category,
+            //     date: dateRef.current,
+            //     targetDate: targetDateRef.current,
+            //     startingValue: startingValueRef.current,
+            //     numericalTarget: numericalTargetRef.current,
+            //     unit: unitRef.current,
+            // };
+
+            // console.log(logData);
+            // console.log("Above");
             const user = auth.currentUser;
             if (user) {
                 const userId = user.uid;
 
                 // Assuming you have already captured these values from your form inputs
-                await UserModel.addGoal(userId, goal, category, date, targetDate, startingValue, numericalTarget, unit);
+                await UserModel.addGoal(userId, goal, category, dateRef.current, targetDateRef.current, startingValue, numericalTarget, unit);
                 setGlobalData(goal, category, date, targetDate, startingValue, numericalTarget, unit);
                 setJustCreatedGoal(true)
                 console.log('Goal created successfully');

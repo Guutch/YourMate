@@ -276,6 +276,9 @@ static async sendFriendRequest(senderUserId, receiverUserId) {
 
 
   static async addGoal(userId, goal, category, date, targetDate, startingValue, numericalTarget, unit) {
+    console.log("target date in usermodel")
+    console.log(targetDate)
+    console.log(date)
     try {
       const goalData = {
         goal: goal,
@@ -298,6 +301,46 @@ static async sendFriendRequest(senderUserId, receiverUserId) {
       throw error;
     }
   }
+
+  static async deleteGoalAndSubcollections(userId, goalId) {
+    const goalRef = firestore.collection('users').doc(userId).collection('goals').doc(goalId);
+  
+    // Delete subcollections like 'notes' and 'milestones' for the goal
+    const subcollections = ['notes', 'milestones']; // Add more subcollections as needed
+    try {
+      for (const subcollection of subcollections) {
+        const snapshot = await goalRef.collection(subcollection).get();
+        snapshot.forEach(doc => {
+          doc.ref.delete();
+        });
+      }
+  
+      // After deleting subcollections, delete the goal document itself
+      await goalRef.delete();
+      console.log(`Goal and its subcollections successfully deleted.`);
+    } catch (error) {
+      console.error('Error deleting goal and its subcollections:', error);
+      throw error;
+    }
+  }
+
+  static async deleteBlock(userId, blockId) {
+    try {
+      const blockRef = firebase
+        .firestore()
+        .collection('users')
+        .doc(userId)
+        .collection('blocks')
+        .doc(blockId);
+
+      // Delete the block document
+      await blockRef.delete();
+    } catch (error) {
+      console.error('Error deleting block:', error);
+      throw error;
+    }
+  };
+  
 
   static async fetchUserGoals(userId) {
     try {
@@ -351,6 +394,29 @@ static async sendFriendRequest(senderUserId, receiverUserId) {
     }
   }
   
+  static async fetchUserBlocks(userId) {
+    try {
+      const blocksCollection = await firebase
+        .firestore()
+        .collection('users')
+        .doc(userId)
+        .collection('blocks')
+        .get();
+  
+      if (!blocksCollection.empty) {
+        const blocksData = blocksCollection.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        return blocksData;
+      } else {
+        throw new Error('No blocks found');
+      }
+    } catch (error) {
+      console.error('Error fetching blocks:', error);
+      throw error;
+    }
+  };
 
   static async fetchUserHabit(userId) {
     try {

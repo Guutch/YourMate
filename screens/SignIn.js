@@ -79,16 +79,16 @@ const SignIn = ({ navigation }) => {
       </View>
 
       {/* Login Button */}
-      <TouchableOpacity style={[reusableStyles.button, reusableStyles.lessRounded, { backgroundColor: '#0077FF', marginTop: 15 }]}
+      {/* <TouchableOpacity style={[reusableStyles.button, reusableStyles.lessRounded, { backgroundColor: '#0077FF', marginTop: 15 }]}
         onPress={() => navigation.navigate('MainFlow')}
       >
         <Text style={reusableStyles.buttonText}> Login no creds</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
       {/* Login Button */}
       <TouchableOpacity style={[reusableStyles.button, reusableStyles.lessRounded, { backgroundColor: '#0077FF', marginTop: 15 }]}
        onPress={handleSignIn}
       >
-        <Text style={reusableStyles.buttonText}>Login with creds</Text>
+        <Text style={reusableStyles.buttonText}>Login</Text>
       </TouchableOpacity>
     </View>
 

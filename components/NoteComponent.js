@@ -14,7 +14,7 @@ const NoteComponent = ({ noteTitle, noteText, noteDate }) => (
 
 const styles = StyleSheet.create({
   container: {
-    borderBottomWidth: 1,
+    // borderBottomWidth: 1,
     padding: 10,
     borderBottomColor: 'black',
     justifyContent: 'center',

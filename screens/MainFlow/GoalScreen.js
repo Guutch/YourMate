@@ -25,6 +25,8 @@ const GoalScreen = ({ navigation, route }) => {
     const [goals, setGoals] = useState([]); // Blocks on screen
     const [completedGoals, setCompletedGoals] = useState([]); // Blocks on screen
     const [selectedGoal, setSelectedGoal] = useState(null);
+    const [selectedGoalId, setSelectedGoalId] = useState(null);
+
 
     const userUID = auth.currentUser.uid;
 
@@ -62,10 +64,10 @@ const GoalScreen = ({ navigation, route }) => {
       };
 
 
-    const handlePress = () => {
-        console.log("Hi")
-        setOverlayContent('options')
-        setShowOverlay(!showOverlay); // Toggle the boolean state
+      const handlePress = (goalId) => {
+        setSelectedGoalId(goalId); // Assuming you have a state [selectedGoalId, setSelectedGoalId]
+        setOverlayContent('options');
+        setShowOverlay(!showOverlay); // Toggle the overlay visibility
     };
 
     const goalPressed = (selectedGoal) => {
@@ -145,7 +147,31 @@ const GoalScreen = ({ navigation, route }) => {
     }
 
     const updateGoalData = (updatedGoal) => {
+        // Assuming each goal has a unique identifier, like `id`
+        const updatedGoals = goals.map(goal => 
+            goal.id === updatedGoal.id ? updatedGoal : goal
+        );
+    
+        // Update the goals state with the new array
+        setGoals(updatedGoals);
+    
+        // Update the selectedGoal state if needed
         setSelectedGoal(updatedGoal);
+    };
+
+    const handleDeleteGoal = async (goalId) => {
+        try {
+          // Delete the goal from Firestore
+          await UserModel.deleteGoalAndSubcollections(userUID, goalId);
+      
+          // Update the goals state by filtering out the deleted goal
+          setGoals((prevGoals) => prevGoals.filter((goal) => goal.id !== goalId));
+          setShowOverlay(false);
+          setOverlayContent('options');
+        } catch (error) {
+          console.error('Error deleting goal:', error);
+          // Handle the error appropriately
+        }
       };
       
 
@@ -225,7 +251,7 @@ const GoalScreen = ({ navigation, route }) => {
                             <Text style={{ padding: 20 }}>Are you sure you want to<Text style={{ color: 'red', fontWeight: 'bold' }}> delete </Text>your goal?</Text>
                             <TouchableOpacity
                                 style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center' }]}
-                            // onPress={() => setOverlayContent('delete')}
+                            onPress={() => handleDeleteGoal(selectedGoalId)}
                             >
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                     <Text>Yes</Text>
@@ -235,10 +261,10 @@ const GoalScreen = ({ navigation, route }) => {
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center' }]}
-                            // onPress={() => setOverlayContent('delete')}
+                            onPress={() => setOverlayContent('options')}
                             >
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                    <Text>NO</Text>
+                                    <Text>No</Text>
                                     <FontAwesome5 name="chevron-right" size={15} color="#000" />
                                 </View>
                             </TouchableOpacity>
@@ -286,11 +312,19 @@ const GoalScreen = ({ navigation, route }) => {
                     <View>
                         <Text >Ongoing Goals</Text>
                         <FlatList
-                            data={goals}
-                            keyExtractor={(item, index) => index.toString()}
-                            renderItem={({ item }) => (
-                                <GoalItem goalData={item} onItemPress={handlePress} onGoalPress={goalPressed} />)}
-                        />
+  data={goals}
+  keyExtractor={(item, index) => index.toString()}
+  renderItem={({ item }) => (
+    <GoalItem goalData={item} onItemPress={handlePress} onGoalPress={goalPressed} />
+  )}
+  contentContainerStyle={{
+    justifyContent: 'center', // This might not have the desired effect depending on your layout, as FlatList items flow in a column.
+    alignItems: 'center',
+    marginVertical: 15,
+  }}
+  style={{ marginRight: 5 }}
+/>
+
                     </View>
 
                 ) : (

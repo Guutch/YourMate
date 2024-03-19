@@ -7,14 +7,17 @@ let justCreatedGoal = false;
 //   globalData = data;
 // };
 
-export const setGlobalData = (goal, category, date, targetDate, startingValue, numericalTarget, unit) => {
-  
+export const setGlobalData = (goal, category, date, targetDate, startingValue, numericalTarget, unit) => {  
+console.log("These are the dates in setGlobal")
+console.log(targetDate)
+console.log(date)
 
-  globalData = {
-    goal: goal, // Store only the title property of the goal object
+
+globalData = {
+    goal: goal, 
     category,
-    date: new Date(date), // Create a new Date object from the date string
-    targetDate: new Date(targetDate), // Create a new Date object from the targetDate string
+    date: date instanceof Date ? date : new Date(date),
+    targetDate: targetDate instanceof Date ? targetDate : new Date(targetDate),
     startingValue,
     numericalTarget,
     unit,

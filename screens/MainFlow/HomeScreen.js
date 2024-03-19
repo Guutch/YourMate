@@ -35,15 +35,16 @@ const HomeScreen = ({ navigation }) => {
     // this was just to tesst time the time circles. Need to remove this
     const startTime = new Date(new Date().getTime() - 3000000);
 
-    const [overlayContent, setOverlayContent] = useState('options'); // 'options', 'solo', or 'delete'
+    const [overlayContent, setOverlayContent] = useState('solo'); // 'options', 'solo', or 'delete'
 
     const [habitName, setHabitName] = useState('');
     const [habitStartDate, setHabitStartDate] = useState(null);
 
+    const userId = auth.currentUser.uid;
+
     useEffect(() => {
         const fetchHabit = async () => {
             try {
-                const userId = auth.currentUser.uid;
                 const habitData = await UserModel.fetchUserHabit(userId);
                 setHabitName(habitData.name);
                 setHabitStartDate(habitData.startDate);
@@ -54,6 +55,21 @@ const HomeScreen = ({ navigation }) => {
 
         fetchHabit();
     }, []);
+
+    useEffect(() => {
+        const fetchBlocks = async () => {
+            try {
+                const blocksData = await await UserModel.fetchUserBlocks(userId);
+                setBlocks(blocksData);
+                console.log("blocks")
+                console.log(blocksData)
+            } catch (error) {
+                console.error('Error fetching blocks:', error);
+            }
+        };
+
+        fetchBlocks();
+    }, [userId]);
 
     // Helper function to generate days of the month
     const getDaysInMonth = (year, month) => {
@@ -87,6 +103,7 @@ const HomeScreen = ({ navigation }) => {
     const [selectedInitialStartHour, setInitialSelectedStartHour] = useState(futureTime.getHours());
     const [selectedInitialStartMinute, setInitialSelectedStartMinute] = useState(futureTime.getMinutes());
 
+    const [selectedBlockId, setSelectedBlockId] = useState(null);
 
     const [initialHour, setInitialHour] = useState(selectedHour);
     const [initialMinute, setInitialMinute] = useState(selectedMinute);
@@ -127,15 +144,45 @@ const HomeScreen = ({ navigation }) => {
         return `${formattedHour}:${formattedMinute}`;
     };
 
+
+    const handleDeleteBlock = async (selectedBlockId) => {
+        try {
+            console.log("selectedBlockId")
+            console.log(selectedBlockId)
+            // Delete the block from Firestore
+            await UserModel.deleteBlock(userId, selectedBlockId);
+
+            // Update the blocks state by filtering out the deleted block
+            setBlocks((prevBlocks) => prevBlocks.filter((block) => block.id !== selectedBlockId));
+            setShowOverlay(false);
+            setOverlayContent('solo');
+
+        } catch (error) {
+            console.error('Error deleting block:', error);
+            // Handle the error appropriately
+        }
+    }
+
     const handleBlockNowPress = async () => {
+
+        // console.log(selectedDate.toISOString().split('T')[0])
+
         setShowOverlay(false); // Hide the overlay
-        setOverlayContent('options'); // Reset the overlay content to 'options'
+        setOverlayContent('solo'); // Reset the overlay content to 'options'
         setTitle('Session');
 
         const newBlock = {
             date: selectedDate.toISOString().split('T')[0], // Store only the date part
             time: new Date().toLocaleString(), // Convert Date to a string
             title: title,
+            duration: {
+                hours: selectedHour,
+                minutes: selectedMinute,
+            },
+            startingTime: {
+                hours: selectedStartHour,
+                minutes: selectedStartMinute,
+            },
         };
 
         try {
@@ -168,10 +215,21 @@ const HomeScreen = ({ navigation }) => {
         return `${formattedHour} ${suffix}`;
     };
 
+    const handleBlockPress = (blockId) => {
+        console.log(blockId)
+        setSelectedBlockId(blockId); // Assuming you have a state [selectedGoalId, setSelectedGoalId]
+        setOverlayContent('blockOpts');
+        setShowOverlay(!showOverlay); // Toggle the overlay visibility
+    };
 
     const renderItem = ({ item }) => (
         <View style={homeMain.blocksContainer}>
-            <BlockItem title={item.title} time={item.time} />
+            <BlockItem
+                title={item.title}
+                time={item.time}
+                block={item}
+                onItemPress={handleBlockPress}
+            />
         </View>
     );
 
@@ -247,11 +305,11 @@ const HomeScreen = ({ navigation }) => {
                         setShowOverlay(false);
                         setSelectedMinute(45)
                         setSelectedHour(0)
-                        setOverlayContent('options'); // Reset the overlay content when backdrop is pressed
+                        setOverlayContent('solo'); // Reset the overlay content when backdrop is pressed
                     }}
                     overlayStyle={reusableStyles.overlay}
                 >
-                    {overlayContent === 'options' && (
+                    {/* {overlayContent === 'dat e' && (
                         <>
                             <Text style={{ padding: 20 }}>What would you like to do?</Text>
                             <TouchableOpacity
@@ -261,7 +319,7 @@ const HomeScreen = ({ navigation }) => {
                                 <Text>Solo</Text>
                             </TouchableOpacity>
                         </>
-                    )}
+                    )} */}
                     {overlayContent === 'titleChange' && (
                         <>
                             <TextInput
@@ -283,12 +341,6 @@ const HomeScreen = ({ navigation }) => {
                                 <Text style={{ textAlign: 'left', color: "#000" }}>{title}</Text>
                                 <FontAwesome5 name="pen" size={15} color="#000" style={{ paddingLeft: 10 }} />
                             </TouchableOpacity>
-                            {/* <TouchableOpacity
-                                style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center' }]}
-                                onPress={() => setOverlayContent('solo')}
-                            >
-                                <Text>Solo</Text>
-                            </TouchableOpacity> */}
 
                             <TouchableOpacity
                                 style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center', marginTop: 5 }]}
@@ -303,22 +355,6 @@ const HomeScreen = ({ navigation }) => {
                                         <FontAwesome5 name="chevron-right" size={15} color="#000" />
                                     </View>
                                 </View>
-
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center', marginTop: 5 }]}
-                                onPress={() => setOverlayContent('date')}
-                            >
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                    <Text>Date</Text>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <Text style={{ marginRight: 10 }}>
-                                            {formatDate(selectedDate)}
-                                        </Text>
-                                        <FontAwesome5 name="chevron-right" size={15} color="#000" />
-                                    </View>
-                                </View>
-
 
                             </TouchableOpacity>
                             <TouchableOpacity
@@ -349,18 +385,35 @@ const HomeScreen = ({ navigation }) => {
                     {/*  */}
                     {overlayContent === 'delete' && (
                         <>
-                            <Text style={{ padding: 20 }}>Are you sure you want to<Text style={{ color: 'red', fontWeight: 'bold' }}> delete </Text>your goal?</Text>
+                            <Text style={{ padding: 20 }}>Are you sure you want to<Text style={{ color: 'red', fontWeight: 'bold' }}> delete </Text>this block?</Text>
                             <TouchableOpacity
-                                style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center' }]}
-                            // onPress={() => setOverlayContent('delete')}
+                                style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center', marginBottom: 10 }]}
+                                onPress={() => handleDeleteBlock(selectedBlockId)}
                             >
                                 <Text>Yes</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center' }]}
-                            // onPress={() => setOverlayContent('delete')}
+                            // onPress={() => setOverlayContent('')}
                             >
                                 <Text>No</Text>
+                            </TouchableOpacity>
+                        </>
+                    )}
+                    {overlayContent === 'blockOpts' && (
+                        <>
+                            <Text style={{ padding: 20, color: 'black' }}>What would you like to do with this block</Text>
+                            <TouchableOpacity
+                                style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center', marginBottom: 10 }]}
+                            // onPress={() => setOverlayContent('delete')}
+                            >
+                                <Text>Modify Block</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center' }]}
+                                onPress={() => setOverlayContent('delete')}
+                            >
+                                <Text>Delete Block</Text>
                             </TouchableOpacity>
                         </>
                     )}
@@ -542,7 +595,7 @@ const HomeScreen = ({ navigation }) => {
                 {/* Text at bottom */}
                 <View style={[{ flexDirection: 'row', justifyContent: 'space-between', color: "#000" }]}>
                     <Text style={[{ color: "#000", fontWeight: 'bold' }]}>
-                        {upcomingBlocksCount} Upcoming Blocks
+                        {upcomingBlocksCount} Blocks
                     </Text>
                     <Text style={{ color: "#000" }}>
                         {formattedDate}

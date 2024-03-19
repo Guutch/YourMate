@@ -6,11 +6,11 @@ import { goalMain, reusableStyles } from './styles';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 const GoalItem = ({ goalData, onItemPress, onGoalPress }) => (
-    <TouchableOpacity style={[reusableStyles.textInput, { height: 128 }, reusableStyles.lessRounded]} onPress={() => onGoalPress(goalData)}>
+    <TouchableOpacity style={[reusableStyles.textInput, { height: 128, marginBottom: 10 }, reusableStyles.lessRounded]} onPress={() => onGoalPress(goalData)}>
 
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <Text>{goalData.goal}</Text>
-            <TouchableOpacity onPress={onItemPress} style={goalMain.settings}>
+            <TouchableOpacity onPress={() => onItemPress(goalData.id)} style={goalMain.settings}>
                 <FontAwesome5 name="ellipsis-h" size={15} color="#000" />
             </TouchableOpacity>
         </View>
