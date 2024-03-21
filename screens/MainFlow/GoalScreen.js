@@ -61,10 +61,10 @@ const GoalScreen = ({ navigation, route }) => {
 
     const handleOverlayContentChange = (newContent) => {
         setOverlayContent(newContent);
-      };
+    };
 
 
-      const handlePress = (goalId) => {
+    const handlePress = (goalId) => {
         setSelectedGoalId(goalId); // Assuming you have a state [selectedGoalId, setSelectedGoalId]
         setOverlayContent('options');
         setShowOverlay(!showOverlay); // Toggle the overlay visibility
@@ -80,27 +80,36 @@ const GoalScreen = ({ navigation, route }) => {
 
     useEffect(() => {
         const fetchGoals = async () => {
-          try {
-            // Get the current user's ID
-            const userUID = auth.currentUser.uid;
-            console.log(userUID);
-            console.log('user');
-    
-            // Fetch the goals using the UserModel
-            const goalData = await UserModel.fetchUserGoals(userUID);
-            console.log(goalData)
-            console.log("goalData")
-    
-            setGoals(goalData);
-            // setLoading(false);
-          } catch (error) {
-            console.error('Error fetching goals:', error);
-            // setLoading(false);
-          }
+            try {
+                const userUID = auth.currentUser.uid;
+                const fetchedGoalData = await UserModel.fetchUserGoals(userUID);
+                console.log(fetchedGoalData);
+                console.log("goalData");
+            
+                const ongoingGoals = [];
+                const completedGoals = [];
+            
+                fetchedGoalData.forEach((goal) => {
+                  if (goal.status && goal.status === 'Ongoing') {
+                    ongoingGoals.push(goal);
+                  } else if (goal.status && goal.status === 'Completed') {
+                    completedGoals.push(goal);
+                  } else {
+                    // Handle goals without a "status" attribute
+                    // You can either add them to the "ongoingGoals" array or ignore them
+                    ongoingGoals.push(goal);
+                  }
+                });
+            
+                setGoals(ongoingGoals);
+                setCompletedGoals(completedGoals);
+              } catch (error) {
+                console.error('Error fetching goals:', error);
+              }
         };
-    
+
         fetchGoals();
-      }, [userUID]);
+    }, [userUID]);
 
     useEffect(() => {
         // Use `setOptions` to update the button that we previously specified
@@ -148,32 +157,54 @@ const GoalScreen = ({ navigation, route }) => {
 
     const updateGoalData = (updatedGoal) => {
         // Assuming each goal has a unique identifier, like `id`
-        const updatedGoals = goals.map(goal => 
+        const updatedGoals = goals.map(goal =>
             goal.id === updatedGoal.id ? updatedGoal : goal
         );
-    
+
         // Update the goals state with the new array
         setGoals(updatedGoals);
-    
+
         // Update the selectedGoal state if needed
         setSelectedGoal(updatedGoal);
     };
 
     const handleDeleteGoal = async (goalId) => {
         try {
-          // Delete the goal from Firestore
-          await UserModel.deleteGoalAndSubcollections(userUID, goalId);
-      
-          // Update the goals state by filtering out the deleted goal
-          setGoals((prevGoals) => prevGoals.filter((goal) => goal.id !== goalId));
-          setShowOverlay(false);
-          setOverlayContent('options');
+            // Delete the goal from Firestore
+            await UserModel.deleteGoalAndSubcollections(userUID, goalId);
+
+            // Update the goals state by filtering out the deleted goal
+            setGoals((prevGoals) => prevGoals.filter((goal) => goal.id !== goalId));
+            setShowOverlay(false);
+            setOverlayContent('options');
         } catch (error) {
-          console.error('Error deleting goal:', error);
-          // Handle the error appropriately
+            console.error('Error deleting goal:', error);
+            // Handle the error appropriately
+        }
+    };
+
+    const markGoalAsCompleted = async (goalId) => {
+        console.log("COmplete this")
+        console.log(goalId)
+        console.log("COmplete this")
+        console.log(userUID)
+        try {
+          // Update the goal's status in Firestore
+          await UserModel.markGoalAsCompleted(userUID, goalId);
+    
+          // Update the local state
+          const updatedGoals = goals.filter((goal) => goal.id !== goalId);
+          const updatedCompletedGoals = [...completedGoals, ...goals.filter((goal) => goal.id === goalId)];
+    
+          setGoals(updatedGoals);
+          setCompletedGoals(updatedCompletedGoals);
+
+          setOverlayContent('options')
+          setShowOverlay(!showOverlay)
+        } catch (error) {
+          console.error('Error marking goal as completed:', error);
         }
       };
-      
 
     return (
         <View style={[reusableStyles.container]}>
@@ -227,7 +258,7 @@ const GoalScreen = ({ navigation, route }) => {
                             <Text style={{ padding: 20 }}>Are you sure you want to<Text style={{ color: 'green', fontWeight: 'bold' }}> complete </Text>your goal?</Text>
                             <TouchableOpacity
                                 style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center' }]}
-                            // onPress={() => setOverlayContent('delete')}
+                            onPress={() => markGoalAsCompleted(selectedGoalId)}
                             >
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                     <Text>Yes</Text>
@@ -251,7 +282,7 @@ const GoalScreen = ({ navigation, route }) => {
                             <Text style={{ padding: 20 }}>Are you sure you want to<Text style={{ color: 'red', fontWeight: 'bold' }}> delete </Text>your goal?</Text>
                             <TouchableOpacity
                                 style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center' }]}
-                            onPress={() => handleDeleteGoal(selectedGoalId)}
+                                onPress={() => handleDeleteGoal(selectedGoalId)}
                             >
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                     <Text>Yes</Text>
@@ -261,7 +292,7 @@ const GoalScreen = ({ navigation, route }) => {
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center' }]}
-                            onPress={() => setOverlayContent('options')}
+                                onPress={() => setOverlayContent('options')}
                             >
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                     <Text>No</Text>
@@ -272,65 +303,91 @@ const GoalScreen = ({ navigation, route }) => {
                     )}
                     {overlayContent === 'lrg' && (
                         <LargeGoalOverview
-                        xOut={xOutOfOverlay}
-                        goal={selectedGoal}
-                        onOverlayContentChange={handleOverlayContentChange}
-                        userId={userUID}
-                        
-                      />
+                            xOut={xOutOfOverlay}
+                            goal={selectedGoal}
+                            onOverlayContentChange={handleOverlayContentChange}
+                            userId={userUID}
+
+                        />
                     )}
                     {overlayContent === 'note' && (
                         <MilestoneLrgGoalO
-                        xOut={xOutOfOverlay}
-                        goal={selectedGoal}
-                        onOverlayContentChange={handleOverlayContentChange}
-                        mode={"note"}
-                        updateGoalData={updateGoalData}
-                        userId={userUID}
-                      />
+                            xOut={xOutOfOverlay}
+                            goal={selectedGoal}
+                            onOverlayContentChange={handleOverlayContentChange}
+                            mode={"note"}
+                            updateGoalData={updateGoalData}
+                            userId={userUID}
+                        />
                     )}
                     {overlayContent === 'milestone' && (
                         <MilestoneLrgGoalO
-                        xOut={xOutOfOverlay}
-                        goal={selectedGoal}
-                        onOverlayContentChange={handleOverlayContentChange}
-                        mode={"milestone"}
-                        updateGoalData={updateGoalData}
-                        userId={userUID}
-                      />
+                            xOut={xOutOfOverlay}
+                            goal={selectedGoal}
+                            onOverlayContentChange={handleOverlayContentChange}
+                            mode={"milestone"}
+                            updateGoalData={updateGoalData}
+                            userId={userUID}
+                        />
                     )}
                 </Overlay>
             )}
 
-            {goals.length === 0 ? (
-                <View style={homeMain.noBlocksContainer}>
-                    <Text>Press '+' to add a new goal</Text>
-                </View>
-
-            ) : (
-                completedGoals.length === 0 ? (
-                    <View>
-                        <Text >Ongoing Goals</Text>
-                        <FlatList
-  data={goals}
-  keyExtractor={(item, index) => index.toString()}
-  renderItem={({ item }) => (
-    <GoalItem goalData={item} onItemPress={handlePress} onGoalPress={goalPressed} />
-  )}
-  contentContainerStyle={{
-    justifyContent: 'center', // This might not have the desired effect depending on your layout, as FlatList items flow in a column.
-    alignItems: 'center',
-    marginVertical: 15,
-  }}
-  style={{ marginRight: 5 }}
-/>
-
-                    </View>
-
-                ) : (
-                    <Text >Completed Goals</Text>
-                )
+<>
+  {goals.length === 0 && completedGoals.length === 0 ? (
+    <Text>You don't have any goals yet.</Text>
+  ) : (
+    <View style={{ flex: 1 }}>
+      {goals.length > 0 && (
+        <View style={{ flex: 0.5 }}>
+          <Text>Ongoing Goals</Text>
+          <FlatList
+            data={goals}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => (
+              <GoalItem
+                goalData={item}
+                onItemPress={handlePress}
+                onGoalPress={goalPressed}
+              />
             )}
+            contentContainerStyle={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginVertical: 15,
+              paddingBottom: 10
+            }}
+            style={{ marginRight: 5 }}
+          />
+        </View>
+      )}
+
+      {completedGoals.length > 0 && (
+        <View style={{ flex: 0.5 }}>
+          <Text>Completed Goals</Text>
+          <FlatList
+            data={completedGoals}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => (
+              <GoalItem
+                goalData={item}
+                onItemPress={handlePress}
+                onGoalPress={goalPressed}
+              />
+            )}
+            contentContainerStyle={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginVertical: 15,
+              paddingBottom: 10
+            }}
+            style={{ marginRight: 5 }}
+          />
+        </View>
+      )}
+    </View>
+  )}
+</>
 
 
 

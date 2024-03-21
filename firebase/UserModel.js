@@ -289,6 +289,7 @@ static async sendFriendRequest(senderUserId, receiverUserId) {
         numericalTarget: numericalTarget,
         unit: unit,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(), // Assuming you also want to store the creation timestamp
+        status: "Ongoing"
       };
 
       await firestore
@@ -299,6 +300,29 @@ static async sendFriendRequest(senderUserId, receiverUserId) {
     } catch (error) {
       console.error('Error adding goal:', error);
       throw error;
+    }
+  };
+
+  static async markGoalAsCompleted(userUID, goalId) {
+    try {
+      const goalRef = firebase
+        .firestore()
+        .collection('users')
+        .doc(userUID)
+        .collection('goals')
+        .doc(goalId);
+  
+      // Check if the document exists
+      const doc = await goalRef.get();
+      if (doc.exists) {
+        // Update the goal's status in Firestore
+        await goalRef.update({ status: 'Completed' });
+      } else {
+        console.log('No such document exists');
+      }
+    } catch (error) {
+      console.error('Error marking goal as completed:', error);
+      throw error; // Rethrow the error for further handling
     }
   }
 
