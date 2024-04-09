@@ -17,6 +17,8 @@ import CreateGoal from './screens/CreateGoal'; // Adjust the path as per your di
 import MilestoneAdd from './screens/MilestoneAdd'; // Adjust the path as per your directory structure
 import MilestoneInfo from './screens/MIlestoneInfo'; // Adjust the path as per your directory structure
 import Housekeeping from './screens/Housekeeping'; // Adjust the path as per your directory structure
+import Assessment from './screens/Assessment'; // Adjust the path as per your directory structure
+import ResultsScreen from './screens/ResultsScreen'; // Adjust the path as per your directory structure
 
 
 import Settings from './screens/MainFlow/Settings'; // Adjust the path as per your directory structure
@@ -63,6 +65,14 @@ const App = () => {
           headerTitle: '', // Removes the title
           headerShadowVisible: false
         }} />
+        <Stack.Screen name="Assessment" component={Assessment} options={{
+          headerTitle: '', // Removes the title
+          headerShadowVisible: false
+        }} />
+        <Stack.Screen name="ResultsScreen" component={ResultsScreen} options={{
+          headerTitle: '', // Removes the title
+          headerShadowVisible: false
+        }} />
 
         {/* Need to re-use for adding a friend */}
         <Stack.Screen name="Createusername" component={Createusername} options={{
@@ -95,7 +105,7 @@ const App = () => {
             //   </View>
             // ),
           })}
-          
+
         />
         <Stack.Screen name="ActualGoals" component={ActualGoals} options={{
           headerTitle: '', // Removes the title
@@ -106,33 +116,33 @@ const App = () => {
           headerShadowVisible: false
         }} />
         <Stack.Screen name="CreateGoal" component={CreateGoal}
-                  options={({ navigation }) => ({
-          headerTitle: '', // Removes the title
-          headerShadowVisible: false,
-          
-        })} />
+          options={({ navigation }) => ({
+            headerTitle: '', // Removes the title
+            headerShadowVisible: false,
+
+          })} />
         <Stack.Screen name="MilestoneInfo" component={MilestoneInfo} options={{
           headerTitle: '', // Removes the title
           headerShadowVisible: false
-        }} /> 
+        }} />
         <Stack.Screen name="MilestoneAdd" component={MilestoneAdd} options={{
           headerTitle: '', // Removes the title
           headerShadowVisible: false
         }} />
-<Stack.Screen 
-    name="MainFlow" 
-    component={MainFlow}
-    options={{ headerShown: false }}
-  //   options={({ navigation }) => ({
-  //     headerShadowVisible: false,
-  //     headerRight: () => (
-  //         <View style={{ flexDirection: 'row' }}>
-  //             <Text>Settings</Text>
-  //         </View>
-  //     ),
-  // })}
-/>
-<Stack.Screen name="Settings" component={Settings} options={{
+        <Stack.Screen
+          name="MainFlow"
+          component={MainFlow}
+          options={{ headerShown: false }}
+        //   options={({ navigation }) => ({
+        //     headerShadowVisible: false,
+        //     headerRight: () => (
+        //         <View style={{ flexDirection: 'row' }}>
+        //             <Text>Settings</Text>
+        //         </View>
+        //     ),
+        // })}
+        />
+        <Stack.Screen name="Settings" component={Settings} options={{
           headerTitle: '', // Removes the title
           headerShadowVisible: false
         }} />

@@ -12,7 +12,7 @@ import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 const auth = getAuth(app);
 
 const ActualGoals = ({ route, navigation }) => {
-    const { goal, fromMain, category } = route.params;
+    const { goal, fromMain, category, selected } = route.params;
 
     console.log(fromMain)
 
@@ -96,16 +96,36 @@ const ActualGoals = ({ route, navigation }) => {
                 const userId = user.uid;
 
                 // Assuming you have already captured these values from your form inputs
-                await UserModel.addGoal(userId, goal, category, dateRef.current, targetDateRef.current, startingValue, numericalTarget, unit);
-                setGlobalData(goal, category, date, targetDate, startingValue, numericalTarget, unit);
+                
+                
+                if(dateRef.current == null) {
+                    dateRef.current = date;
+                }
+
+                if(targetDateRef.current == null) {
+                    targetDateRef.current = targetDate;
+                }
+                
+                console.log("dateRef")
+                console.log(dateRef.current)
+                const docRef = await UserModel.addGoal(userId, goal, category, dateRef.current, targetDateRef.current, startingValue, numericalTarget, unit);
+                setGlobalData(goal, category, date, targetDate, startingValue, numericalTarget, unit, docRef.id);
                 setJustCreatedGoal(true)
                 console.log('Goal created successfully');
 
+                const goalId = docRef.id;
+
                 // Navigate to the next screen after saving the goal
-                navigation.navigate(fromMain ? 'MilestoneAdd' : 'MilestoneInfo', {
+                navigation.navigate('MilestoneAdd', {
                     goal: goal, // Pass the goal and any other relevant information
                     fromMain: fromMain,
+                    selected,
+                    goalId
                 });
+                // navigation.navigate(fromMain ? 'MilestoneAdd' : 'MilestoneInfo', {
+                //     goal: goal, // Pass the goal and any other relevant information
+                //     fromMain: fromMain,
+                // });
             } else {
                 console.error('User not authenticated');
             }

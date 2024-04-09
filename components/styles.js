@@ -152,9 +152,11 @@ const communityMain = StyleSheet.create({
         // flexDirection: 'colu',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#f0f0f0',
+        // backgroundColor: '#f0f0f0',
+        borderWidth: 2,
+        borderColor: 'black',
         borderRadius: 5,
-        marginBottom: 10,
+        // marginBottom: 10,
       },
     nameContainer: {
         // flex: 1,

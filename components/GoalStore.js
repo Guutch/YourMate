@@ -2,12 +2,13 @@
 
 let globalData = {};
 let justCreatedGoal = false;
+let justCreatedM = false;
 
 // export const setGlobalData = (data) => {
 //   globalData = data;
 // };
 
-export const setGlobalData = (goal, category, date, targetDate, startingValue, numericalTarget, unit) => {  
+export const setGlobalData = (goal, category, date, targetDate, startingValue, numericalTarget, unit, id) => {  
 console.log("These are the dates in setGlobal")
 console.log(targetDate)
 console.log(date)
@@ -21,6 +22,7 @@ globalData = {
     startingValue,
     numericalTarget,
     unit,
+    id
   };
 
   console.log("globalData Below");
@@ -38,6 +40,14 @@ export const setJustCreatedGoal = (data) => {
 
 export const getJustCreatedGoal = () => {
  return justCreatedGoal;
+}
+
+export const setJustCreatedM = (data) => {
+  justCreatedM = data; 
+}
+
+export const getJustCreatedM = () => {
+ return justCreatedM;
 }
 
 

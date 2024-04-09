@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import { homeMain } from './styles';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+
 
 const DayItem = ({ day, dayName, isToday, isSelected }) => (
   <View style={isSelected ? [{ backgroundColor: '#0077FF' }, homeMain.dateBorder] : isToday ? [{ backgroundColor: '#0057FF' }, homeMain.dateBorder] : homeMain.dateBorder}>

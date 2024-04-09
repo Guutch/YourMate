@@ -12,6 +12,9 @@ const MilestoneLrgGoalO = ({ xOut, goal, onOverlayContentChange, mode, userId, u
     const [descBorderColor, setDescBorderColor] = useState('#000');
     const [titlePlaceholder, setTitlePlaceholder] = useState(mode === 'milestone' ? 'Milestone Title' : 'Note Title');
     const [descPlaceholder, setDescPlaceholder] = useState(mode === 'milestone' ? 'Milestone Description' : 'Note Description');
+    const [milestoneTV, setMilestoneTV] = useState('');
+    const [milestoneU, setMilestoneU] = useState('');
+    const [milestoneTU, setMilestoneTU] = useState('');
 
     const handleSaveAndClose = async () => {
         let isValid = true;
@@ -46,7 +49,17 @@ const MilestoneLrgGoalO = ({ xOut, goal, onOverlayContentChange, mode, userId, u
 
 
         if (mode === 'milestone') {
-            const isSaved = await UserModel.addMilestone(userId, goal.id, data);
+
+            const milestoneDate = {
+                title,
+                description: desc,
+                milestoneTV,
+                milestoneU,
+                milestoneTU,
+                status: 'Ongoing'
+            }
+
+            const isSaved = await UserModel.addMilestone(userId, goal.id, milestoneDate);
             if (isSaved) {
                 const updatedGoal = {
                     ...goal,
@@ -80,6 +93,9 @@ const MilestoneLrgGoalO = ({ xOut, goal, onOverlayContentChange, mode, userId, u
     function resetFormFields() {
         setTitle('');
         setDesc('');
+        setMilestoneTU('');
+        setMilestoneTV('');
+        setMilestoneU('');
         setTitleBorderColor('#000');
         setDescBorderColor('#000');
         setTitlePlaceholder('Note Title');
@@ -118,6 +134,8 @@ const MilestoneLrgGoalO = ({ xOut, goal, onOverlayContentChange, mode, userId, u
                 </View>
             </View>
 
+            <Text>Required</Text>
+
             <TextInput
                 style={[reusableStyles.textInput, { height: 44, borderColor: descBorderColor, borderWidth: 1, marginTop: 9 }, reusableStyles.lessRounded]}
                 placeholder={titlePlaceholder}
@@ -131,6 +149,33 @@ const MilestoneLrgGoalO = ({ xOut, goal, onOverlayContentChange, mode, userId, u
                 onChangeText={handleDescChange}
                 multiline
             />
+
+            <View>
+                {mode === "milestone" && (
+                    <>
+                        <Text style={{ marginTop: 10 }}>Additional</Text>
+                        <TextInput
+                            style={[reusableStyles.textInput, { height: 44, borderColor: 'black', borderWidth: 1, marginTop: 9 }, reusableStyles.lessRounded]}
+                            placeholder="Target Value"
+                            value={milestoneTV}
+                            onChangeText={setMilestoneTV}
+                        />
+                        <TextInput
+                            style={[reusableStyles.textInput, { height: 44, borderColor: 'black', borderWidth: 1, marginTop: 9 }, reusableStyles.lessRounded]}
+                            placeholder="Unit"
+                            value={milestoneU}
+                            onChangeText={setMilestoneU}
+                        />
+                        <TextInput
+                            style={[reusableStyles.textInput, { height: 44, borderColor: 'black', borderWidth: 1, marginTop: 9 }, reusableStyles.lessRounded]}
+                            placeholder="Target Date"
+                            value={milestoneTU}
+                            onChangeText={setMilestoneTU}
+                        />
+                    </>
+                )}
+            </View>
+
         </View>
     );
 

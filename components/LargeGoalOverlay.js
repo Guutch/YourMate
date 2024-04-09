@@ -14,7 +14,7 @@ import UserModel from '../firebase/UserModel';
 
 
 
-const LargeGoalOverview = ({ xOut, goal, onOverlayContentChange }) => {
+const LargeGoalOverview = ({ xOut, goal, onOverlayContentChange, userId }) => {
 
   // console.log("This is the note ")
   // console.log(goal.notes[0].createdAt)
@@ -33,6 +33,31 @@ const LargeGoalOverview = ({ xOut, goal, onOverlayContentChange }) => {
 
   const handleCancel = () => {
     onOverlayContentChange('lrg');
+  };
+
+  const handleFlagPress = async (milestone, goal) => {
+    const newStatus = milestone.status === 'Ongoing' ? 'Completed' : 'Ongoing';
+    const isStatusUpdated = await UserModel.updateMilestoneStatus(userId, goal.id, milestone.id, newStatus);
+
+    if (isStatusUpdated) {
+        const updatedMilestones = goal.milestones.map(m => {
+            if (m.id === milestone.id) { // Use the destructured `id` or `milestone.id`
+                return { ...m, status: newStatus };
+            }
+            return m;
+        });
+
+        // Call the parent component's function to update the entire goal's milestones
+        onUpdateGoalMilestones(goal.id, updatedMilestones);
+    } else {
+        console.error('Error updating milestone status');
+    }
+};
+
+
+  const handleEllipsisPress = (milestoneTitle) => {
+    // Implement your logic to show the overlay options for modifying or deleting the milestone
+    onOverlayContentChange('options');
   };
 
   return (
@@ -70,13 +95,20 @@ const LargeGoalOverview = ({ xOut, goal, onOverlayContentChange }) => {
             </View>
             {goal.milestones && goal.milestones.length > 0 ? (
               goal.milestones.map((milestone, index) => (
-                <MilestoneGoal key={index} title={milestone.title} />
+                <MilestoneGoal
+                  key={index}
+                  title={milestone.title}
+                  onFlagPress={handleFlagPress}
+                  onEllipsisPress={handleEllipsisPress}
+                  milestone={milestone}
+                  goal={goal}
+                />
               ))
             ) : (
-              <View style={{marginVertical: 20}}>
-                <Text style={{textAlign: 'center', color: 'black'}}>No milestones yet</Text>
+              <View style={{ marginVertical: 20 }}>
+                <Text style={{ textAlign: 'center', color: 'black' }}>No milestones yet</Text>
               </View>
-              
+
             )}
             <View style={[reusableStyles.button, { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: "white", padding: 10, borderColor: "#000", borderWidth: 2 }]}>
               <Text>Target Date</Text>

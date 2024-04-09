@@ -15,8 +15,29 @@ const BlockItem = ({ title, time, block, onItemPress }) => {
             const blockDate = new Date(block.date); // Assuming block.date is in a format that the Date constructor can parse
             const blockDateWithoutTime = new Date(blockDate.getFullYear(), blockDate.getMonth(), blockDate.getDate());
 
-            // First, compare dates to determine if the block is in the past, future, or today
-            if (blockDateWithoutTime < currentDate) {
+            // const currentDate = new Date();
+            const yesterdayDate = new Date();
+            yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+
+            if (blockDateWithoutTime.getFullYear() === yesterdayDate.getFullYear() &&
+                blockDateWithoutTime.getMonth() === yesterdayDate.getMonth() &&
+                blockDateWithoutTime.getDate() === yesterdayDate.getDate()) {
+                const blockStartTime = new Date(blockDateWithoutTime);
+                blockStartTime.setHours(block.startingTime.hours, block.startingTime.minutes);
+                const blockEndTime = new Date(blockStartTime);
+                blockEndTime.setMinutes(blockStartTime.getMinutes() + block.duration.minutes);
+                blockEndTime.setHours(blockEndTime.getHours() + block.duration.hours);
+
+                if (blockEndTime > currentDate) {
+                    setBorderColor('green');
+                    setBlockStatus('Active');
+                    return;
+                } else {
+                    setBorderColor('gray');
+                    setBlockStatus('Past');
+                    return;
+                }
+            } else if (blockDateWithoutTime < currentDate) {
                 setBorderColor('gray');
                 setBlockStatus('Past');
                 return;
@@ -25,6 +46,8 @@ const BlockItem = ({ title, time, block, onItemPress }) => {
                 setBlockStatus('Upcoming');
                 return;
             }
+
+            console.log(blockDate)
 
             // If the block's date is today, then further compare times
             const { startingTime, duration } = block;

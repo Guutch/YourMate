@@ -49,7 +49,7 @@ const GoalSelector = ({ route, navigation }) => {
 
     const handleSelection = (category) => {
         // was fromMain: true but changed to be just 'fromMain'
-        navigation.navigate('ActualGoals', { category, fromMain })
+        navigation.navigate('ActualGoals', { category, fromMain, selected })
     };
 
     const handleSkipPress = () => {

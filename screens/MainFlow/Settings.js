@@ -1,20 +1,564 @@
 import React, { useEffect, useState, useLayoutEffect } from 'react';
-import { View, Text, TouchableOpacity, KeyboardAvoidingView, TextInput, Keyboard, ScrollView, Platform } from 'react-native';
-import { reusableStyles, landing, signUp } from '../../components/styles'; // Adjust the path
+import { View, Text, TouchableOpacity, StyleSheet, TextInput, Modal, ScrollView, Platform, Touchable } from 'react-native';
+import { reusableStyles, communityMain, signUp } from '../../components/styles'; // Adjust the path
 
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import { app } from '../../firebase/firebase'
+import { getAuth } from 'firebase/auth';
 
+import UserModel from '../../firebase/UserModel'
+
+import { setUserData } from '../../components/DataManager';
+
+const auth = getAuth(app);
 const Settings = ({ navigation }) => {
+  const userId = auth.currentUser.uid;
 
-    const [count, setCount] = React.useState(0);
+  const [completedBlocks, setCompletedBlocks] = useState(0);
+  const [completedGoals, setCompletedGoals] = useState(0);
+  const [completedUserData, setCompletedUserData] = useState({});
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState(null);
+  const [newFirstName, setNewFirstName] = useState('');
+  const [newLastName, setNewLastName] = useState('');
+  const [newUsername, setNewUsername] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [oldEmail, setOldEmail] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [initialFirstName, setInitialFirstName] = useState('');
+  const [initialLastName, setInitialLastName] = useState('');
+  const [initialUsername, setInitialUsername] = useState('');
+  const [usernameError, setUsernameError] = useState('');
+  const [firstNameError, setFirstNameError] = useState('');
+  const [lastNameError, setLastNameError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [initialOldEmail, setInitialOldEmail] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
+  const isValidEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
+  const isValidPassword = (password) => {
+    const hasNumber = /\d/;
+    const hasSymbol = /[!@#$%^&*]/;
+    const hasUpperCase = /[A-Z]/;
+    const hasLowerCase = /[a-z]/;
     return (
-        <View style={[reusableStyles.container]}>
-            <Text >SETTINGS</Text>
-
-
-        </View>
+      password.length >= 8 &&
+      hasNumber.test(password) &&
+      hasSymbol.test(password) &&
+      hasUpperCase.test(password) &&
+      hasLowerCase.test(password)
     );
-};
+  };
 
+  const handleSave = async () => {
+    try {
+      let isValid = true;
+      switch (modalType) {
+        case 'name':
+          // Validate first name and last name
+          if (/\d/.test(newFirstName)) {
+            setFirstNameError('Error, incorrect value');
+            isValid = false;
+            return;
+          } else if (newFirstName.trim() === '') {
+            setFirstNameError('First name cannot be empty');
+            isValid = false;
+            return;
+          } else {
+            setFirstNameError('');
+          }
+
+          if (/\d/.test(newLastName)) {
+            setLastNameError('Error, incorrect value');
+            isValid = false;
+            return;
+          } else if (newLastName.trim() === '') {
+            setLastNameError('Last name cannot be empty');
+            isValid = false;
+            return;
+          } else {
+            setLastNameError('');
+          }
+
+          if (isValid) {
+            await UserModel.updateUserFirstLastName(userId, newFirstName, newLastName);
+            setInitialFirstName(newFirstName);
+            setInitialLastName(newLastName);
+            setUserData({firstName: newFirstName})
+            setUserData({lastName: newLastName})
+            setShowModal(false); // Close the modal after successful update
+          }
+          break;
+        case 'username':
+          console.log(newUsername);
+          if (newUsername.trim() === '') {
+            setUsernameError('Username cannot be empty');
+            isValid = false;
+            return;
+          } else {
+            const isUsernameAvailable = await UserModel.updateUsername(userId, newUsername);
+            if (isUsernameAvailable) {
+              setUsernameError('');
+              setInitialUsername(newUsername);
+              setUserData({username: newUsername})
+            } else {
+              setUsernameError('Username is already taken');
+              isValid = false;
+              return;
+            }
+          }
+          break;
+          case 'password':
+            if (currentPassword.trim() === '') {
+              setPasswordError('Current password cannot be empty');
+              isValid = false;
+              return;
+            }
+            if (newPassword.trim() === '') {
+              setPasswordError('New password cannot be empty');
+              isValid = false;
+              return;
+            }
+            if (newPassword !== confirmNewPassword) {
+              setPasswordError('New password and confirm new password do not match');
+              isValid = false;
+              return;
+            }
+            const isValidNewPassword = isValidPassword(newPassword);
+            if (!isValidNewPassword) {
+              setPasswordError(
+                'New password must be at least 8 characters long and contain at least one number, one symbol, one uppercase letter, and one lowercase letter'
+              );
+              isValid = false;
+              return;
+            }
+          
+            const { error } = await UserModel.changePassword(currentPassword, newPassword);
+            if (error) {
+              setPasswordError(error);
+              isValid = false;
+              return;
+            } else {
+              clearThings();
+              
+              
+              // Handle any additional, logic after the password change, like closing the modal
+            }
+            break;
+        case 'email':
+          // Validate email
+          if (!isValidEmail(newEmail)) {
+            setEmailError('Invalid email format');
+            isValid = false;
+            return;
+          } else if (newEmail.trim() === '') {
+            setEmailError('New email cannot be empty');
+            isValid = false;
+            return;
+          } else if (newEmail === oldEmail) {
+            setEmailError('New email cannot be the same as old email');
+            isValid = false;
+            return;
+          } else if (initialOldEmail != oldEmail) {
+            setEmailError('Old email does not match current email');
+            isValid = false;
+            return;
+          }
+          else {
+            const updateSuccessful = await UserModel.updateEmail(userId, newEmail);
+
+            if (updateSuccessful) {
+              // Update states since the change was successful
+              setNewEmail('');
+              setOldEmail('');
+              setInitialOldEmail(newEmail);
+            } else {
+              setEmailError('Email taken');
+              isValid = false;
+              return;
+            }
+          }
+          break;
+        default:
+          break;
+      }
+
+      // Close the modal
+      setShowModal(false);
+    } catch (error) {
+      console.error('Error updating user data:', error);
+    }
+  };
+
+  const renderModalContent = () => {
+    switch (modalType) {
+      case 'name':
+        return (
+          <View>
+            <Text style={{ marginBottom: 10 }}>First Name</Text>
+            <TextInput
+              value={newFirstName}
+              onChangeText={(text) => {
+                setNewFirstName(text);
+                if (text.trim() !== '' && !/\d/.test(text)) {
+                  setFirstNameError('');
+                }
+              }}
+              style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginBottom: 5 }]}
+            />
+            {firstNameError !== '' && <Text style={{ color: 'red' }}>{firstNameError}</Text>}
+
+            <Text style={{ marginBottom: 10, marginTop: 20 }}>Last Name</Text>
+            <TextInput
+              value={newLastName}
+              onChangeText={(text) => {
+                setNewLastName(text);
+                if (text.trim() !== '' && !/\d/.test(text)) {
+                  setLastNameError('');
+                }
+              }}
+              style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginBottom: 5 }]}
+            />
+            {lastNameError !== '' && <Text style={{ color: 'red' }}>{lastNameError}</Text>}
+
+          </View>
+        );
+      case 'username':
+        return (
+          <View>
+            <Text style={{ marginBottom: 20 }}>Enter New Username</Text>
+            <TextInput
+              value={newUsername}
+              onChangeText={(text) => {
+                setNewUsername(text);
+                if (text.trim() !== '') {
+                  setUsernameError('');
+                }
+              }}
+              style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginBottom: 5 }]}
+            />
+            {usernameError !== '' && <Text style={{ color: 'red' }}>{usernameError}</Text>}
+
+          </View>
+        );
+      case 'password':
+        return (
+          <View>
+            <Text style={{ marginBottom: 10 }}>Current Password</Text>
+            <TextInput
+              value={currentPassword}
+              onChangeText={setCurrentPassword}
+              secureTextEntry
+              style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginBottom: 5 }]}
+
+            />
+            <Text style={{ marginBottom: 10, marginTop: 20 }}>New Password</Text>
+            <TextInput
+              value={newPassword}
+              onChangeText={setNewPassword}
+              secureTextEntry
+              style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginBottom: 5 }]}
+
+            />
+            <Text style={{ marginBottom: 10, marginTop: 20 }}>Confirm New Password</Text>
+            <TextInput
+              value={confirmNewPassword}
+              onChangeText={setConfirmNewPassword}
+              secureTextEntry
+              style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginBottom: 5 }]}
+            />
+            <View style={{width: "80%"}}>
+            {passwordError !== '' && <Text style={{ color: 'red' }}>{passwordError}</Text>}
+
+              </View>
+          </View>
+        );
+      case 'email':
+        return (
+          <View>
+            <Text style={{ marginBottom: 10 }}>Old Email</Text>
+            <TextInput
+              value={oldEmail}
+              onChangeText={(text) => {
+                setOldEmail(text);
+                if (text.trim() !== '' && isValidEmail(text) && text !== newEmail) {
+                  setEmailError('');
+                }
+              }}
+              style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginBottom: 5 }]}
+            />
+            <Text style={{ marginBottom: 10, marginTop: 20 }}>New Email</Text>
+            <TextInput
+              value={newEmail}
+              onChangeText={(text) => {
+                setNewEmail(text);
+                if (text.trim() !== '' && isValidEmail(text) && text !== oldEmail) {
+                  setEmailError('');
+                }
+              }}
+              style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginBottom: 5 }]}
+            />
+            
+            {emailError !== '' && <Text style={{ color: 'red' }}>{emailError}</Text>}
+          </View>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const numberOfCompleted = (blocks) => {
+    let completed = 0;
+    const todaysDate = new Date();
+    console.log("Today's date");
+    console.log(todaysDate);
+
+    for (const block of blocks) {
+      const blockDate = new Date(block.date);
+      // console.log("Block: ", block);
+
+      // Get yesterday's date
+      const yesterdayDate = new Date();
+      yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+
+      // Check if the dates match (only the date portion)
+      if (
+        blockDate.getFullYear() === todaysDate.getFullYear() &&
+        blockDate.getMonth() === todaysDate.getMonth() &&
+        blockDate.getDate() === todaysDate.getDate()
+      ) {
+        // Calculate block endTime
+        const blockStartTime = new Date();
+        blockStartTime.setHours(block.startingTime.hours, block.startingTime.minutes);
+        const blockEndTime = new Date(blockStartTime);
+        blockEndTime.setMinutes(blockStartTime.getMinutes() + block.duration.minutes);
+        blockEndTime.setHours(blockEndTime.getHours() + block.duration.hours);
+
+        // Compare blockEndTime with the current time
+        const currentTime = new Date();
+        if (blockEndTime < currentTime) {
+          console.log(`Block with ID ${block.id} ended in the past`);
+          completed++;
+        } else {
+          console.log(`Block with ID ${block.id} ends in the future`);
+        }
+      } else if (
+        blockDate.getFullYear() === yesterdayDate.getFullYear() &&
+        blockDate.getMonth() === yesterdayDate.getMonth() &&
+        blockDate.getDate() === yesterdayDate.getDate()
+      ) {
+        // Calculate block endTime
+        const blockStartTime = new Date();
+        blockStartTime.setHours(block.startingTime.hours, block.startingTime.minutes);
+        const blockEndTime = new Date(blockStartTime);
+        blockEndTime.setMinutes(blockStartTime.getMinutes() + block.duration.minutes);
+        blockEndTime.setHours(blockEndTime.getHours() + block.duration.hours);
+
+        // Compare blockEndTime with the current time
+        const currentTime = new Date();
+        if (blockEndTime > currentTime) {
+          console.log(`Block with ID ${block.id} ends in the future`);
+        } else {
+          console.log(`Block with ID ${block.id} ended in the past`);
+          completed++;
+        }
+      } else if (blockDate < todaysDate) {
+        console.log(`Block with ID ${block.id} ended in the past`);
+        completed++;
+      }
+    }
+
+    return completed;
+  };
+
+  const goalsCompleted = (goals) => {
+    let completed = 0;
+
+    for (const goal of goals) {
+      if (goal.status == "Completed") {
+        completed++;
+      }
+
+    }
+
+    return completed;
+  }
+
+
+
+  useEffect(() => {
+    const fetchBlocks = async () => {
+      try {
+        const blocks = await UserModel.fetchUserBlocks(userId);
+        const goals = await UserModel.fetchUserGoals(userId);
+        const data = await UserModel.fetchUserData(userId);
+        const completedBlocksCount = numberOfCompleted(blocks)
+        const completedGoalsCount = goalsCompleted(goals)
+        setCompletedBlocks(completedBlocksCount);
+        setCompletedGoals(completedGoalsCount);
+        console.log(data)
+        setCompletedUserData(data);
+        setInitialFirstName(data.firstName);
+        setNewFirstName(data.firstName);
+        setInitialLastName(data.lastName);
+        setNewLastName(data.lastName);
+        setInitialUsername(data.username);
+        setNewUsername(data.username);
+        setInitialOldEmail(data.email)
+      } catch (error) {
+        console.log('Error fetching blocks:', error);
+      }
+    };
+
+    fetchBlocks();
+  }, [userId]);
+
+  const clearThings = () => {
+    setUsernameError('')
+    setFirstNameError('')
+    setLastNameError('')
+    setEmailError('')
+    setPasswordError('')
+    setNewPassword('')
+    setConfirmNewPassword('')
+    setCurrentPassword('')
+  }
+
+  const handleCancel = () => {    
+    setNewFirstName(initialFirstName);
+    setNewLastName(initialLastName);
+    setNewUsername(initialUsername);
+    setShowModal(false);
+  };
+
+  const logoutUser = async () => {
+    try {
+      await auth.signOut();
+      // Navigate to the 'Landing' screen after successful logout
+      navigation.navigate('Landing');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
+
+  return (
+    <View style={[reusableStyles.container, { alignItems: 'center' }]}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+        <View style={styles.box}>
+          <FontAwesome5 name="trophy" size={24} color="#FFD700" style={styles.icon} />
+          <Text style={styles.counter}>{completedGoals}</Text>
+          <Text style={styles.text}>Completed Goals</Text>
+        </View>
+        <View style={styles.box}>
+          <FontAwesome5 name="trophy" size={24} color="#FFD700" style={styles.icon} />
+          <Text style={styles.counter}>{completedBlocks}</Text>
+          <Text style={[styles.text,]}>Completed Blocks</Text>
+        </View>
+      </View>
+
+      <TouchableOpacity
+        style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginBottom: 5 }]}
+        onPress={() => {
+          setModalType('name');
+          setShowModal(true);
+        }}
+      >
+        <Text style={{ textAlign: 'center' }}>Change Name</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginBottom: 5 }]}
+        onPress={() => {
+          setModalType('username');
+          setShowModal(true);
+        }}
+      >
+        <Text style={{ textAlign: 'center' }}>Change Username</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginBottom: 5 }]}
+        onPress={() => {
+          setModalType('password');
+          setShowModal(true);
+        }}
+      >
+        <Text style={{ textAlign: 'center' }}>Change Password</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginBottom: 5 }]}
+        onPress={() => {
+          setModalType('email');
+          setShowModal(true);
+        }}
+      >
+        <Text style={{ textAlign: 'center' }}>Change Email</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginBottom: 5 }]}
+        onPress={() =>
+          navigation.navigate('Assessment', { isSignUp: false, habit: 'online_gambling' })
+        }
+      >
+        <Text style={{ textAlign: 'center' }}>Take Assessment</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginBottom: 5 }]}
+        onPress={logoutUser}
+      >
+        <Text style={{ textAlign: 'center' }}>Log Out</Text>
+      </TouchableOpacity>
+
+
+      <Modal visible={showModal} animationType="slide">
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          {renderModalContent()}
+          <TouchableOpacity style={styles.button} onPress={handleSave}>
+            <Text style={styles.buttonText}>Save</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.button} onPress={handleCancel}>
+            <Text style={styles.buttonText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+
+    </View>
+  );
+
+
+};
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 20, // Adjust the padding as needed
+  },
+  box: {
+    alignItems: 'center', // Center the content of the boxes
+    padding: 10, // Adjust the padding as needed
+    borderWidth: 1, // Add a border to make the box visible
+    borderColor: '#ddd', // Light grey border
+    borderRadius: 10, // Rounded corners
+  },
+  icon: {
+    marginBottom: 10, // Space between icon and counter
+  },
+  counter: {
+    fontSize: 24, // Large font size for the counter
+    fontWeight: 'bold', // Make the counter bold
+    marginBottom: 10, // Space between counter and text
+  },
+  text: {
+    textAlign: 'center', // Center the text
+  },
+});
 export default Settings;

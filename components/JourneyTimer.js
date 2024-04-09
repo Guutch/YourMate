@@ -44,10 +44,10 @@ const JourneyTimer = ({ startTime }) => {
     return (
         <View style={{ flexDirection: 'row', justifyContent: 'center', marginVertical: 10 }}>
       <View style={homeMain.timeCircle}>
-        <Text>{primaryUnit}</Text>
+        <Text style={{color: 'black', fontWeight: 'bold'}}>{primaryUnit}</Text>
       </View>
       <View style={[homeMain.timeCircle, {marginLeft: 15}]}>
-        <Text>{secondaryUnit}</Text>
+        <Text style={{color: 'black', fontWeight: 'bold'}}>{secondaryUnit}</Text>
       </View>
     </View>
     );

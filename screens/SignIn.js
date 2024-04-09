@@ -23,7 +23,7 @@ const SignIn = ({ navigation }) => {
       })
       .catch((error) => {
         // Handle errors here.
-        console.error("Error signing in:", error.code, error.message);
+        // console.error("Error signing in:", error.code, error.message);
         // Set error message
         setError("Incorrect details.");
       });
@@ -48,34 +48,34 @@ const SignIn = ({ navigation }) => {
           Email
         </Text>
         <TextInput
-  style={[reusableStyles.textInput, reusableStyles.lessRounded, { height: 44, borderColor: error ? 'red' : 'black', borderWidth: 2 }]}
-  onChangeText={handleChange(setEmail)}
-  value={email}
-  placeholder="Enter your email"
-  keyboardType="email-address"
-/>
+          style={[reusableStyles.textInput, reusableStyles.lessRounded, { height: 44, borderColor: error ? 'red' : 'black', borderWidth: 2 }]}
+          onChangeText={handleChange(setEmail)}
+          value={email}
+          placeholder="Enter your email"
+          keyboardType="email-address"
+        />
       </View>
 
       {/* Password Group */}
       <View style={{ marginBottom: 9 }}>
-        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <Text style={[reusableStyles.labelText, { marginBottom: 10 }]}>
-          Password          
-        </Text>
-         {error && (
-          <Text style={[reusableStyles.labelText, { marginBottom: 10, color: 'red', fontSize: 15 }]}>
-            {error}
+            Password
           </Text>
-        )}
+          {error && (
+            <Text style={[reusableStyles.labelText, { marginBottom: 10, color: 'red', fontSize: 15 }]}>
+              {error}
+            </Text>
+          )}
         </View>
-        
+
         <TextInput
-  style={[reusableStyles.textInput, reusableStyles.lessRounded, { height: 44, borderColor: error ? 'red' : 'black', borderWidth: 2 }]}
-  onChangeText={handleChange(setPassword)}
-  value={password}
-  placeholder="Enter your password"
-  secureTextEntry={true} // hides the password
-/>
+          style={[reusableStyles.textInput, reusableStyles.lessRounded, { height: 44, borderColor: error ? 'red' : 'black', borderWidth: 2 }]}
+          onChangeText={handleChange(setPassword)}
+          value={password}
+          placeholder="Enter your password"
+          secureTextEntry={true} // hides the password
+        />
       </View>
 
       {/* Login Button */}
@@ -86,7 +86,7 @@ const SignIn = ({ navigation }) => {
       </TouchableOpacity> */}
       {/* Login Button */}
       <TouchableOpacity style={[reusableStyles.button, reusableStyles.lessRounded, { backgroundColor: '#0077FF', marginTop: 15 }]}
-       onPress={handleSignIn}
+        onPress={handleSignIn}
       >
         <Text style={reusableStyles.buttonText}>Login</Text>
       </TouchableOpacity>

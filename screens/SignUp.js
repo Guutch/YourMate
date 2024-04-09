@@ -138,7 +138,7 @@ const SignUp = ({ navigation }) => {
                     setConfirmPasswordError('Passwords do not match');
                     return true;
                 } else {
-                    setConfirmPasswordError(''); // Clear the error if passwords match
+                    setConfirmPasswordError(''); // Clear the error if passwords match 
                 }
                 // If confirmPassword is valid (not empty and matches password), reset the error
                 setConfirmPasswordError('');
@@ -148,20 +148,28 @@ const SignUp = ({ navigation }) => {
 
     const handleSignUp = async () => {
         try {
-            const user = await UserModel.createUser(
-                firstName,
-                lastName,
-                username,
-                email,
-                password
-            );
-            console.log('User created:', user);
-            // Handle successful user creation
+          const user = await UserModel.createUser(
+            firstName,
+            lastName,
+            username,
+            email,
+            password
+          );
+          console.log('User created:', user);
+          // Handle successful user creation
+          navigation.navigate('HabitSelector');
         } catch (error) {
-            console.error('Error creating user:', error);
-            // Handle error
+          console.error('Error creating user:', error);
+          // Handle error
+          if (error.message === 'Email already in use') {
+            setEmailError('Email is already taken');
+          } else if (error.message === 'Username already in use') {
+            setUsernameError('Username is already taken');
+          } else {
+            Alert.alert('Error', error.message);
+          }
         }
-    };
+      };
 
     const validation = () => {
         let isFormInvalid = false;
@@ -181,7 +189,7 @@ const SignUp = ({ navigation }) => {
             handleSignUp();
             // const user = await UserModel.createUser(email, password);
             // console.log("Valid form input - can create user")
-            navigation.navigate('HabitSelector')
+            // navigation.navigate('HabitSelector')
             // onPress={() => 
         }
     };
@@ -347,10 +355,9 @@ const SignUp = ({ navigation }) => {
                     </View>
                 </View>
 
-                {/* Login Button */}
+                {/* Sign up Button */}
                 <TouchableOpacity style={[reusableStyles.button, { backgroundColor: '#0077FF', marginTop: 15, borderWidth: 1, width: 335 }]}
                     onPress={validation}
-                // onPress={() => navigation.navigate('Createusername')}
                 >
                     <Text style={reusableStyles.buttonText}>Sign Up</Text>
                 </TouchableOpacity>
