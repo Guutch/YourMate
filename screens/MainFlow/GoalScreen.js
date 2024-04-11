@@ -18,6 +18,8 @@ import { getGlobalData, getJustCreatedGoal, setJustCreatedGoal, setJustCreatedM 
 import { Overlay } from 'react-native-elements';
 import LargeGoalOverview from '../../components/LargeGoalOverlay';
 
+import motivationMessages from '../../components/motivation'
+
 const auth = getAuth(app);
 const GoalScreen = ({ navigation, route }) => {
     const [showOverlay, setShowOverlay] = useState(false);
@@ -35,13 +37,13 @@ const GoalScreen = ({ navigation, route }) => {
     useFocusEffect(
         React.useCallback(() => {
             // Code to run every time the screen is focused
-            console.log("Here ")
+            // console.log("Here ")
 
             if (getJustCreatedGoal()) {
-                console.log("New goal createdd: ", getGlobalData());
+                // console.log("New goal createdd: ", getGlobalData());
                 const newGoal = getGlobalData(); // This is now an object
-                console.log("newGoal");
-                console.log(newGoal);
+                // console.log("newGoal");
+                // console.log(newGoal);
                     
                 UserModel.newGoalMile(newGoal.id, userUID)
                   .then((goalWithMilestoneData) => {
@@ -89,8 +91,8 @@ const GoalScreen = ({ navigation, route }) => {
             try {
                 const userUID = auth.currentUser.uid;
                 const fetchedGoalData = await UserModel.fetchUserGoals(userUID);
-                console.log(fetchedGoalData);
-                console.log("goalData");
+                // console.log(fetchedGoalData);
+                // console.log("goalData");
 
                 const ongoingGoals = [];
                 const completedGoals = [];
@@ -146,7 +148,11 @@ const GoalScreen = ({ navigation, route }) => {
         }));
       };
       
-
+      const getrandomMotivationMessage = () => {
+        const randomIndex = Math.floor(Math.random() * motivationMessages.length);
+        console.log(motivationMessages[randomIndex])
+        return motivationMessages[randomIndex];
+     }
 
     useEffect(() => {
         // Use `setOptions` to update the button that we previously specified
@@ -155,6 +161,21 @@ const GoalScreen = ({ navigation, route }) => {
             headerRight: () => (
                 <View style={{ flexDirection: 'row' }}>
                     {/* To add a new goal */}
+                    <TouchableOpacity
+                        onPress={() => {
+                            // Hard coded porn as the selected habit
+                            // navigation.navigate('GoalSelector', { selected: 'porn', fromMain: true });
+                            setOverlayContent('motivation')
+                            setShowOverlay(true)
+                        }}
+                        style={{
+                            padding: 10,
+                            borderRadius: 5,
+                        }}
+                    >
+
+                        <FontAwesome5 name="dove" size={30} color="#000" />
+                    </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => {
                             // Hard coded porn as the selected habit
@@ -189,7 +210,6 @@ const GoalScreen = ({ navigation, route }) => {
 
     const xOutOfOverlay = () => {
         setShowOverlay(false)
-        // clearSets()
     }
 
     const updateGoalData = (updatedGoal) => {
@@ -318,6 +338,12 @@ const GoalScreen = ({ navigation, route }) => {
                                 </View>
                             </TouchableOpacity>
                         </>
+                    )}
+                    {overlayContent === 'motivation' && (
+                        <View style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}> 
+                        <Text style={{ color: '#000', marginBottom: 10, fontWeight: 'bold', fontSize: 24 }}>Tips, Tricks, and Motivation</Text> 
+                        <Text style={{ color: '#000', fontSize: 18 }}>{getrandomMotivationMessage()}</Text> 
+                      </View>
                     )}
 
                     {overlayContent === 'delete' && (

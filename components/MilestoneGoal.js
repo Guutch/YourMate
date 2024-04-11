@@ -21,8 +21,8 @@ const MilestoneGoal = ({ title, onFlagPress, onEllipsisPress, milestone, goal })
     onFlagPress(milestone, goal);
   };
 
-  console.log("title!!!!!!")
-  console.log(title)
+  console.log("MILESTONE!!!!!!")
+  console.log(milestone)
 
 
   return (
@@ -31,11 +31,11 @@ const MilestoneGoal = ({ title, onFlagPress, onEllipsisPress, milestone, goal })
         reusableStyles.button,
         {
           flexDirection: 'row',
-          height: 60,
+          height: 'auto',
           marginVertical: 5,
           justifyContent: 'space-between',
           backgroundColor: 'white',
-          padding: 10,
+          padding: 12,
           borderColor,
           borderWidth: 2,
           textAlign: 'centre',
@@ -43,14 +43,21 @@ const MilestoneGoal = ({ title, onFlagPress, onEllipsisPress, milestone, goal })
       ]}
     >
       <View style={{ flexDirection: 'row' }}>
-        <TouchableOpacity onPress={handleFlagPress} style={[goalMain.settings, { marginRight: 5 }]}>
-          <FontAwesome5 name="flag" size={15} color="#000" />
+    <View style={{ marginLeft: 5, flex: 3 }}> 
+        <Text>Title: {title}</Text>
+        <Text>Desc:Desc:Desc:Desc:Desc:Desc:Desc:Desc:Desc:Desc:Desc:Desc:Desc:Desc:Desc:Desc:Desc:Desc:v {milestone.description}</Text>
+    </View>
+
+    <View style={{ flexDirection: 'row', flex: 1, alignItems: 'center' }}> 
+        <TouchableOpacity onPress={handleFlagPress} style={[goalMain.settings, { marginRight: 5, height: 30, width: 30 }]}>
+            <FontAwesome5 name="flag" size={15} color="#000" />
         </TouchableOpacity>
-        <Text style={{ marginLeft: 5}}>{title}</Text>
-      </View>
-      <TouchableOpacity onPress={() => onEllipsisPress(title)} style={[goalMain.settings, { marginRight: 5 }]}>
-        <FontAwesome5 name="ellipsis-h" size={15} color="#000" />
-      </TouchableOpacity>
+        <TouchableOpacity onPress={() => onEllipsisPress(title)} style={goalMain.settings}>
+            <FontAwesome5 name="ellipsis-h" size={15} color="#000" />
+        </TouchableOpacity>
+     </View>
+</View>
+
     </TouchableOpacity>
   );
 };

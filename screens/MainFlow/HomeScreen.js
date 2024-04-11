@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useLayoutEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList, ScrollView, TextInput } from 'react-native';
 import { reusableStyles, homeMain, signUp } from '../../components/styles'; // Adjust the path
-
+import { useFocusEffect } from '@react-navigation/native';
 import { Overlay } from 'react-native-elements';
 import { format } from 'date-fns';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -15,6 +15,9 @@ import BlockItem from '../../components/BlockItem'
 import { app } from '../../firebase/firebase'
 import { getAuth } from 'firebase/auth';
 import UserModel from '../../firebase/UserModel'
+
+import { getUserData, setUserData } from '../../components/DataManager';
+
 
 const auth = getAuth(app);
 const HomeScreen = ({ navigation }) => {
@@ -33,6 +36,8 @@ const HomeScreen = ({ navigation }) => {
     const currentDateString = currentDate.toISOString().split('T')[0];
     const formattedDate = format(selectedDate, 'EEEE | MMM do yyyy');
 
+    const [habits, setHabits] = useState([])
+
     // this was just to tesst time the time circles. Need to remove this
     const startTime = new Date(new Date().getTime() - 3000000);
 
@@ -43,18 +48,44 @@ const HomeScreen = ({ navigation }) => {
 
     const userId = auth.currentUser.uid;
 
-    useEffect(() => {
-        const fetchHabit = async () => {
-            try {
-                const habitData = await UserModel.fetchUserHabit(userId);
-                setHabitName(habitData.name);
-                setHabitStartDate(habitData.startDate);
-            } catch (error) {
-                console.log('Error fetching habit:', error);
-            }
-        };
+    const [currentHabitIndex, setCurrentHabitIndex] = useState(0);
 
-        fetchHabit();
+    const navigateToPreviousHabit = () => {
+        if (currentHabitIndex > 0) {
+            setCurrentHabitIndex(currentHabitIndex - 1);
+        }
+    };
+
+    const navigateToNextHabit = () => {
+        if (currentHabitIndex < habits.length - 1) {
+            setCurrentHabitIndex(currentHabitIndex + 1);
+        }
+    };
+
+    const currentHabit = habits[currentHabitIndex];
+
+    useFocusEffect(
+        React.useCallback(() => {
+            const data = getUserData();
+            if (data.habit) {
+                fetchHabits()
+                setUserData({habit: ''})
+            }
+        }, [])
+    );
+
+    const fetchHabits = async () => {
+        try {
+            const habitsData = await UserModel.fetchUserHabit(userId);
+            console.log(habitsData)
+            setHabits(habitsData);
+        } catch (error) {
+            console.log('Error fetching habits:', error);
+        }
+    };
+    
+    useEffect(() => {
+        fetchHabits();
     }, []);
 
     useEffect(() => {
@@ -77,26 +108,26 @@ const HomeScreen = ({ navigation }) => {
 
         let date = new Date(Date.UTC(year, month, 1)); // Create a new Date with UTC time
         let days = [];
-      
+
         while (date.getUTCMonth() === month) { // Check the UTC month
-          days.push(new Date(date)); // Create a new Date object without modifying the original
-          date.setUTCDate(date.getUTCDate() + 1); // Update the date using UTC methods
+            days.push(new Date(date)); // Create a new Date object without modifying the original
+            date.setUTCDate(date.getUTCDate() + 1); // Update the date using UTC methods
         }
 
         // console.log(days);
         return days;
-      };
+    };
 
     const handleMonthChange = (monthOffset) => {
         const nextMonth = currentMonth + monthOffset;
         const nextYear = nextMonth >= 12 ? currentYear + 1 : currentYear; // Increment year if needed
         const adjustedMonth = nextMonth >= 12 ? nextMonth - 12 : nextMonth; // Adjust for new year
-    
+
         setCurrentYear(nextYear);
         setCurrentMonth(adjustedMonth);
         setDays(getDaysInMonth(nextYear, adjustedMonth));
     };
-    
+
 
 
     // You can replace this with the current year and month
@@ -137,12 +168,12 @@ const HomeScreen = ({ navigation }) => {
 
     // Filter blocks for the selected date
     const blocksForSelectedDate = blocks && blocks.length > 0
-    ? blocks.filter(block => block.date === selectedDateStr)
-    : [];
+        ? blocks.filter(block => block.date === selectedDateStr)
+        : [];
 
     // console.log("blocksForSelectedDate!!!!!!!!!!!")
     // console.log(blocksForSelectedDate)
-    
+
 
     const confirmSelection = () => {
         // Assuming there's a way to differentiate context, like a currentMode state or similar
@@ -160,10 +191,10 @@ const HomeScreen = ({ navigation }) => {
     };
 
 
-    const formatDate = (date) => {
-        const options = { year: 'numeric', month: 'long', day: 'numeric' };
-        return date.toLocaleDateString('en-US', options);
-    };
+    // const formatDate = (date) => {
+    //     const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    //     return date.toLocaleDateString('en-US', options);
+    // };
 
     const formatTime = (hour, minute) => {
         const formattedHour = hour.toString().padStart(2, '0');
@@ -224,16 +255,16 @@ const HomeScreen = ({ navigation }) => {
             // console.log(blocks)
             setBlocks((prevBlocks) => {
                 if (prevBlocks === undefined) {
-                  return [newBlockWithId]; // If prevBlocks is undefined, return a new array with the new block
+                    return [newBlockWithId]; // If prevBlocks is undefined, return a new array with the new block
                 } else {
-                  return [...prevBlocks, newBlockWithId]; // Otherwise, spread the existing blocks and add the new block
+                    return [...prevBlocks, newBlockWithId]; // Otherwise, spread the existing blocks and add the new block
                 }
-              });
+            });
             console.log('Blocks state updated');
             // setUpcomingBlocksCount(prevCount => prevCount + 1); // Increment the count of upcoming blocks, if needed
-          } catch (error) {
+        } catch (error) {
             console.log('Error adding block:', error); // Handle the error as needed
-          }
+        }
     };
 
 
@@ -281,9 +312,6 @@ const HomeScreen = ({ navigation }) => {
     };
 
     useEffect(() => {
-        // console.log(blocksForSelectedDate.length)
-        // console.log("blocksForSelectedDate")
-        // console.log(blocksForSelectedDate)
         setUpcomingBlocksCount(blocksForSelectedDate.length)
     }, [blocksForSelectedDate])
 
@@ -306,9 +334,22 @@ const HomeScreen = ({ navigation }) => {
                 <View style={{ flexDirection: 'row' }}>
                     <TouchableOpacity
                         onPress={() => {
+                            setOverlayContent('rewind')
+                            setShowOverlay(true);
+                            console.log("Rewind time")
+                        }}
+                        style={{
+                            padding: 10,
+                            borderRadius: 5,
+                        }}
+                    >
+                        <FontAwesome5 name="history" size={30} color="#000" />
+                        {/* <FontAwesome5 name="clock" size={30} color="#000" onPress={() => setShowOverlay(true)} /> */}
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => {
                             resetFutureTime();
                             console.log("lol")
-                            setShowOverlay(true);
                             setShowOverlay(true);
                         }}
                         style={{
@@ -365,17 +406,41 @@ const HomeScreen = ({ navigation }) => {
                     }}
                     overlayStyle={reusableStyles.overlay}
                 >
-                    {/* {overlayContent === 'dat e' && (
+                    {overlayContent === 'rewind' && (
                         <>
-                            <Text style={{ padding: 20 }}>What would you like to do?</Text>
-                            <TouchableOpacity
-                                style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center' }]}
-                                onPress={() => setOverlayContent('solo')}
-                            >
-                                <Text>Solo</Text>
-                            </TouchableOpacity>
+                            <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                                <Text style={{ textAlign: 'center', fontWeight: 'bold', color: "#000" }}>
+                                    Would you like to reset the timer for {currentHabit.name}
+                                </Text>
+                                <View style={{ flexDirection: 'column', justifyContent: 'space-around', marginVertical: 10, paddingHorizontal: 10 }}>
+                                    <TouchableOpacity
+                                        style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginTop: 10 }]}
+                                        onPress={async () => {
+                                            console.log(currentHabit);
+                                            try {
+                                                await UserModel.updateHabitTime(userId, currentHabit.id);
+                                                setShowOverlay(false);
+                                                fetchHabits()
+                                            } catch (error) {
+                                                // Handle the error appropriately 
+                                            }
+                                        }}
+                                    >
+                                        <Text style={{ textAlign: 'center' }}>Yes</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[reusableStyles.textInput, reusableStyles.moreRounded]}
+                                        onPress={() => {
+                                            setShowOverlay(false); // Close the overlay on 'No' press
+                                        }}
+                                    >
+                                        <Text style={{ textAlign: 'center' }}>No</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+
                         </>
-                    )} */}
+                    )}
                     {overlayContent === 'titleChange' && (
                         <>
                             <TextInput
@@ -465,7 +530,7 @@ const HomeScreen = ({ navigation }) => {
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center' }]}
-                            onPress={() => setOverlayContent('blockOpts')}
+                                onPress={() => setOverlayContent('blockOpts')}
                             >
                                 <Text>No</Text>
                             </TouchableOpacity>
@@ -691,9 +756,24 @@ const HomeScreen = ({ navigation }) => {
             {/* Top Half */}
             <View>
 
-                <Text style={{ textAlign: 'center', fontWeight: 'bold', color: '#000' }}>Your {habitName} journey started...</Text>
 
-                <JourneyTimer startTime={habitStartDate} />
+                {currentHabit && (
+                    <>
+                        <Text style={{ textAlign: 'center', fontWeight: 'bold', color: '#000' }}>Your {currentHabit.name} journey started...</Text>
+                        <JourneyTimer
+                            key={currentHabit.id}
+                            startTime={currentHabit.startDate}
+                            habitName={currentHabit.name}
+                            showLeftChevron={currentHabitIndex !== 0}
+                            showRightChevron={currentHabitIndex !== habits.length - 1}
+                            totalHabits={habits.length}
+                            currentIndex={currentHabitIndex}
+                            navigateToPreviousHabit={navigateToPreviousHabit}
+                            navigateToNextHabit={navigateToNextHabit}
+                        />
+                    </>
+
+                )}
 
                 <Text style={{ textAlign: 'center', fontWeight: 'bold', color: '#000' }}>...ago!</Text>
 
@@ -714,7 +794,7 @@ const HomeScreen = ({ navigation }) => {
                             <TouchableOpacity onPress={() => {
                                 // console.log(item.getDay()); // Log the item before updating state
                                 // console.log(item); // Log the item before updating state
-                                setSelectedDate(item); 
+                                setSelectedDate(item);
                             }}>
                                 <DayItem
                                     day={item.getDate()}
@@ -777,8 +857,8 @@ const HomeScreen = ({ navigation }) => {
                     <FlatList
                         data={blocksForSelectedDate} // Use the filtered blocks here
                         renderItem={renderItem} // Assuming renderItem is defined elsewhere to handle rendering each block
-                        keyExtractor={(item) => item.id} 
- // Updated keyExtractor to use index
+                        keyExtractor={(item) => item.id}
+                        // Updated keyExtractor to use index
                         ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
                     />
 

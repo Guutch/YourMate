@@ -36,22 +36,24 @@ const LargeGoalOverview = ({ xOut, goal, onOverlayContentChange, userId }) => {
   };
 
   const handleFlagPress = async (milestone, goal) => {
-    const newStatus = milestone.status === 'Ongoing' ? 'Completed' : 'Ongoing';
-    const isStatusUpdated = await UserModel.updateMilestoneStatus(userId, goal.id, milestone.id, newStatus);
+    console.log("milestone(((((((((((((")
+    console.log(milestone)
+    // const newStatus = milestone.status === 'Ongoing' ? 'Completed' : 'Ongoing';
+    // const isStatusUpdated = await UserModel.updateMilestoneStatus(userId, goal.id, milestone.id, newStatus);
 
-    if (isStatusUpdated) {
-        const updatedMilestones = goal.milestones.map(m => {
-            if (m.id === milestone.id) { // Use the destructured `id` or `milestone.id`
-                return { ...m, status: newStatus };
-            }
-            return m;
-        });
+    // if (isStatusUpdated) {
+    //     const updatedMilestones = goal.milestones.map(m => {
+    //         if (m.id === milestone.id) { // Use the destructured `id` or `milestone.id`
+    //             return { ...m, status: newStatus };
+    //         }
+    //         return m;
+    //     });
 
-        // Call the parent component's function to update the entire goal's milestones
-        onUpdateGoalMilestones(goal.id, updatedMilestones);
-    } else {
-        console.error('Error updating milestone status');
-    }
+    //     // Call the parent component's function to update the entire goal's milestones
+    //     onUpdateGoalMilestones(goal.id, updatedMilestones);
+    // } else {
+    //     console.error('Error updating milestone status');
+    // }
 };
 
 
@@ -66,13 +68,12 @@ const LargeGoalOverview = ({ xOut, goal, onOverlayContentChange, userId }) => {
       <View style={{ borderBottomWidth: 1, padding: 10, borderBottomColor: 'black', justifyContent: 'center', alignItems: 'center' }}>
 
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 10 }}>
-          <TouchableOpacity style={{}} >
-            <Text>SAVE</Text>
-          </TouchableOpacity>
+          <View>
+            <Text style={{color: "#000"}}>Goal Details</Text>
+          </View>
 
-          {/* Title Container */}
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontSize: 20 }}>The Goal</Text>
+            <Text style={{color: "#fff"}}>The Goal</Text>
           </View>
 
           <TouchableOpacity style={{}} onPress={() => xOut()}>
@@ -135,12 +136,47 @@ const LargeGoalOverview = ({ xOut, goal, onOverlayContentChange, userId }) => {
 
       </View>
       {/* Buttons */}
-      <TouchableOpacity style={[reusableStyles.button, { backgroundColor: "white", padding: 10, borderColor: "#000", borderWidth: 2, height: 'auto' }]} onPress={handleMilestoneButtonPress}>
+      <View style={{ 
+        flexDirection: 'row', 
+        justifyContent: 'center', // Center elements horizontally
+        flexWrap: 'wrap',
+        marginTop: 5,
+        padding: 10 
+       }}> 
+       
+    <TouchableOpacity 
+        style={[
+            reusableStyles.button, 
+            { 
+                backgroundColor: "white", 
+                padding: 10, 
+                borderColor: "#000", 
+                borderWidth: 2,
+                marginBottom: 10 // Add margin for spacing
+            }
+        ]} 
+        onPress={handleMilestoneButtonPress}
+    >
         <Text>Add a milestone</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={[reusableStyles.button, { backgroundColor: "white", padding: 10, borderColor: "#000", borderWidth: 2, height: 'auto' }]} onPress={handleNoteButtonPress}>
+    </TouchableOpacity>
+
+    <TouchableOpacity 
+        style={[
+            reusableStyles.button, 
+            { 
+                backgroundColor: "white", 
+                padding: 10, 
+                borderColor: "#000", 
+                borderWidth: 2, 
+                marginBottom: 10 // Add margin for spacing
+            }
+        ]}
+        onPress={handleNoteButtonPress}
+    >
         <Text>Add a note</Text>
-      </TouchableOpacity>
+    </TouchableOpacity>
+</View>
+
 
     </ScrollView>
   );

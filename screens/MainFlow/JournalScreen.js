@@ -47,74 +47,98 @@ const JournalScreen = ({ navigation }) => {
 
     const addJournal = async () => {
         if (!journalTitle || !journalDesc) {
-          // Set error state if title or description is empty
-          setTitleError(!journalTitle);
-          setDescError(!journalDesc);
-          return; // Stop execution if validation fails
+            // Set error state if title or description is empty
+            setTitleError(!journalTitle);
+            setDescError(!journalDesc);
+            return; // Stop execution if validation fails
         }
-      
-        const newJournal = {
-          time: new Date().toLocaleString(),
-          title: journalTitle,
-          desc: journalDesc,
-          triggeredToday: selections.trigger,
-          triggerComment: selections.trigger ? triggerComment : '',
-          engagedInHabit: selections.engage,
-          madeProgress: selections.progress,
-          progressComment: selections.progress ? progressComment : '',
-        };
-      
-        try {
-          const userId = auth.currentUser.uid;
-          // Await the ID from the addJournal method
-          const journalId = await UserModel.addJournal(userId, newJournal);
-      
-          // Include this ID in the journal object added to the local state
-          const newJournalWithId = { ...newJournal, id: journalId };
-      
-          setJournals((prevJournals) => [...prevJournals, newJournalWithId]);
-      
-          // Reset input fields and selections
-          setJournalTitle('');
-          setJournalDesc('');
-          setTitleError(false);
-          setDescError(false);
-          setTriggerComment('');
-          setProgressComment('');
-          setSelections({
-            trigger: null,
-            engage: null,
-            progress: null,
-          });
-      
-          setShowOverlay(false);
-          clearSets();
-        } catch (error) {
-          console.error('Error adding journal:', error);
-          // Handle error as needed
-        }
-      };
-      
 
-      useEffect(() => {
-        const fetchJournals = async () => {
-          try {
-            const userId = auth.currentUser.uid;
-            const fetchedJournals = await UserModel.fetchUserJournals(userId);
-            setJournals(fetchedJournals);
-          } catch (error) {
-            console.error('Error fetching journals:', error);
-          } finally {
-            setIsLoading(false);
-          }
+        const newJournal = {
+            time: new Date().toLocaleString(),
+            title: journalTitle,
+            desc: journalDesc,
+            triggeredToday: selections.trigger,
+            triggerComment: selections.trigger ? triggerComment : '',
+            engagedInHabit: selections.engage,
+            madeProgress: selections.progress,
+            progressComment: selections.progress ? progressComment : '',
         };
-    
+
+        try {
+            const userId = auth.currentUser.uid;
+            // Await the ID from the addJournal method
+            const journalId = await UserModel.addJournal(userId, newJournal);
+
+            // Include this ID in the journal object added to the local state
+            const newJournalWithId = { ...newJournal, id: journalId };
+            setJournals((prevJournals) => [newJournalWithId, ...prevJournals]);
+
+            // Reset input fields and selections
+            setJournalTitle('');
+            setJournalDesc('');
+            setTitleError(false);
+            setDescError(false);
+            setTriggerComment('');
+            setProgressComment('');
+            setSelections({
+                trigger: null,
+                engage: null,
+                progress: null,
+            });
+
+            setShowOverlay(false);
+            clearSets();
+        } catch (error) {
+            console.error('Error adding journal:', error);
+            // Handle error as needed
+        }
+    };
+
+
+    useEffect(() => {
+        const fetchJournals = async () => {
+            try {
+                const userId = auth.currentUser.uid;
+                const fetchedJournals = await UserModel.fetchUserJournals(userId);
+
+                // Sort the fetched journals by date in descending order
+                const sortedJournals = fetchedJournals.sort((a, b) => {
+                    const dateFormat = "M/D/YYYY, h:mm:ss a"; // Adjust if your format is different
+                    const dateA = new Date(Date.parse(a.time, dateFormat));
+                    const dateB = new Date(Date.parse(b.time, dateFormat));
+
+                    // const dateA = new Date(a.time);fff
+                    // const dateB = new Date(b.time);
+
+                    // If the dates cannot be parsed reliably, fall back to string comparison
+                    if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+                        return b.time.localeCompare(a.time); // String comparison
+                    } else {
+                        return dateB.getTime() - dateA.getTime(); // Numerical comparison 
+                    }
+                });
+
+                console.log("sorted");
+                console.log(sortedJournals);
+
+                for (const log of sortedJournals) {
+                    console.log(log.time)
+                }
+
+                // console.log("fetchedJournals");
+                // console.log(sortedJournals);
+                setJournals(sortedJournals);
+            } catch (error) {
+                console.error('Error fetching journals:', error);
+            }
+        };
+
         fetchJournals();
-      }, []);
+    }, []);
 
     const renderItem = ({ item }) => (
         <View style={homeMain.blocksContainer}>
-            <JournalItem title={item.title} date={item.time} desc={item.desc} />
+            <JournalItem title={item.title} date={item.time} desc={item.desc} item={item} />
         </View>
     );
 

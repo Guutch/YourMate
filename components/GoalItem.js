@@ -7,8 +7,8 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 const GoalItem = ({ goalData, onItemPress, onGoalPress }) => {
     useEffect(() => {
-    console.log("goalData in goalItem.")
-    console.log(goalData.createdAt)
+    // console.log("goalData in goalItem.")
+    // console.log(goalData.createdAt)
     }, [goalData]);
   
     return (

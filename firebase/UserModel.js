@@ -89,6 +89,37 @@ class UserModel {
     }
   }
 
+  static async removeHabit(userId, habitId) {
+    try {
+      await firestore
+        .collection('users')
+        .doc(userId)
+        .collection('habits')
+        .doc(habitId)
+        .delete();
+    } catch (error) {
+      console.error('Error removing habit:', error);
+      throw error;
+    }
+  }
+
+  static async updateHabitTime(userId, currentHabitId) {
+    try {
+      const habitRef = firestore
+        .collection('users')
+        .doc(userId)
+        .collection('habits')
+        .doc(currentHabitId);
+
+      await habitRef.update({
+        startDate: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    } catch (error) {
+      console.error('Error updating habit time:', error);
+      throw error;
+    }
+  }
+
   static async saveStatusToBackend(userId, statusMessage){
     try {
         const statusData = {
@@ -785,14 +816,16 @@ static async sendFriendRequest(senderUserId, receiverUserId) {
         .get();
   
       if (!habitsCollection.empty) {
-        // Retrieve the first habit document
-        const firstHabitDoc = habitsCollection.docs[0];
-        const habitData = firstHabitDoc.data();
-        return {
-          id: firstHabitDoc.id,
-          name: habitData.name,
-          startDate: habitData.startDate.toDate(), // Convert Firestore Timestamp to JavaScript Date
-        };
+        const habitsData = habitsCollection.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            name: data.name,
+            startDate: data.startDate.toDate(), // Convert Firestore Timestamp to JavaScript Date
+          };
+        });
+  
+        return habitsData;
       } else {
         throw new Error('No habits found');
       }

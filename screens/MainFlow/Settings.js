@@ -36,6 +36,7 @@ const Settings = ({ navigation }) => {
   const [emailError, setEmailError] = useState('');
   const [initialOldEmail, setInitialOldEmail] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [habits, setHabits] = useState([])
 
   const isValidEmail = (email) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -54,6 +55,20 @@ const Settings = ({ navigation }) => {
       hasUpperCase.test(password) &&
       hasLowerCase.test(password)
     );
+  };
+
+  const [selectedHabits, setSelectedHabits] = useState([]);
+  const availableHabits = ['porn', 'procrastination', 'general', 'gambling'];
+  const [selectedHabitToRemove, setSelectedHabitToRemove] = useState(null);
+  
+  const handleHabitSelection = (habit) => {
+    if (selectedHabits.includes(habit)) {
+      // Remove the habit from the selectedHabits array
+      setSelectedHabits(selectedHabits.filter((h) => h !== habit));
+    } else {
+      // Add the habit to the selectedHabits array
+      setSelectedHabits([...selectedHabits, habit]);
+    }
   };
 
   const handleSave = async () => {
@@ -90,8 +105,8 @@ const Settings = ({ navigation }) => {
             await UserModel.updateUserFirstLastName(userId, newFirstName, newLastName);
             setInitialFirstName(newFirstName);
             setInitialLastName(newLastName);
-            setUserData({firstName: newFirstName})
-            setUserData({lastName: newLastName})
+            setUserData({ firstName: newFirstName })
+            setUserData({ lastName: newLastName })
             setShowModal(false); // Close the modal after successful update
           }
           break;
@@ -106,7 +121,7 @@ const Settings = ({ navigation }) => {
             if (isUsernameAvailable) {
               setUsernameError('');
               setInitialUsername(newUsername);
-              setUserData({username: newUsername})
+              setUserData({ username: newUsername })
             } else {
               setUsernameError('Username is already taken');
               isValid = false;
@@ -114,43 +129,43 @@ const Settings = ({ navigation }) => {
             }
           }
           break;
-          case 'password':
-            if (currentPassword.trim() === '') {
-              setPasswordError('Current password cannot be empty');
-              isValid = false;
-              return;
-            }
-            if (newPassword.trim() === '') {
-              setPasswordError('New password cannot be empty');
-              isValid = false;
-              return;
-            }
-            if (newPassword !== confirmNewPassword) {
-              setPasswordError('New password and confirm new password do not match');
-              isValid = false;
-              return;
-            }
-            const isValidNewPassword = isValidPassword(newPassword);
-            if (!isValidNewPassword) {
-              setPasswordError(
-                'New password must be at least 8 characters long and contain at least one number, one symbol, one uppercase letter, and one lowercase letter'
-              );
-              isValid = false;
-              return;
-            }
-          
-            const { error } = await UserModel.changePassword(currentPassword, newPassword);
-            if (error) {
-              setPasswordError(error);
-              isValid = false;
-              return;
-            } else {
-              clearThings();
-              
-              
-              // Handle any additional, logic after the password change, like closing the modal
-            }
-            break;
+        case 'password':
+          if (currentPassword.trim() === '') {
+            setPasswordError('Current password cannot be empty');
+            isValid = false;
+            return;
+          }
+          if (newPassword.trim() === '') {
+            setPasswordError('New password cannot be empty');
+            isValid = false;
+            return;
+          }
+          if (newPassword !== confirmNewPassword) {
+            setPasswordError('New password and confirm new password do not match');
+            isValid = false;
+            return;
+          }
+          const isValidNewPassword = isValidPassword(newPassword);
+          if (!isValidNewPassword) {
+            setPasswordError(
+              'New password must be at least 8 characters long and contain at least one number, one symbol, one uppercase letter, and one lowercase letter'
+            );
+            isValid = false;
+            return;
+          }
+
+          const { error } = await UserModel.changePassword(currentPassword, newPassword);
+          if (error) {
+            setPasswordError(error);
+            isValid = false;
+            return;
+          } else {
+            clearThings();
+
+
+            // Handle any additional, logic after the password change, like closing the modal
+          }
+          break;
         case 'email':
           // Validate email
           if (!isValidEmail(newEmail)) {
@@ -185,6 +200,57 @@ const Settings = ({ navigation }) => {
             }
           }
           break;
+        case 'habits':
+          console.log('Selected Habits:', selectedHabits);
+
+          try {
+            // Get the existing habit names from the habits state
+            const existingHabitNames = habits.map((habit) => habit.name);
+
+            // Filter out the habits that already exist
+            const newHabits = selectedHabits.filter(
+              (habitName) => !existingHabitNames.includes(habitName)
+            );
+
+            // Add the new habits to the user's habits collection
+            await Promise.all(
+              newHabits.map(async (habitName) => {
+                await UserModel.addHabit(userId, habitName);
+              })
+            );
+
+            // Fetch the updated habits from the backend
+            const updatedHabits = await UserModel.fetchUserHabit(userId);
+            setHabits(updatedHabits);
+            setUserData({habit: 'yes'})
+            setSelectedHabits([])
+            
+          } catch (error) {
+            console.error('Error adding habits:', error);
+            isValid = false;
+          }
+          break;
+        case 'removeHabits':
+          console.log('Habits to Remove:', selectedHabitToRemove);
+
+          try {
+            // await Promise.all(
+            //   habitsToRemove.map(async (selectedHabitToRemove) => {
+                await UserModel.removeHabit(userId, selectedHabitToRemove);
+            //   })
+            // );
+
+            // Fetch the updated habits from the backend
+            const updatedHabits = await UserModel.fetchUserHabit(userId);
+            setHabits(updatedHabits);
+            setSelectedHabitToRemove([]);
+            setUserData({habit: 'yes'})
+          } catch (error) {
+            console.error('Error removing habits:', error);
+            isValid = false;
+          }
+
+          // break;
         default:
           break;
       }
@@ -273,10 +339,10 @@ const Settings = ({ navigation }) => {
               secureTextEntry
               style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginBottom: 5 }]}
             />
-            <View style={{width: "80%"}}>
-            {passwordError !== '' && <Text style={{ color: 'red' }}>{passwordError}</Text>}
+            <View style={{ width: "80%" }}>
+              {passwordError !== '' && <Text style={{ color: 'red' }}>{passwordError}</Text>}
 
-              </View>
+            </View>
           </View>
         );
       case 'email':
@@ -304,10 +370,64 @@ const Settings = ({ navigation }) => {
               }}
               style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginBottom: 5 }]}
             />
-            
+
             {emailError !== '' && <Text style={{ color: 'red' }}>{emailError}</Text>}
           </View>
         );
+      case 'habits':
+        return (
+          <View>
+            <Text style={{ marginBottom: 20 }}>Select Habits</Text>
+            {availableHabits
+              .filter((habit) => !habits.some((h) => h.name === habit))
+              .map((habit) => (
+                <TouchableOpacity
+                  key={habit}
+                  onPress={() => handleHabitSelection(habit)}
+                  style={[
+                    reusableStyles.textInput,
+                    reusableStyles.moreRounded,
+                    { marginBottom: 5, backgroundColor: selectedHabits.includes(habit) ? '#0077FF' : 'transparent' },
+                  ]}
+                >
+                  <Text
+                    style={{
+                      color: selectedHabits.includes(habit) ? 'white' : 'black',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {habit}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+          </View>
+        );
+        case 'removeHabits':
+  return (
+    <View>
+    <Text style={{ marginBottom: 20 }}>Select Habit to Remove</Text>
+    {habits.map((habit) => (
+      <TouchableOpacity
+        key={habit.id}
+        onPress={() => setSelectedHabitToRemove(selectedHabitToRemove === habit.id ? null : habit.id)}
+        style={[
+          reusableStyles.textInput,
+          reusableStyles.moreRounded,
+          { marginBottom: 5, backgroundColor: selectedHabitToRemove === habit.id ? '#0077FF' : 'transparent' },
+        ]}
+      >
+        <Text
+          style={{
+            color: selectedHabitToRemove === habit.id ? 'white' : 'black',
+            textAlign: 'center',
+          }}
+        >
+          {habit.name}
+        </Text>
+      </TouchableOpacity>
+    ))}
+  </View>
+  );
       default:
         return null;
     }
@@ -397,6 +517,7 @@ const Settings = ({ navigation }) => {
       try {
         const blocks = await UserModel.fetchUserBlocks(userId);
         const goals = await UserModel.fetchUserGoals(userId);
+        const habits = await UserModel.fetchUserHabit(userId);
         const data = await UserModel.fetchUserData(userId);
         const completedBlocksCount = numberOfCompleted(blocks)
         const completedGoalsCount = goalsCompleted(goals)
@@ -411,6 +532,7 @@ const Settings = ({ navigation }) => {
         setInitialUsername(data.username);
         setNewUsername(data.username);
         setInitialOldEmail(data.email)
+        setHabits(habits)
       } catch (error) {
         console.log('Error fetching blocks:', error);
       }
@@ -427,14 +549,16 @@ const Settings = ({ navigation }) => {
     setPasswordError('')
     setNewPassword('')
     setConfirmNewPassword('')
-    setCurrentPassword('')
+    setCurrentPassword('')    
   }
 
-  const handleCancel = () => {    
+  const handleCancel = () => {
     setNewFirstName(initialFirstName);
     setNewLastName(initialLastName);
     setNewUsername(initialUsername);
     setShowModal(false);
+    setSelectedHabitToRemove(null)
+    setSelectedHabits([])
   };
 
   const logoutUser = async () => {
@@ -463,7 +587,7 @@ const Settings = ({ navigation }) => {
       </View>
 
       <TouchableOpacity
-        style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginBottom: 5 }]}
+        style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginVertical: 5 }]}
         onPress={() => {
           setModalType('name');
           setShowModal(true);
@@ -501,6 +625,28 @@ const Settings = ({ navigation }) => {
       >
         <Text style={{ textAlign: 'center' }}>Change Email</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginBottom: 5 }]}
+        onPress={() => {
+          setModalType('habits');
+          setShowModal(true);
+        }}
+      >
+        <Text style={{ textAlign: 'center' }}>Add A Habit</Text>
+      </TouchableOpacity>
+      {habits.length > 1 && ( // Only render if habits.length is not 1
+  <TouchableOpacity
+    style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginBottom: 5 }]}
+    onPress={() => {
+      setModalType('removeHabits');
+      setShowModal(true);
+    }}
+  >
+    <Text style={{ textAlign: 'center' }}>Remove A Habit</Text>
+  </TouchableOpacity>
+)}
+
 
       <TouchableOpacity
         style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginBottom: 5 }]}
