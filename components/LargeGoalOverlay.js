@@ -14,7 +14,7 @@ import UserModel from '../firebase/UserModel';
 
 
 
-const LargeGoalOverview = ({ xOut, goal, onOverlayContentChange, userId }) => {
+const LargeGoalOverview = ({ xOut, goal, onOverlayContentChange, userId, updateGoalData }) => {
 
   // console.log("This is the note ")
   // console.log(goal.notes[0].createdAt)
@@ -36,31 +36,68 @@ const LargeGoalOverview = ({ xOut, goal, onOverlayContentChange, userId }) => {
   };
 
   const handleFlagPress = async (milestone, goal) => {
-    console.log("milestone(((((((((((((")
+    console.log("milestone((((((l((")
     console.log(milestone)
-    // const newStatus = milestone.status === 'Ongoing' ? 'Completed' : 'Ongoing';
-    // const isStatusUpdated = await UserModel.updateMilestoneStatus(userId, goal.id, milestone.id, newStatus);
+    console.log(goal.id)
 
-    // if (isStatusUpdated) {
-    //     const updatedMilestones = goal.milestones.map(m => {
-    //         if (m.id === milestone.id) { // Use the destructured `id` or `milestone.id`
-    //             return { ...m, status: newStatus };
-    //         }
-    //         return m;
-    //     });
+    const newStatus = milestone.status === 'Ongoing' ? 'Completed' : 'Ongoing';
+    console.log("New status = ", newStatus);
 
-    //     // Call the parent component's function to update the entire goal's milestones
-    //     onUpdateGoalMilestones(goal.id, updatedMilestones);
-    // } else {
-    //     console.error('Error updating milestone status');
-    // }
+    // Ensure database update is successful
+    const isStatusUpdated = await UserModel.updateMilestoneStatus(userId, goal, milestone, newStatus);
+
+    if (isStatusUpdated) {
+        const goalMilestones = goal.milestones;
+        for (let i = 0; i < goalMilestones.length; i++) {
+            if (goalMilestones[i].id === milestone.id) {
+                goalMilestones[i].status = newStatus; 
+                break; // Assuming milestone IDs are unique
+            }
+        }
+
+        // Call the parent component's function 
+        onUpdateGoalMilestones(goal.id, goalMilestones); 
+    } else {
+        console.error('Error updating milestone status');
+    }
 };
 
 
-  const handleEllipsisPress = (milestoneTitle) => {
-    // Implement your logic to show the overlay options for modifying or deleting the milestone
-    onOverlayContentChange('options');
+
+const handleDeleteMilestone = async (milestone) => {
+  console.log("Here")
+  // 1. Remove from the frontend
+  const updatedGoal = {
+    ...goal,
+    milestones: goal.milestones.filter((m) => m !== milestone),
   };
+  updateGoalData(updatedGoal);
+
+  // 2. Remove from the backend
+  const goalId = goal.id; // Assuming `goal` has an `id` property
+  const isDeleted = await UserModel.deleteMilestoneFromBackend(userId, goalId, milestone);
+  if (!isDeleted) {
+    console.log('Error deleting milestone from backend');
+  }
+};
+
+const handleDeleteNote = async (note) => {
+  console.log("note")
+  console.log(note)
+  // 1. Remove from the frontend
+  const updatedGoal = {
+    ...goal,
+    notes: goal.notes.filter((n) => n !== note),
+  };
+  updateGoalData(updatedGoal);
+
+  // 2. Remove from the backend
+  const goalId = goal.id; // Assuming `goal` has an `id` property
+  const isDeleted = await UserModel.deleteNoteFromBackend(userId, goalId, note);
+  if (!isDeleted) {
+    console.log('Error deleting note from backend');
+  }
+};
 
   return (
     <ScrollView>
@@ -83,7 +120,7 @@ const LargeGoalOverview = ({ xOut, goal, onOverlayContentChange, userId }) => {
 
         <Text>Milestones</Text>
         {/* <Text>Milestones - title -{goal.title} </Text>   */}
-        <GoalItem goalData={goal} />
+        <GoalItem goalData={goal} deeperLook={true}/>
 
         {/* Milestone rectangles */}
         <View style={{ marginTop: 10 }}>
@@ -100,7 +137,7 @@ const LargeGoalOverview = ({ xOut, goal, onOverlayContentChange, userId }) => {
                   key={index}
                   title={milestone.title}
                   onFlagPress={handleFlagPress}
-                  onEllipsisPress={handleEllipsisPress}
+                  onDeletePress={handleDeleteMilestone}
                   milestone={milestone}
                   goal={goal}
                 />
@@ -128,6 +165,7 @@ const LargeGoalOverview = ({ xOut, goal, onOverlayContentChange, userId }) => {
               noteTitle={note.title}
               noteText={note.description}
               noteDate={note.createdAt.toLocaleDateString('en-GB')}
+              onDeletePress={() => handleDeleteNote(note)}
             />
           ))
         ) : (

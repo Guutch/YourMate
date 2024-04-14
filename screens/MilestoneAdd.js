@@ -13,7 +13,7 @@ const MilestoneAdd = ({ navigation, route }) => {
   const [milestoneDesc, setMilestoneDesc] = useState('');
   const [milestoneTV, setMilestoneTV] = useState('');
   const [milestoneU, setMilestoneU] = useState('');
-  const [milestoneTU, setMilestoneTU] = useState('');
+  // const [milestoneTU, setMilestoneTU] = useState('');
   const [showValidationError, setShowValidationError] = useState(false);
 
   // Allows for the goal to be created on the UI
@@ -50,10 +50,11 @@ const MilestoneAdd = ({ navigation, route }) => {
           description: milestoneDesc,
           milestoneTV: milestoneTV,
           milestoneU: milestoneU,
-          milestoneTU: milestoneTU,
+          // milestoneTU: milestoneTU,
           status: 'Ongoing'
         };
 
+        console.log("milestoneData")
         console.log(milestoneData)
 
         await UserModel.addMilestone(userId, goalId, milestoneData);
@@ -81,29 +82,22 @@ const MilestoneAdd = ({ navigation, route }) => {
     navigation.setOptions({
       headerRight: () => (
         <View style={{ flexDirection: 'row' }}>
-          <TouchableOpacity
-            onPress={() => handleMilestoneSave()}
-            // onPress={test}
-            // onPress={() => navigation.navigate(
-            //   fromMain ? 'MainFlow' : 'Housekeeping', 
-            //   { 
-            //     fromMain: fromMain, // Ensure the key matches what you access in MilestoneAdd
-            //     addGoal: true,
-            //     word: 'YourWordHeree',
-            //   }
-            // )}
-            style={{ padding: 10, borderRadius: 5 }}
-          >
-            <Text style={{ color: 'Black', textAlign: 'center', fontSize: 16 }}>
-              {fromMain ? 'Add' : 'Next'}
-            </Text>
-          </TouchableOpacity>
+         {milestoneTitle && milestoneDesc ? (
+    <TouchableOpacity
+      onPress={() => handleMilestoneSave()}
+      style={{ padding: 10, borderRadius: 5 }}
+    >
+      <Text style={{ color: "Black", textAlign: "center", fontSize: 16 }}>
+        {fromMain ? "Add" : "Next"}
+      </Text>
+    </TouchableOpacity>
+  ) : null}
         </View>
       ),
     });
 
 
-  }, [navigation, milestoneTitle, milestoneDesc, milestoneTV, milestoneU, milestoneTU]);
+  }, [navigation, milestoneTitle, milestoneDesc, milestoneTV, milestoneU]);
 
   const handleTitleChange = (text) => {
     setMilestoneTitle(text);
@@ -153,12 +147,12 @@ const MilestoneAdd = ({ navigation, route }) => {
       >
 
       </TextInput>
-      <TextInput style={[reusableStyles.textInput, { height: 44, borderColor: 'black', borderWidth: 1, marginTop: 18 }, reusableStyles.lessRounded]}
+      {/* <TextInput style={[reusableStyles.textInput, { height: 44, borderColor: 'black', borderWidth: 1, marginTop: 18 }, reusableStyles.lessRounded]}
         placeholder={"Target Date"}
         onChangeText={(text) => setMilestoneTU(text)}
       >
 
-      </TextInput>
+      </TextInput> */}
       {showValidationError && (
         <Text>TITLE AND/OR DESCRIPTION MISSING</Text>
       )}

@@ -17,18 +17,18 @@ class UserModel {
       if (!emailQuery.empty) {
         throw new Error('Email already in use');
       }
-  
+
       // Check if the username is already in use
       const usernameQuery = await firestore.collection('users').where('username', '==', username).get();
       if (!usernameQuery.empty) {
         throw new Error('Username already in use');
       }
-  
+
       // If email and username are available, create the user
       const userCredential = await auth.createUserWithEmailAndPassword(email, password);
       const user = userCredential.user;
       const userId = user.uid;
-  
+
       // Create a document in the "users" collection with the user's data
       await firestore.collection('users').doc(userId).set({
         firstName,
@@ -37,7 +37,7 @@ class UserModel {
         email,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
-  
+
       return user;
     } catch (error) {
       console.error('Error creating user:', error);
@@ -120,24 +120,24 @@ class UserModel {
     }
   }
 
-  static async saveStatusToBackend(userId, statusMessage){
+  static async saveStatusToBackend(userId, statusMessage) {
     try {
-        const statusData = {
-            // username: userName, // Replace with the actual username
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            message: statusMessage,
-        };
+      const statusData = {
+        // username: userName, // Replace with the actual username
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        message: statusMessage,
+      };
 
-        await firestore
-            .collection('users')
-            .doc(userId)
-            .collection('statuses')
-            .add(statusData);
+      await firestore
+        .collection('users')
+        .doc(userId)
+        .collection('statuses')
+        .add(statusData);
     } catch (error) {
-        console.error('Error saving status:', error);
-        throw error;
+      console.error('Error saving status:', error);
+      throw error;
     }
-};
+  };
 
   static async fetchMates(userId) {
     const friendsCollection = firebase.firestore().collection('friends');
@@ -145,41 +145,41 @@ class UserModel {
       .where('status', '==', 'mates')
       .where('receiver', '==', userId)
       .get();
-  
+
     const mates = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-  
+
     const senderQuerySnapshot = await friendsCollection
       .where('status', '==', 'mates')
       .where('sender', '==', userId)
       .get();
-  
+
     const matesAsSender = senderQuerySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-  
+
     return [...mates, ...matesAsSender];
   };
 
   static async fetchStatuses(userId, mates) {
     console.log("mates", mates);
-  try {
-    const mateUserIds = mates.map((mate) => {
-      if (mate.id === userId) {
-        // If the mate's id matches the userId, it means the other user is the friend
-        return mate.userId; // Assuming the friend's id is stored in the 'userId' property
-      } else {
-        // If the mate's id doesn't match the userId, it means the mate is the friend
-        return mate.id;
-      }
-    });
+    try {
+      const mateUserIds = mates.map((mate) => {
+        if (mate.id === userId) {
+          // If the mate's id matches the userId, it means the other user is the friend
+          return mate.userId; // Assuming the friend's id is stored in the 'userId' property
+        } else {
+          // If the mate's id doesn't match the userId, it means the mate is the friend
+          return mate.id;
+        }
+      });
 
-    const userIdsToFetch = [userId, ...mateUserIds.filter(Boolean)];
-    console.log("userIdsToFetch", userIdsToFetch);
-  
+      const userIdsToFetch = [userId, ...mateUserIds.filter(Boolean)];
+      console.log("userIdsToFetch", userIdsToFetch);
+
       // Fetch user documents for all relevant user IDs
       const userDocsPromises = userIdsToFetch.map((userIdToFetch) =>
         firestore.collection('users').doc(userIdToFetch).get()
       );
       const userDocs = await Promise.all(userDocsPromises);
-  
+
       // Create a map of user IDs to usernames
       const userIdToUsernameMap = new Map();
       userDocs.forEach((userDoc) => {
@@ -188,7 +188,7 @@ class UserModel {
           userIdToUsernameMap.set(userDoc.id, userData.username);
         }
       });
-  
+
       const statusesPromises = [
         firestore
           .collection('users')
@@ -205,7 +205,7 @@ class UserModel {
             .get()
         ),
       ];
-  
+
       const statusesSnapshots = await Promise.all(statusesPromises);
       const allStatuses = statusesSnapshots.flatMap((snapshot) =>
         snapshot.docs.map((doc) => {
@@ -215,7 +215,7 @@ class UserModel {
           return { id: doc.id, username, ...statusData };
         })
       );
-  
+
       console.log("allStatuses")
       console.log(allStatuses)
 
@@ -226,42 +226,42 @@ class UserModel {
     }
   }
 
-//   static async fetchStatuses(userId, mates) {
-//     try {
-//         const mateUserIds = mates.map((mate) => mate.sender === userId ? mate.receiver : mate.sender);
+  //   static async fetchStatuses(userId, mates) {
+  //     try {
+  //         const mateUserIds = mates.map((mate) => mate.sender === userId ? mate.receiver : mate.sender);
 
-//         const statusesPromises = [
-//             firestore
-//                 .collection('users')
-//                 .doc(userId)
-//                 .collection('statuses')
-//                 .orderBy('timestamp', 'desc')
-//                 .get(),
-//             ...mateUserIds.map((mateUserId) =>
-//                 firestore
-//                     .collection('users')
-//                     .doc(mateUserId)
-//                     .collection('statuses')
-//                     .orderBy('timestamp', 'desc')
-//                     .get()
-//             ),
-//         ];
+  //         const statusesPromises = [
+  //             firestore
+  //                 .collection('users')
+  //                 .doc(userId)
+  //                 .collection('statuses')
+  //                 .orderBy('timestamp', 'desc')
+  //                 .get(),
+  //             ...mateUserIds.map((mateUserId) =>
+  //                 firestore
+  //                     .collection('users')
+  //                     .doc(mateUserId)
+  //                     .collection('statuses')
+  //                     .orderBy('timestamp', 'desc')
+  //                     .get()
+  //             ),
+  //         ];
 
-//         const statusesSnapshots = await Promise.all(statusesPromises);
+  //         const statusesSnapshots = await Promise.all(statusesPromises);
 
-//         const allStatuses = statusesSnapshots.flatMap((snapshot) =>
-//             snapshot.docs.map((doc) => ({
-//                 id: doc.id,
-//                 ...doc.data(),
-//             }))
-//         );
+  //         const allStatuses = statusesSnapshots.flatMap((snapshot) =>
+  //             snapshot.docs.map((doc) => ({
+  //                 id: doc.id,
+  //                 ...doc.data(),
+  //             }))
+  //         );
 
-//         return allStatuses;
-//     } catch (error) {
-//         console.error('Error fetching statuses:', error);
-//         throw error;
-//     }
-// };
+  //         return allStatuses;
+  //     } catch (error) {
+  //         console.error('Error fetching statuses:', error);
+  //         throw error;
+  //     }
+  // };
 
   static async fetchUserData(userId) {
     try {
@@ -270,19 +270,19 @@ class UserModel {
         .collection('users')
         .doc(userId)
         .get();
-  
+
       if (userDoc.exists) {
         const userData = userDoc.data();
-  
+
         // Convert the createdAt timestamp to a Date object
         const createdAtDate = userData.createdAt.toDate();
-  
+
         // Create a new object with the converted createdAt value
         const updatedUserData = {
           ...userData,
           createdAt: createdAtDate,
         };
-  
+
         return updatedUserData;
       } else {
         console.log('User document does not exist');
@@ -295,6 +295,8 @@ class UserModel {
   }
 
   static async addMilestone(userId, goalId, milestoneData) {
+    console.log("ADDMILESTONE")
+    console.log(milestoneData)
     try {
       const milestonesCollection = firebase
         .firestore()
@@ -318,17 +320,124 @@ class UserModel {
     }
   }
 
-  static async updateMilestoneStatus(userId, goalId, milestoneId, newStatus) {
+  static async deleteMilestoneFromBackend(userId, goalId, milestone) {
+    console.log("goalId", goalId);
+    console.log("milestone", milestone);
+  
     try {
-      const milestoneDocRef = firebase
+      const milestonesCollection = firebase
         .firestore()
         .collection('users')
         .doc(userId)
         .collection('goals')
         .doc(goalId)
-        .collection('milestones')
-        .doc(milestoneId);
+        .collection('milestones');
   
+      // Find the milestone document to delete
+      const milestonesSnapshot = await milestonesCollection.get();
+      const milestoneToDelete = milestonesSnapshot.docs.find(
+        (doc) => doc.id === milestone.id
+      );
+  
+      if (milestoneToDelete) {
+        await milestoneToDelete.ref.delete();
+        console.log('Milestone deleted from backend');
+        return true;
+      } else {
+        console.log('Milestone not found in backend');
+        return false;
+      }
+    } catch (error) {
+      console.error('Error deleting milestone from backend: ', error);
+      return false;
+    }
+  }
+
+
+  static async updateMilestoneStatus(userId, goal, milestone, newStatus) {
+
+    console.log("updateMilestoneStatus milestone", milestone)
+
+    const formatTimestamp = (timestamp) => {
+      const date = new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
+      return date.toISOString();
+    };
+
+    try {
+      let milestoneDocRef;
+
+      if (milestone.id) {
+        // If the milestone has an ID, use it to find the milestone document
+        milestoneDocRef = firebase
+          .firestore()
+          .collection('users')
+          .doc(userId)
+          .collection('goals')
+          .doc(goal.id)
+          .collection('milestones')
+          .doc(milestone.id);
+
+        console.log("milestoneDocRef", milestoneDocRef)
+      } else {
+        // Get all milestones for the given goal
+        const milestonesQuery = firebase
+          .firestore()
+          .collection('users')
+          .doc(userId)
+          .collection('goals')
+          .doc(goal.id)
+          .collection('milestones');
+
+        const querySnapshot = await milestonesQuery.get();
+        const milestones = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+        console.log('All milestones for the goal:', milestones);
+
+        // Find the milestone by createdAt and description
+        const targetMilestone = milestones.find(m => {
+          const createdAtString = formatTimestamp(m.createdAt);
+          const milestoneCreatedAt = new Date(milestone.createdAt);
+          const dbCreatedAt = new Date(createdAtString);
+
+          const timeDiff = Math.abs(milestoneCreatedAt.getTime() - dbCreatedAt.getTime());
+          const tolerance = 2000; // 1 second in milliseconds
+
+          console.log("created at string:", createdAtString);
+          return timeDiff <= tolerance && m.description === milestone.description;
+        });
+
+        console.log("targetMilestone", targetMilestone.id)
+
+        if (targetMilestone) {
+          // Construct the document reference directly
+          milestoneDocRef = firebase
+            .firestore()
+            .collection('users')
+            .doc(userId)
+            .collection('goals')
+            .doc(goal.id)
+            .collection('milestones')
+            .doc(targetMilestone.id);
+
+          console.log("milestoneDocRef", milestoneDocRef)
+
+          // if (milestoneDocRef.exists) {
+          //   await milestoneDocRef.update({ status: newStatus });
+          //   console.log('Milestone status updated successfully');
+          //   return true;
+          // } else {
+          //   console.error('Milestone document not found');
+          //   return false;
+          // }
+        } else {
+          console.error('Milestone not found');
+          return false;
+        }
+      }
+
       await milestoneDocRef.update({ status: newStatus });
       console.log('Milestone status updated successfully');
       return true;
@@ -347,37 +456,65 @@ class UserModel {
         .collection('goals')
         .doc(goalId)
         .collection('notes');
-
+  
       const newNoteRef = await notesCollection.add({
         ...noteData,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
-
+  
       console.log('Note added with ID: ', newNoteRef.id);
-      return true;
+      return { success: true, noteId: newNoteRef.id };
     } catch (error) {
       console.error('Error adding note: ', error);
-      return false;
+      return { success: false, noteId: null };
     }
   }
+
+  static async deleteNoteFromBackend(userId, goalId, note) {
+    try {
+      const notesCollection = firebase
+        .firestore()
+        .collection('users')
+        .doc(userId)
+        .collection('goals')
+        .doc(goalId)
+        .collection('notes');
+  
+      // Find the note document to delete
+      const notesSnapshot = await notesCollection.get();
+      const noteToDelete = notesSnapshot.docs.find((doc) => doc.id === note.id);
+  
+      if (noteToDelete) {
+        await noteToDelete.ref.delete();
+        console.log('Note deleted from backend');
+        return true;
+      } else {
+        console.log('Note not found in backend');
+        return false;
+      }
+    } catch (error) {
+      console.error('Error deleting note from backend: ', error);
+      return false;
+    }
+  };
 
   static async searchUserByUsername(username) {
     try {
       const usersCollection = firebase.firestore().collection('users');
       const querySnapshot = await usersCollection.where('username', '==', username).get();
-  
+
       if (!querySnapshot.empty) {
         // User found
         const userDoc = querySnapshot.docs[0];
         const userData = userDoc.data();
         const userId = userDoc.id; // Get the user's ID from the document ID
-  
+
         // Create a new object with the user ID and other data
         const userWithId = {
           ...userData,
           userId,
         };
-  
+
         console.log('User found:', userWithId);
         return userWithId;
       } else {
@@ -399,13 +536,13 @@ class UserModel {
         .where('sender', '==', senderUserId)
         .where('receiver', '==', receiverUserId)
         .get();
-  
+
       // Then, check for any existing connection where the sender is the receiverUserId and the receiver is the senderUserId
       const friendQueryReceiverAsSender = await friendsCollection
         .where('sender', '==', receiverUserId)
         .where('receiver', '==', senderUserId)
         .get();
-  
+
       if (!friendQuerySenderAsSender.empty) {
         const friendDoc = friendQuerySenderAsSender.docs[0];
         const connection = friendDoc.data();
@@ -415,7 +552,7 @@ class UserModel {
         const connection = friendDoc.data();
         return connection;
       }
-  
+
       return null;
     } catch (error) {
       console.error('Error checking friend connection:', error);
@@ -425,162 +562,162 @@ class UserModel {
 
   static async handleAccept(requestId, senderId) {
     try {
-        // Update the request's status to 'mates'
-        await firebase.firestore().collection('friends').doc(requestId).update({
-            status: 'mates'
-        });
+      // Update the request's status to 'mates'
+      await firebase.firestore().collection('friends').doc(requestId).update({
+        status: 'mates'
+      });
 
-        // Fetch the newly accepted friend's data
-        const friendData = await UserModel.fetchUserData(senderId);
-        console.log("friendData")
-        console.log(friendData)
+      // Fetch the newly accepted friend's data
+      const friendData = await UserModel.fetchUserData(senderId);
+      console.log("friendData")
+      console.log(friendData)
 
-        return friendData; // Return this data to add to the friends state
+      return friendData; // Return this data to add to the friends state
     } catch (error) {
-        console.error('Error accepting friend request:', error);
-        throw error;
+      console.error('Error accepting friend request:', error);
+      throw error;
     }
-};
+  };
 
-static async handleReject(requestId) {
-  try {
+  static async handleReject(requestId) {
+    try {
       // Delete the friend request
       await firebase.firestore().collection('friends').doc(requestId).delete();
       console.log("Done")
     } catch (error) {
       console.error('Error handling the friend request rejection:', error);
       throw error;
-  }
-}
-
-static async handleDeleteFriend(currentUserId, friendId) {
-  try {
-    const friendsRef = firebase.firestore().collection('friends');
-
-    // Find the document where the current user is the sender and the friend is the receiver
-    const senderQuery = await friendsRef
-      .where('sender', '==', currentUserId)
-      .where('receiver', '==', friendId)
-      .get();
-
-    // Find the document where the current user is the receiver and the friend is the sender
-    const receiverQuery = await friendsRef
-      .where('receiver', '==', currentUserId)
-      .where('sender', '==', friendId)
-      .get();
-
-    if (!senderQuery.empty) {
-      // Delete the found document
-      await senderQuery.docs[0].ref.delete();
-    } else if (!receiverQuery.empty) {
-      // Delete the found document
-      await receiverQuery.docs[0].ref.delete();
-    } else {
-      console.warn('No friend document found with the provided user IDs');
     }
-  } catch (error) {
-    console.error('Error deleting friend:', error);
-    throw error;
   }
-}
 
-static async handleBlockFriend(currentUserId, friendId) {
-  try {
-    const friendsRef = firebase.firestore().collection('friends');
-    const batch = firebase.firestore().batch();
+  static async handleDeleteFriend(currentUserId, friendId) {
+    try {
+      const friendsRef = firebase.firestore().collection('friends');
 
-    // Find the document where the current user is the sender and the friend is the receiver
-    const senderQuery = await friendsRef
-      .where('sender', '==', currentUserId)
-      .where('receiver', '==', friendId)
-      .get();
+      // Find the document where the current user is the sender and the friend is the receiver
+      const senderQuery = await friendsRef
+        .where('sender', '==', currentUserId)
+        .where('receiver', '==', friendId)
+        .get();
 
-    // Find the document where the current user is the receiver and the friend is the sender
-    const receiverQuery = await friendsRef
-      .where('receiver', '==', currentUserId)
-      .where('sender', '==', friendId)
-      .get();
+      // Find the document where the current user is the receiver and the friend is the sender
+      const receiverQuery = await friendsRef
+        .where('receiver', '==', currentUserId)
+        .where('sender', '==', friendId)
+        .get();
 
-    if (!senderQuery.empty) {
-      // Update the status and blockedBy fields for the found document
-      const docRef = senderQuery.docs[0].ref;
-      batch.update(docRef, { status: 'Blocked', blockedBy: currentUserId });
-    } else if (!receiverQuery.empty) {
-      // Update the status and blockedBy fields for the found document
-      const docRef = receiverQuery.docs[0].ref;
-      batch.update(docRef, { status: 'Blocked', blockedBy: currentUserId });
-    } else {
-      console.warn('No friend document found with the provided user IDs');
+      if (!senderQuery.empty) {
+        // Delete the found document
+        await senderQuery.docs[0].ref.delete();
+      } else if (!receiverQuery.empty) {
+        // Delete the found document
+        await receiverQuery.docs[0].ref.delete();
+      } else {
+        console.warn('No friend document found with the provided user IDs');
+      }
+    } catch (error) {
+      console.error('Error deleting friend:', error);
+      throw error;
     }
-
-    await batch.commit();
-  } catch (error) {
-    console.error('Error blocking friend:', error);
-    throw error;
   }
-}
 
-  
-static async fetchFriendRequests(userId) {
-  const friendsCollection = firebase.firestore().collection('friends');
-  const sentRequestsQuery = await friendsCollection
-    .where('sender', '==', userId)
-    .where('status', '==', 'pending')
-    .get();
-  const receivedRequestsQuery = await friendsCollection
-    .where('receiver', '==', userId)
-    .where('status', '==', 'pending')
-    .get();
+  static async handleBlockFriend(currentUserId, friendId) {
+    try {
+      const friendsRef = firebase.firestore().collection('friends');
+      const batch = firebase.firestore().batch();
 
-  const sentRequests = sentRequestsQuery.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  }));
-  const receivedRequests = receivedRequestsQuery.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  }));
+      // Find the document where the current user is the sender and the friend is the receiver
+      const senderQuery = await friendsRef
+        .where('sender', '==', currentUserId)
+        .where('receiver', '==', friendId)
+        .get();
 
-  return { sentRequests, receivedRequests };
-}
-  
-static async fetchBlockedUsers(currentUserId) {
-  try {
-    const friendsRef = firebase.firestore().collection('friends');
-    const blockedQuery = await friendsRef
-      .where('blockedBy', '==', currentUserId)
-      .where('status', '==', 'Blocked')
+      // Find the document where the current user is the receiver and the friend is the sender
+      const receiverQuery = await friendsRef
+        .where('receiver', '==', currentUserId)
+        .where('sender', '==', friendId)
+        .get();
+
+      if (!senderQuery.empty) {
+        // Update the status and blockedBy fields for the found document
+        const docRef = senderQuery.docs[0].ref;
+        batch.update(docRef, { status: 'Blocked', blockedBy: currentUserId });
+      } else if (!receiverQuery.empty) {
+        // Update the status and blockedBy fields for the found document
+        const docRef = receiverQuery.docs[0].ref;
+        batch.update(docRef, { status: 'Blocked', blockedBy: currentUserId });
+      } else {
+        console.warn('No friend document found with the provided user IDs');
+      }
+
+      await batch.commit();
+    } catch (error) {
+      console.error('Error blocking friend:', error);
+      throw error;
+    }
+  }
+
+
+  static async fetchFriendRequests(userId) {
+    const friendsCollection = firebase.firestore().collection('friends');
+    const sentRequestsQuery = await friendsCollection
+      .where('sender', '==', userId)
+      .where('status', '==', 'pending')
+      .get();
+    const receivedRequestsQuery = await friendsCollection
+      .where('receiver', '==', userId)
+      .where('status', '==', 'pending')
       .get();
 
-    const blockedUsers = blockedQuery.docs.map(doc => ({
+    const sentRequests = sentRequestsQuery.docs.map(doc => ({
       id: doc.id,
-      userId: doc.data().receiver, // Assuming the blocked user is the receiver
+      ...doc.data()
+    }));
+    const receivedRequests = receivedRequestsQuery.docs.map(doc => ({
+      id: doc.id,
       ...doc.data()
     }));
 
-    return blockedUsers;
-  } catch (error) {
-    console.error('Error fetching blocked users:', error);
-    throw error;
+    return { sentRequests, receivedRequests };
   }
-}
 
-static async sendFriendRequest(senderUserId, receiverUserId) {
-  try {
-    const friendsCollection = firebase.firestore().collection('friends');
-    const requestData = {
-      sender: senderUserId,
-      receiver: receiverUserId,
-      status: 'pending',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    };
+  static async fetchBlockedUsers(currentUserId) {
+    try {
+      const friendsRef = firebase.firestore().collection('friends');
+      const blockedQuery = await friendsRef
+        .where('blockedBy', '==', currentUserId)
+        .where('status', '==', 'Blocked')
+        .get();
 
-    await friendsCollection.add(requestData);
-    console.log('Friend request sent successfully');
-  } catch (error) {
-    console.error('Error sending friend request:', error);
+      const blockedUsers = blockedQuery.docs.map(doc => ({
+        id: doc.id,
+        userId: doc.data().receiver, // Assuming the blocked user is the receiver
+        ...doc.data()
+      }));
+
+      return blockedUsers;
+    } catch (error) {
+      console.error('Error fetching blocked users:', error);
+      throw error;
+    }
   }
-};
+
+  static async sendFriendRequest(senderUserId, receiverUserId) {
+    try {
+      const friendsCollection = firebase.firestore().collection('friends');
+      const requestData = {
+        sender: senderUserId,
+        receiver: receiverUserId,
+        status: 'pending',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      };
+
+      await friendsCollection.add(requestData);
+      console.log('Friend request sent successfully');
+    } catch (error) {
+      console.error('Error sending friend request:', error);
+    }
+  };
 
 
   static async addGoal(userId, goal, category, date, targetDate, startingValue, numericalTarget, unit) {
@@ -613,6 +750,57 @@ static async sendFriendRequest(senderUserId, receiverUserId) {
     }
   };
 
+  static async updateGoal(userId, goalId, updatedGoalData) {
+    try {
+      const goalRef = firestore
+        .collection('users')
+        .doc(userId)
+        .collection('goals')
+        .doc(goalId);
+  
+      // Check if the goal exists
+      const goalSnapshot = await goalRef.get();
+      if (!goalSnapshot.exists) {
+        console.log('Goal does not exist');
+        return;
+      }
+  
+      // Update the goal document with the new data
+      await goalRef.update(updatedGoalData);
+      console.log('Goal updated successfully');
+    } catch (error) {
+      console.error('Error updating goal:', error);
+      throw error;
+    }
+  }
+
+  static async unMarkGoalAsCompleted(userUID, goalId) {
+    try {
+      const goalRef = firebase
+        .firestore()
+        .collection('users')
+        .doc(userUID)
+        .collection('goals')
+        .doc(goalId);
+  
+      // Check if the document exists
+      const doc = await goalRef.get();
+      if (doc.exists) {
+        // Update the goal's status in Firestore
+        await goalRef.update({ status: 'Ongoing' }); // Or any other status you prefer
+  
+        // Optional: Success message 
+        console.log('Goal successfully unmarked as completed');
+      } else {
+        // Document doesn't exist - handle this
+        console.error('Goal document not found');
+      }
+    } catch (error) {
+      console.error('Error unmarking goal as completed:', error);
+    }
+  }
+  
+
   static async markGoalAsCompleted(userUID, goalId) {
     try {
       const goalRef = firebase
@@ -627,6 +815,23 @@ static async sendFriendRequest(senderUserId, receiverUserId) {
       if (doc.exists) {
         // Update the goal's status in Firestore
         await goalRef.update({ status: 'Completed' });
+  
+        // Update the status of all milestones associated with the goal
+        const milestonesCollection = goalRef.collection('milestones');
+        const milestonesSnapshot = await milestonesCollection.get();
+        const milestoneBatches = [];
+  
+        milestonesSnapshot.forEach((doc) => {
+          const batch = firebase.firestore().batch();
+          const milestoneRef = milestonesCollection.doc(doc.id);
+          batch.update(milestoneRef, { status: 'Completed' });
+          milestoneBatches.push(batch);
+        });
+  
+        // Commit the batches
+        for (const batch of milestoneBatches) {
+          await batch.commit();
+        }
       } else {
         console.log('No such document exists');
       }
@@ -638,7 +843,7 @@ static async sendFriendRequest(senderUserId, receiverUserId) {
 
   static async deleteGoalAndSubcollections(userId, goalId) {
     const goalRef = firestore.collection('users').doc(userId).collection('goals').doc(goalId);
-  
+
     // Delete subcollections like 'notes' and 'milestones' for the goal
     const subcollections = ['notes', 'milestones']; // Add more subcollections as needed
     try {
@@ -648,7 +853,7 @@ static async sendFriendRequest(senderUserId, receiverUserId) {
           doc.ref.delete();
         });
       }
-  
+
       // After deleting subcollections, delete the goal document itself
       await goalRef.delete();
       console.log(`Goal and its subcollections successfully deleted.`);
@@ -674,7 +879,7 @@ static async sendFriendRequest(senderUserId, receiverUserId) {
       throw error;
     }
   };
-  
+
 
   static async fetchUserGoals(userId) {
     try {
@@ -684,28 +889,28 @@ static async sendFriendRequest(senderUserId, receiverUserId) {
         .doc(userId)
         .collection('goals')
         .get();
-  
+
       const goalsData = await Promise.all(goalsCollection.docs.map(async (goalDoc) => {
         const goalDocData = goalDoc.data();
         const milestonesQuery = await goalDoc.ref.collection('milestones').get();
         const notesQuery = await goalDoc.ref.collection('notes').get();
-  
+
         const milestones = milestonesQuery.docs.map((milestoneDoc) => ({
           id: milestoneDoc.id,
           ...milestoneDoc.data(),
           createdAt: milestoneDoc.data().createdAt.toDate(), // Assuming createdAt is a Firestore timestamp
         }));
-        
+
         const notes = notesQuery.docs.map((noteDoc) => ({
           id: noteDoc.id,
           ...noteDoc.data(),
           createdAt: noteDoc.data().createdAt.toDate(), // Assuming createdAt is a Firestore timestamp
         }));
-  
+
         // No need to console.log here unless you're debugging
         // console.log('Milestones for goal:', goalDocData.goal, milestones);
         // console.log('Notes for goal:', goalDocData.goal, notes);
-  
+
         return {
           id: goalDoc.id,
           goal: goalDocData.goal,
@@ -721,14 +926,14 @@ static async sendFriendRequest(senderUserId, receiverUserId) {
           status: goalDocData.status
         };
       }));
-  
+
       return goalsData;
     } catch (error) {
       console.error('Error fetching goals:', error);
       throw error;
     }
   }
-  
+
   static async newGoalMile(goalId, userId) {
     try {
       const goalDocRef = firebase
@@ -798,13 +1003,15 @@ static async sendFriendRequest(senderUserId, receiverUserId) {
         }));
         return blocksData;
       } else {
-        // throw new Error('No blocks found');
+        // Return an empty array instead of throwing an error
+        return [];
       }
     } catch (error) {
       console.log('Error fetching blocks:', error);
+      // You can optionally throw the error here if needed
       // throw error;
     }
-  };
+  }
 
   static async fetchUserHabit(userId) {
     try {
@@ -814,7 +1021,7 @@ static async sendFriendRequest(senderUserId, receiverUserId) {
         .doc(userId)
         .collection('habits')
         .get();
-  
+
       if (!habitsCollection.empty) {
         const habitsData = habitsCollection.docs.map((doc) => {
           const data = doc.data();
@@ -824,7 +1031,7 @@ static async sendFriendRequest(senderUserId, receiverUserId) {
             startDate: data.startDate.toDate(), // Convert Firestore Timestamp to JavaScript Date
           };
         });
-  
+
         return habitsData;
       } else {
         throw new Error('No habits found');
@@ -843,7 +1050,7 @@ static async sendFriendRequest(senderUserId, receiverUserId) {
         .doc(userId)
         .collection('journals')
         .add(journalData);
-  
+
       console.log('Journal added with ID:', journalRef.id);
       return journalRef.id; // Return the ID
     } catch (error) {
@@ -851,7 +1058,28 @@ static async sendFriendRequest(senderUserId, receiverUserId) {
       throw error;
     }
   }
+
+  static async removeJournal(userId, journalId) {
+    try {
+      const userRef = firebase.firestore().collection('users').doc(userId);
+      const journalRef = userRef.collection('journals').doc(journalId);
   
+      // Check if the journal exists
+      const journalSnapshot = await journalRef.get();
+      if (!journalSnapshot.exists) {
+        console.log('Journal does not exist');
+        return;
+      }
+  
+      // Remove the journal document
+      await journalRef.delete();
+      console.log('Journal removed successfully');
+    } catch (error) {
+      console.error('Error removing journal:', error);
+      throw error;
+    }
+  }
+
   static async addBlock(userId, blockData) {
     try {
       const blockRef = await firebase
@@ -860,7 +1088,7 @@ static async sendFriendRequest(senderUserId, receiverUserId) {
         .doc(userId)
         .collection('blocks') // Assuming a 'blocks' collection under each user
         .add(blockData);
-  
+
       console.log('Block added with ID:', blockRef.id);
       return blockRef.id; // Return the ID for potential future use
     } catch (error) {
@@ -868,7 +1096,7 @@ static async sendFriendRequest(senderUserId, receiverUserId) {
       throw error;
     }
   }
-  
+
 
   static async fetchUserJournals(userId) {
     try {
@@ -878,7 +1106,7 @@ static async sendFriendRequest(senderUserId, receiverUserId) {
         .doc(userId)
         .collection('journals')
         .get();
-
+  
       if (!journalsCollection.empty) {
         const journals = journalsCollection.docs.map((doc) => ({
           id: doc.id,
@@ -886,13 +1114,16 @@ static async sendFriendRequest(senderUserId, receiverUserId) {
         }));
         return journals;
       } else {
-        throw new Error('No journals found');
+        // No journals found - return an empty array
+        return []; 
       }
     } catch (error) {
-      console.error('Error fetching journals:', error);
-      throw error;
+      // console.log('Error fetching journals:', error);
+      // Re-throwing the error is optional, you might want to handle it differently.
+      // throw error; 
     }
   }
+  
 
   static async updateUserFirstLastName(userId, newFirstName, newLastName) {
     try {
@@ -911,12 +1142,12 @@ static async sendFriendRequest(senderUserId, receiverUserId) {
       const userRef = firestore.collection('users').doc(userId);
       const usernameQuery = firestore.collection('users').where('username', '==', newUsername);
       const snapshot = await usernameQuery.get();
-  
+
       if (!snapshot.empty) {
         // Username is already taken
         return false;
       }
-  
+
       // Update the username
       await userRef.update({ username: newUsername });
       return true;
@@ -928,25 +1159,25 @@ static async sendFriendRequest(senderUserId, receiverUserId) {
 
   static async updateEmail(userId, newEmail) {
     try {
-        // Check for existing email
-        const emailExistsQuery = firestore.collection('users').where('email', '==', newEmail).limit(1);
-        const emailExistsSnapshot = await emailExistsQuery.get();
+      // Check for existing email
+      const emailExistsQuery = firestore.collection('users').where('email', '==', newEmail).limit(1);
+      const emailExistsSnapshot = await emailExistsQuery.get();
 
-        if (!emailExistsSnapshot.empty) {
-            return false; // Email already exists
-        }
+      if (!emailExistsSnapshot.empty) {
+        return false; // Email already exists
+      }
 
-        // Update the email if unique
-        await firestore.collection('users').doc(userId).update({
-            email: newEmail,
-        });
+      // Update the email if unique
+      await firestore.collection('users').doc(userId).update({
+        email: newEmail,
+      });
 
-        return true; // Update successful
+      return true; // Update successful
     } catch (error) {
-        console.error('Error updating email:', error);
-        return false; // Handle unexpected errors 
+      console.error('Error updating email:', error);
+      return false; // Handle unexpected errors 
     }
-}
+  }
 
 }
 

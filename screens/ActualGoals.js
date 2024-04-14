@@ -130,7 +130,7 @@ const ActualGoals = ({ route, navigation }) => {
                     </TouchableOpacity>
                 ))}
                 {/* Custom */}
-                <TouchableOpacity
+                {/* <TouchableOpacity
                     
                     style={[
                         reusableStyles.textInput,
@@ -146,7 +146,7 @@ const ActualGoals = ({ route, navigation }) => {
                     >
                         Other - Need to code this
                     </Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View>
 
         </View>

@@ -28,6 +28,8 @@ const JournalScreen = ({ navigation }) => {
     const [triggerComment, setTriggerComment] = useState('');
     const [progressComment, setProgressComment] = useState('');
 
+    const userId = auth.currentUser.uid;
+
     const handleSelection = (option, value) => {
         setSelections(prevSelections => ({
             ...prevSelections,
@@ -44,6 +46,19 @@ const JournalScreen = ({ navigation }) => {
         setJournalTitle(''); // Reset journal title for next entry
         setJournalDesc(''); // Reset journal title for next entry
     }
+
+    const removeJournal = async (itemToRemove) => {
+        try {
+
+            await UserModel.addJournal(userId, itemToRemove)
+
+            setJournals((prevJournals) =>
+                prevJournals.filter((journal) => journal.id !== itemToRemove.id)
+            );
+        } catch (error) {
+            console.error("Error removing journal:", error);
+        }
+    };
 
     const addJournal = async () => {
         if (!journalTitle || !journalDesc) {
@@ -138,7 +153,13 @@ const JournalScreen = ({ navigation }) => {
 
     const renderItem = ({ item }) => (
         <View style={homeMain.blocksContainer}>
-            <JournalItem title={item.title} date={item.time} desc={item.desc} item={item} />
+            <JournalItem
+                title={item.title}
+                date={item.time}
+                desc={item.desc}
+                item={item}
+                removeJournal={removeJournal}
+            />
         </View>
     );
 
@@ -268,7 +289,7 @@ const JournalScreen = ({ navigation }) => {
                             value={triggerComment}
                             onChangeText={setTriggerComment}
                         />
-                        <Text style={{ alignSelf: 'flex-start' }}>Did you engage in -Habit-</Text>
+                        <Text style={{ alignSelf: 'flex-start' }}>Did you engage in a habit of yours</Text>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignSelf: 'stretch' }}>
                             <TouchableOpacity
                                 style={[

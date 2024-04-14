@@ -74,30 +74,10 @@ const ActualGoals = ({ route, navigation }) => {
 
     const handleGoalSave = async () => {
         try {
-            // console.log(dateRef.current); // Log the updated date value
-            // console.log(targetDateRef.current);
-            // console.log("Below");
-
-
-            // const logData = {
-            //     goal,
-            //     category,
-            //     date: dateRef.current,
-            //     targetDate: targetDateRef.current,
-            //     startingValue: startingValueRef.current,
-            //     numericalTarget: numericalTargetRef.current,
-            //     unit: unitRef.current,
-            // };
-
-            // console.log(logData);
-            // console.log("Above");
             const user = auth.currentUser;
             if (user) {
                 const userId = user.uid;
 
-                // Assuming you have already captured these values from your form inputs
-                
-                
                 if(dateRef.current == null) {
                     dateRef.current = date;
                 }
@@ -105,10 +85,22 @@ const ActualGoals = ({ route, navigation }) => {
                 if(targetDateRef.current == null) {
                     targetDateRef.current = targetDate;
                 }
+
+                if(startingValueRef.current == null) {
+                    startingValueRef.current = startingValue;
+                }
+
+                if(numericalTargetRef.current == null) {
+                    numericalTargetRef.current = numericalTarget;
+                }
+
+                if(unitRef.current == null) {
+                    unitRef.current = unit;
+                }
                 
                 console.log("dateRef")
                 console.log(dateRef.current)
-                const docRef = await UserModel.addGoal(userId, goal, category, dateRef.current, targetDateRef.current, startingValue, numericalTarget, unit);
+                const docRef = await UserModel.addGoal(userId, goal, category, dateRef.current, targetDateRef.current, startingValueRef.current, numericalTargetRef.current, unitRef.current);
                 setGlobalData(goal, category, date, targetDate, startingValue, numericalTarget, unit, docRef.id);
                 setJustCreatedGoal(true)
                 console.log('Goal created successfully');

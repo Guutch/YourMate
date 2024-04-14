@@ -74,7 +74,7 @@ const Assessment = ({ route, navigation }) => {
                         options: ['Yes (time management tools, breaking tasks into smaller steps, etc.)', 'No, but I want to', 'No, and I\'m not interested in changing'],
                     },
                 ];
-            case 'screen_time':
+            case 'general':
                 return [
                     {
                         question: 'Daily Screen Time: How much time do you spend in front of screens daily (including smartphones, computers, tablets, and TVs)?',
@@ -97,7 +97,7 @@ const Assessment = ({ route, navigation }) => {
                         options: ['Fully aware', 'Somewhat aware', 'Not aware'],
                     },
                 ];
-            case 'online_gambling':
+            case 'gambling':
                 return [
                     {
                         question: 'Frequency of Online Gambling: How often do you participate in online gambling activities?',

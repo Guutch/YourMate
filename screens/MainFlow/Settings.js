@@ -510,9 +510,12 @@ const Settings = ({ navigation }) => {
     return completed;
   }
 
-
+  const handleAssessmentPress = (habitName) => {
+    navigation.navigate('Assessment', { isSignUp: false, habit: habitName });
+  };
 
   useEffect(() => {
+    console.log("HEREEEEEEEEEEEEEEEEEE")
     const fetchBlocks = async () => {
       try {
         const blocks = await UserModel.fetchUserBlocks(userId);
@@ -523,7 +526,8 @@ const Settings = ({ navigation }) => {
         const completedGoalsCount = goalsCompleted(goals)
         setCompletedBlocks(completedBlocksCount);
         setCompletedGoals(completedGoalsCount);
-        console.log(data)
+        console.log("habits")
+        console.log(habits)
         setCompletedUserData(data);
         setInitialFirstName(data.firstName);
         setNewFirstName(data.firstName);
@@ -573,7 +577,7 @@ const Settings = ({ navigation }) => {
 
   return (
     <View style={[reusableStyles.container, { alignItems: 'center' }]}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 5 }}>
         <View style={styles.box}>
           <FontAwesome5 name="trophy" size={24} color="#FFD700" style={styles.icon} />
           <Text style={styles.counter}>{completedGoals}</Text>
@@ -582,7 +586,7 @@ const Settings = ({ navigation }) => {
         <View style={styles.box}>
           <FontAwesome5 name="trophy" size={24} color="#FFD700" style={styles.icon} />
           <Text style={styles.counter}>{completedBlocks}</Text>
-          <Text style={[styles.text,]}>Completed Blocks</Text>
+          <Text style={[styles.text]}>Completed Blocks</Text>
         </View>
       </View>
 
@@ -593,7 +597,7 @@ const Settings = ({ navigation }) => {
           setShowModal(true);
         }}
       >
-        <Text style={{ textAlign: 'center' }}>Change Name</Text>
+        <Text style={{ textAlign: 'center', color: '#000' }}>Change Name</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -603,7 +607,7 @@ const Settings = ({ navigation }) => {
           setShowModal(true);
         }}
       >
-        <Text style={{ textAlign: 'center' }}>Change Username</Text>
+        <Text style={{ textAlign: 'center', color: '#000' }}>Change Username</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -613,7 +617,7 @@ const Settings = ({ navigation }) => {
           setShowModal(true);
         }}
       >
-        <Text style={{ textAlign: 'center' }}>Change Password</Text>
+        <Text style={{ textAlign: 'center', color: '#000' }}>Change Password</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -623,7 +627,7 @@ const Settings = ({ navigation }) => {
           setShowModal(true);
         }}
       >
-        <Text style={{ textAlign: 'center' }}>Change Email</Text>
+        <Text style={{ textAlign: 'center', color: '#000' }}>Change Email</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -633,7 +637,7 @@ const Settings = ({ navigation }) => {
           setShowModal(true);
         }}
       >
-        <Text style={{ textAlign: 'center' }}>Add A Habit</Text>
+        <Text style={{ textAlign: 'center', color: '#000' }}>Add A Habit</Text>
       </TouchableOpacity>
       {habits.length > 1 && ( // Only render if habits.length is not 1
   <TouchableOpacity
@@ -643,24 +647,33 @@ const Settings = ({ navigation }) => {
       setShowModal(true);
     }}
   >
-    <Text style={{ textAlign: 'center' }}>Remove A Habit</Text>
+    <Text style={{ textAlign: 'center', color: '#000' }}>Remove A Habit</Text>
   </TouchableOpacity>
 )}
 
 
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginBottom: 5 }]}
         onPress={() =>
           navigation.navigate('Assessment', { isSignUp: false, habit: 'online_gambling' })
         }
       >
         <Text style={{ textAlign: 'center' }}>Take Assessment</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
+      {habits.map((habit) => (
+        <TouchableOpacity
+          key={habit.id}
+          style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginBottom: 5 }]}
+          onPress={() => handleAssessmentPress(habit.name)}
+        >
+          <Text style={{ textAlign: 'center', color: '#000', textTransform: 'capitalize' }}>Take Assessment - {habit.name}</Text>
+        </TouchableOpacity>
+      ))}
       <TouchableOpacity
         style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginBottom: 5 }]}
         onPress={logoutUser}
       >
-        <Text style={{ textAlign: 'center' }}>Log Out</Text>
+        <Text style={{ textAlign: 'center', color: '#000' }}>Log Out</Text>
       </TouchableOpacity>
 
 

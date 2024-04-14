@@ -5,7 +5,7 @@ import { View, Text, FlatList, StyleSheet, Touchable, TouchableOpacity } from 'r
 import { goalMain, reusableStyles } from './styles';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
-const JournalItem = ({ title, date, desc, item }) => {
+const JournalItem = ({ title, date, desc, item, removeJournal }) => {
     // Functions defined directly within the component
     const formatDate = (datetimeString) => {
         return datetimeString.split(',')[0];
@@ -18,11 +18,11 @@ const JournalItem = ({ title, date, desc, item }) => {
         return text;
     }
 
-    // console.log("item")
-    // console.log(item)
+    console.log("item")
+    console.log(item)
 
     return (
-        <TouchableOpacity style={[reusableStyles.textInput, { height: 'auto' }, reusableStyles.lessRounded]}>
+        <View style={[reusableStyles.textInput, { height: 'auto' }, reusableStyles.lessRounded]}>
             <View style={[{ flexDirection: 'row', justifyContent: 'space-between', color: "#000", alignItems: 'center' }]}>
                 <View style={{ justifyContent: 'center' }}>
                     <Text numberOfLines={1}>
@@ -54,7 +54,14 @@ const JournalItem = ({ title, date, desc, item }) => {
             {item.triggeredToday !== null && (
                 <Text>Triggered today: {item.triggeredToday}</Text>
             )}
-        </TouchableOpacity>
+            <TouchableOpacity
+                style={{ position: 'absolute', bottom: 5, right: 5 }}
+                onPress={() => removeJournal(item)}
+            >
+                <FontAwesome5 name="times" size={15} color="red" />
+            </TouchableOpacity>
+
+        </View>
     );
 };
 

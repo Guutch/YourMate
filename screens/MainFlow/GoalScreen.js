@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useLayoutEffect } from 'react';
-import { View, Text, TouchableOpacity, FlatList, TextInput, Keyboard, ScrollView, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, TextInput, ScrollView, Platform } from 'react-native';
 import { reusableStyles, goalMain, homeMain } from '../../components/styles'; // Adjust the path
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-
+import DateTimePicker from '@react-native-community/datetimepicker';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import GoalItem from '../../components/GoalItem'
 import MilestoneLrgGoalO from '../../components/MilestoneLrgGoalO'
@@ -28,9 +28,35 @@ const GoalScreen = ({ navigation, route }) => {
     const [completedGoals, setCompletedGoals] = useState([]); // Blocks on screen
     const [selectedGoal, setSelectedGoal] = useState(null);
     const [selectedGoalId, setSelectedGoalId] = useState(null);
+    const [isCompleted, setIsCompleted] = useState(false);
+    const [tempMessage, setTempMessage] = useState('');
+    const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+    const [showTargetDatePicker, setShowTargetDatePicker] = useState(false);
+    const [startDate, setStartDate] = useState('');
+    const [targetDate, setTargetDate] = useState('');
+    const [temporaryStartDate, setTemporaryStartDate] = useState('');
+    const [temporaryTargetDate, setTemporaryTargetDate] = useState('');
+
 
 
     const userUID = auth.currentUser.uid;
+
+    const handleStartDateChange = (event, selectedDate) => {
+        setShowStartDatePicker(false);
+        if (selectedDate) {
+          setStartDate(selectedDate);
+          if (selectedDate > targetDate) {
+            setTargetDate(selectedDate);
+          }
+        }
+      };
+
+    const handleTargetDateChange = (event, selectedDate) => {
+        setShowTargetDatePicker(false);
+        if (selectedDate && selectedDate >= startDate) {
+            setTargetDate(selectedDate);
+        }
+    };
 
     // This will work everytime the screen comes in focus
     // Need boolean to check if we need to add something from within create goal etc
@@ -44,22 +70,22 @@ const GoalScreen = ({ navigation, route }) => {
                 const newGoal = getGlobalData(); // This is now an object
                 // console.log("newGoal");
                 // console.log(newGoal);
-                    
+
                 UserModel.newGoalMile(newGoal.id, userUID)
-                  .then((goalWithMilestoneData) => {
-                    if (goalWithMilestoneData) {
-                      setGoals((currentGoals) => [...currentGoals, goalWithMilestoneData]);
-                    }
-                  })
-                  .catch((error) => {
-                    console.error('Error fetching goal with milestone data:', error);
-                  });
-          
+                    .then((goalWithMilestoneData) => {
+                        if (goalWithMilestoneData) {
+                            setGoals((currentGoals) => [...currentGoals, goalWithMilestoneData]);
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error fetching goal with milestone data:', error);
+                    });
+
                 setJustCreatedGoal(false); // Reset the flag
                 setJustCreatedM(false); // Reset the flag
-              } else {
+            } else {
                 console.log("Nothing to see mate");
-              }
+            }
             return () => {
                 // Cleanup actions if needed
                 console.log("There")
@@ -72,8 +98,15 @@ const GoalScreen = ({ navigation, route }) => {
     };
 
 
-    const handlePress = (goalId) => {
-        setSelectedGoalId(goalId); // Assuming you have a state [selectedGoalId, setSelectedGoalId]
+    const handlePress = (goalData, isCompleted) => {
+        console.log(goalData)
+        setStartDate(goalData.date)
+        setTargetDate(goalData.targetDate)
+        setTemporaryStartDate(goalData.date)
+        setTemporaryTargetDate(goalData.targetDate)
+        setSelectedGoal(goalData)
+        setSelectedGoalId(goalData.id); // Assuming you have a state [selectedGoalId, setSelectedGoalId]
+        setIsCompleted(isCompleted)
         setOverlayContent('options');
         setShowOverlay(!showOverlay); // Toggle the overlay visibility
     };
@@ -85,41 +118,40 @@ const GoalScreen = ({ navigation, route }) => {
         setShowOverlay(!showOverlay); // Toggle visibility of overlay
     };
 
+    const fetchGoals = async () => {
+        try {
+            const fetchedGoalData = await UserModel.fetchUserGoals(userUID);
+            // console.log(fetchedGoalData);
+            // console.log("goalData");
 
+            const ongoingGoals = [];
+            const completedGoals = [];
+
+            fetchedGoalData.forEach((goal) => {
+                if (goal.status && goal.status === 'Ongoing') {
+                    ongoingGoals.push(goal);
+                } else if (goal.status && goal.status === 'Completed') {
+                    completedGoals.push(goal);
+                } else {
+                    // Handle goals without a "status" attribute
+                    // You can either add them to the "ongoingGoals" array or ignore them
+                    ongoingGoals.push(goal);
+                }
+            });
+
+            console.log(ongoingGoals)
+            console.log("ongoingGoals")
+            console.log(completedGoals)
+            console.log("completedGoals")
+
+            setGoals(ongoingGoals);
+            setCompletedGoals(completedGoals);
+        } catch (error) {
+            console.error('Error fetching goals:', error);
+        }
+    };
     useEffect(() => {
-        const fetchGoals = async () => {
-            try {
-                const userUID = auth.currentUser.uid;
-                const fetchedGoalData = await UserModel.fetchUserGoals(userUID);
-                // console.log(fetchedGoalData);
-                // console.log("goalData");
 
-                const ongoingGoals = [];
-                const completedGoals = [];
-
-                fetchedGoalData.forEach((goal) => {
-                    if (goal.status && goal.status === 'Ongoing') {
-                        ongoingGoals.push(goal);
-                    } else if (goal.status && goal.status === 'Completed') {
-                        completedGoals.push(goal);
-                    } else {
-                        // Handle goals without a "status" attribute
-                        // You can either add them to the "ongoingGoals" array or ignore them
-                        ongoingGoals.push(goal);
-                    }
-                });
-
-                console.log(ongoingGoals)
-                console.log("ongoingGoals")
-                console.log(completedGoals)
-                console.log("completedGoals")
-
-                setGoals(ongoingGoals);
-                setCompletedGoals(completedGoals);
-            } catch (error) {
-                console.error('Error fetching goals:', error);
-            }
-        };
 
         fetchGoals();
     }, [userUID]);
@@ -135,24 +167,57 @@ const GoalScreen = ({ navigation, route }) => {
 
     const updateMilestoneInGoals = (goalId, updatedMilestone) => {
         setGoals((prevGoals) => prevGoals.map((goal) => {
-          if (goal.id === goalId) {
-            const updatedMilestones = goal.milestones.map((milestone) => {
-              if (milestone.id === updatedMilestone.id) {
-                return updatedMilestone;
-              }
-              return milestone;
-            });
-            return { ...goal, milestones: updatedMilestones };
-          }
-          return goal;
+            if (goal.id === goalId) {
+                const updatedMilestones = goal.milestones.map((milestone) => {
+                    if (milestone.id === updatedMilestone.id) {
+                        return updatedMilestone;
+                    }
+                    return milestone;
+                });
+                return { ...goal, milestones: updatedMilestones };
+            }
+            return goal;
         }));
-      };
-      
-      const getrandomMotivationMessage = () => {
+    };
+
+    const getrandomMotivationMessage = () => {
         const randomIndex = Math.floor(Math.random() * motivationMessages.length);
         console.log(motivationMessages[randomIndex])
         return motivationMessages[randomIndex];
-     }
+    }
+
+    const updateGoal = () => {
+
+        try {
+            const updatedGoalData = {
+                goal: selectedGoal.goal,
+                category: selectedGoal.category,
+                date: startDate,
+                targetDate: targetDate,
+                startingValue: selectedGoal.startingValue,
+                numericalTarget: selectedGoal.numericalTarget,
+                unit: selectedGoal.unit,
+            };
+
+            UserModel.updateGoal(userUID, selectedGoal.id, updatedGoalData)
+
+            selectedGoal.date = startDate;
+            selectedGoal.targetDate = targetDate;
+
+        } catch (error) {
+            console.error(error)
+        }
+
+        setGoals((prevGoals) =>
+            prevGoals.map((goal) =>
+                goal.id === selectedGoal.id ? selectedGoal : goal
+            )
+        );
+        setTempMessage('Changes Saved');
+        setTimeout(() => {
+            setTempMessage('');
+        }, 2000);
+    };
 
     useEffect(() => {
         // Use `setOptions` to update the button that we previously specified
@@ -209,6 +274,7 @@ const GoalScreen = ({ navigation, route }) => {
     }, [navigation, userUID]);
 
     const xOutOfOverlay = () => {
+        fetchGoals()
         setShowOverlay(false)
     }
 
@@ -227,45 +293,78 @@ const GoalScreen = ({ navigation, route }) => {
 
     const handleDeleteGoal = async (goalId) => {
         try {
-          // Delete the goal from Firestore
-          await UserModel.deleteGoalAndSubcollections(userUID, goalId);
-      
-          // Update the goals state by filtering out the deleted goal
-          setGoals((prevGoals) => prevGoals.filter((goal) => goal.id !== goalId));
-      
-          // Update the completedGoals state by filtering out the deleted goal
-          setCompletedGoals((prevCompletedGoals) =>
-            prevCompletedGoals.filter((goal) => goal.id !== goalId)
-          );
-      
-          setShowOverlay(false);
-          setOverlayContent('options');
+            // Delete the goal from Firestore
+            await UserModel.deleteGoalAndSubcollections(userUID, goalId);
+
+            // Update the goals state by filtering out the deleted goal
+            setGoals((prevGoals) => prevGoals.filter((goal) => goal.id !== goalId));
+
+            // Update the completedGoals state by filtering out the deleted goal
+            setCompletedGoals((prevCompletedGoals) =>
+                prevCompletedGoals.filter((goal) => goal.id !== goalId)
+            );
+
+            setShowOverlay(false);
+            setOverlayContent('options');
         } catch (error) {
-          console.error('Error deleting goal:', error);
-          // Handle the error appropriately
+            console.error('Error deleting goal:', error);
+            // Handle the error appropriately
         }
-      };
+    };
 
     const markGoalAsCompleted = async (goalId) => {
-        console.log("COmplete this")
-        console.log(goalId)
-        console.log("COmplete this")
-        console.log(userUID)
         try {
             // Update the goal's status in Firestore
             await UserModel.markGoalAsCompleted(userUID, goalId);
 
             // Update the local state
-            const updatedGoals = goals.filter((goal) => goal.id !== goalId);
-            const updatedCompletedGoals = [...completedGoals, ...goals.filter((goal) => goal.id === goalId)];
+            const updatedGoals = goals.map((goal) => {
+                if (goal.id === goalId) {
+                    // Update the status of all milestones to 'Completed'
+                    const updatedMilestones = goal.milestones.map((milestone) => ({
+                        ...milestone,
+                        status: 'Completed',
+                    }));
 
-            setGoals(updatedGoals);
+                    // Return the updated goal object with completed milestones
+                    return { ...goal, milestones: updatedMilestones };
+                }
+                return goal;
+            });
+
+            const updatedCompletedGoals = [
+                ...completedGoals,
+                ...updatedGoals.filter((goal) => goal.id === goalId),
+            ];
+
+            const updatedGoalsWithoutCompleted = updatedGoals.filter(
+                (goal) => goal.id !== goalId
+            );
+
+            setGoals(updatedGoalsWithoutCompleted);
             setCompletedGoals(updatedCompletedGoals);
+            setOverlayContent('options');
+            setShowOverlay(!showOverlay);
+        } catch (error) {
+            console.error('Error marking goal as completed:', error);
+        }
+    };
 
+    const markGoalAsUncompleted = async (goalId) => {
+        try {
+            // Update the goal's status in backend
+            await UserModel.unMarkGoalAsCompleted(userUID, goalId);
+
+            // Update the local state
+            const updatedCompletedGoals = completedGoals.filter((goal) => goal.id !== goalId);
+            const updatedGoals = [...goals, ...completedGoals.filter((goal) => goal.id === goalId)];
+
+            setCompletedGoals(updatedCompletedGoals);
+            setGoals(updatedGoals);
             setOverlayContent('options')
             setShowOverlay(!showOverlay)
         } catch (error) {
-            console.error('Error marking goal as completed:', error);
+            console.error('Error marking goal as uncompleted:', error);
         }
     };
 
@@ -289,7 +388,7 @@ const GoalScreen = ({ navigation, route }) => {
                                 onPress={() => setOverlayContent('completed')}
                             >
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                    <Text>Mark as Completed</Text>
+                                    <Text>{isCompleted ? 'Unmark as Completed' : 'Mark as Completed'}</Text>
                                     <FontAwesome5 name="chevron-right" size={15} color="#000" />
                                 </View>
                             </TouchableOpacity>
@@ -305,23 +404,37 @@ const GoalScreen = ({ navigation, route }) => {
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center', marginTop: 15 }]}
-                            // onPress={() => setOverlayContent('delete')}
+                                onPress={() => setOverlayContent('modify')}
                             >
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                     <Text>Modify Goal</Text>
                                     <FontAwesome5 name="chevron-right" size={15} color="#000" />
                                 </View>
                             </TouchableOpacity>
-                            {/* ... other options ... */}
+
                         </>
                     )}
 
                     {overlayContent === 'completed' && (
                         <>
-                            <Text style={{ padding: 20 }}>Are you sure you want to<Text style={{ color: 'green', fontWeight: 'bold' }}> complete </Text>your goal?</Text>
+                            <Text style={{ padding: 20 }}>{isCompleted ? (
+                                <>
+                                    Are you sure you want to{" "}
+                                    <Text style={{ color: 'red', fontWeight: 'bold' }}>reverse</Text> the completion?
+                                </>
+                            ) : (
+                                <>
+                                    Are you sure you want to{" "}
+                                    <Text style={{ color: 'green', fontWeight: 'bold' }}>complete</Text> your goal?
+                                </>
+                            )}</Text>
                             <TouchableOpacity
-                                style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center' }]}
-                                onPress={() => markGoalAsCompleted(selectedGoalId)}
+                                style={[
+                                    reusableStyles.textInput,
+                                    reusableStyles.lessRounded,
+                                    { alignSelf: 'center', marginBottom: 5 },
+                                ]}
+                                onPress={isCompleted ? () => markGoalAsUncompleted(selectedGoalId) : () => markGoalAsCompleted(selectedGoalId)}
                             >
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                     <Text>Yes</Text>
@@ -330,7 +443,7 @@ const GoalScreen = ({ navigation, route }) => {
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center' }]}
-                            // onPress={() => setOverlayContent('delete')}
+                                onPress={() => setOverlayContent('options')}
                             >
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                     <Text>No</Text>
@@ -340,10 +453,128 @@ const GoalScreen = ({ navigation, route }) => {
                         </>
                     )}
                     {overlayContent === 'motivation' && (
-                        <View style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}> 
-                        <Text style={{ color: '#000', marginBottom: 10, fontWeight: 'bold', fontSize: 24 }}>Tips, Tricks, and Motivation</Text> 
-                        <Text style={{ color: '#000', fontSize: 18 }}>{getrandomMotivationMessage()}</Text> 
-                      </View>
+                        <View style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
+                            <Text style={{ color: '#000', marginBottom: 10, fontWeight: 'bold', fontSize: 24 }}>Tips, Tricks, and Motivation</Text>
+                            <Text style={{ color: '#000', fontSize: 18 }}>{getrandomMotivationMessage()}</Text>
+                        </View>
+                    )}
+                    {overlayContent === 'modify' && (
+                        <View style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
+                            {tempMessage ? (
+                                <Text style={{ color: 'green', marginBottom: 10, fontWeight: 'bold', fontSize: 24 }}>
+                                    {tempMessage}
+                                </Text>
+                            ) : (
+                                <Text style={{ color: '#000', marginBottom: 10, fontWeight: 'bold', fontSize: 24 }}>
+                                    Modify Goal
+                                </Text>
+                            )}
+                            <TextInput
+                                style={[
+                                    reusableStyles.textInput,
+                                    reusableStyles.lessRounded,
+                                    { alignSelf: 'center', marginBottom: 5 },
+                                ]}
+                                value={selectedGoal.goal}
+                                onChangeText={(text) => setSelectedGoal({ ...selectedGoal, goal: text })}
+                                placeholder="Title"
+                            />
+                            <TextInput
+                                style={[
+                                    reusableStyles.textInput,
+                                    reusableStyles.lessRounded,
+                                    { alignSelf: 'center', marginBottom: 5 },
+                                ]}
+                                value={selectedGoal.startingValue ? `${selectedGoal.startingValue}` : ''}
+                                onChangeText={(text) =>
+                                    setSelectedGoal({
+                                        ...selectedGoal,
+                                        startingValue: text === '' ? null : parseFloat(text),
+                                    })
+                                }
+                                placeholder="Starting Value"
+                                keyboardType="numeric"
+                            />
+                            <TextInput
+                                style={[
+                                    reusableStyles.textInput,
+                                    reusableStyles.lessRounded,
+                                    { alignSelf: 'center', marginBottom: 5 },
+                                ]}
+                                value={selectedGoal.numericalTarget ? `${selectedGoal.numericalTarget}` : ''}
+                                onChangeText={(text) =>
+                                    setSelectedGoal({
+                                        ...selectedGoal,
+                                        numericalTarget: text === '' ? null : parseFloat(text),
+                                    })
+                                }
+                                placeholder="Target Value"
+                                keyboardType="numeric"
+                            />
+                            <TextInput
+                                style={[
+                                    reusableStyles.textInput,
+                                    reusableStyles.lessRounded,
+                                    { alignSelf: 'center', marginBottom: 5 },
+                                ]} value={selectedGoal.unit}
+                                onChangeText={(text) => setSelectedGoal({ ...selectedGoal, unit: text })}
+                                placeholder="Unit"
+                            />
+                            <TouchableOpacity
+  style={[reusableStyles.textInput, reusableStyles.commonView, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}
+  onPress={() => setShowStartDatePicker(true)}
+>
+  <Text style={[reusableStyles.headerText, { fontSize: 20 }]}>Starting Date</Text>
+  <Text style={[reusableStyles.headerText, { fontSize: 20, fontWeight: 'normal' }]}>
+    {startDate.toDateString()}
+  </Text>
+</TouchableOpacity>
+{showStartDatePicker && (
+  <DateTimePicker
+    value={temporaryStartDate}
+    mode="date"
+    display="default"
+    onChange={handleStartDateChange}
+  />
+)}
+
+{/* Target Date */}
+<TouchableOpacity
+  style={[reusableStyles.textInput, reusableStyles.commonView, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}
+  onPress={() => setShowTargetDatePicker(true)}
+  disabled={!temporaryStartDate}
+>
+  <Text style={[reusableStyles.headerText, { fontSize: 20 }]}>Target Date</Text>
+  <Text style={[reusableStyles.headerText, { fontSize: 20, fontWeight: 'normal' }]}>
+    {targetDate ? targetDate.toDateString() : 'Select a date'}
+  </Text>
+</TouchableOpacity>
+{showTargetDatePicker && (
+  <DateTimePicker
+    value={temporaryTargetDate || temporaryStartDate}
+    mode="date"
+    display="default"
+    onChange={handleTargetDateChange}
+    minimumDate={temporaryStartDate}
+  />
+)}
+                            <TouchableOpacity
+                                style={[reusableStyles.textInput, reusableStyles.lessRounded, { backgroundColor: '#0077ff', alignSelf: 'center' }]}
+                                onPress={updateGoal}
+                            >
+                                <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                                    <Text style={{ textAlign: 'center', fontWeight: 'bold', color: '#fff' }}>Save Changes</Text>
+                                </View>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[reusableStyles.textInput, reusableStyles.lessRounded, { backgroundColor: '#0077ff', alignSelf: 'center', marginTop: 5 }]}
+                                onPress={() => setOverlayContent('options')}
+                            >
+                                <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                                    <Text style={{ textAlign: 'center', fontWeight: 'bold', color: '#fff' }}>Go Back</Text>
+                                </View>
+                            </TouchableOpacity>
+                        </View>
                     )}
 
                     {overlayContent === 'delete' && (
@@ -372,13 +603,14 @@ const GoalScreen = ({ navigation, route }) => {
                     )}
                     {overlayContent === 'lrg' && (
                         <LargeGoalOverview
-                        xOut={xOutOfOverlay}
-                        goal={selectedGoal}
-                        onOverlayContentChange={handleOverlayContentChange}
-                        userId={userUID}
-                        onUpdateGoalMilestones={updateMilestoneInGoals} // This ensures the function is passed down
-                      />
-                      
+                            xOut={xOutOfOverlay}
+                            goal={selectedGoal}
+                            onOverlayContentChange={handleOverlayContentChange}
+                            userId={userUID}
+                            onUpdateGoalMilestones={updateMilestoneInGoals} // This ensures the function is passed down
+                            updateGoalData={updateGoalData}
+                        />
+
                     )}
                     {overlayContent === 'note' && (
                         <MilestoneLrgGoalO
@@ -424,6 +656,8 @@ const GoalScreen = ({ navigation, route }) => {
                                             goalData={item}
                                             onItemPress={handlePress}
                                             onGoalPress={goalPressed}
+                                            deeperLook={false}
+                                            isCompleted={false}
                                         />
                                     )}
                                     contentContainerStyle={{
@@ -453,6 +687,8 @@ const GoalScreen = ({ navigation, route }) => {
                                             goalData={item}
                                             onItemPress={handlePress}
                                             onGoalPress={goalPressed}
+                                            deeperLook={false}
+                                            isCompleted={true}
                                         />
                                     )}
                                     contentContainerStyle={{

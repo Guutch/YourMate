@@ -14,7 +14,7 @@ const MilestoneLrgGoalO = ({ xOut, goal, onOverlayContentChange, mode, userId, u
     const [descPlaceholder, setDescPlaceholder] = useState(mode === 'milestone' ? 'Milestone Description' : 'Note Description');
     const [milestoneTV, setMilestoneTV] = useState('');
     const [milestoneU, setMilestoneU] = useState('');
-    const [milestoneTU, setMilestoneTU] = useState('');
+    // const [milestoneTU, setMilestoneTU] = useState('');
 
     const handleSaveAndClose = async () => {
         let isValid = true;
@@ -43,7 +43,10 @@ const MilestoneLrgGoalO = ({ xOut, goal, onOverlayContentChange, mode, userId, u
         const dataToShow = {
             title,
             description: desc,
+            milestoneTV,
+            milestoneU,
             createdAt: new Date(), // This captures the current date and time
+            status: 'Ongoing'
         };
 
 
@@ -55,7 +58,7 @@ const MilestoneLrgGoalO = ({ xOut, goal, onOverlayContentChange, mode, userId, u
                 description: desc,
                 milestoneTV,
                 milestoneU,
-                milestoneTU,
+                // milestoneTU,
                 status: 'Ongoing'
             }
 
@@ -72,28 +75,30 @@ const MilestoneLrgGoalO = ({ xOut, goal, onOverlayContentChange, mode, userId, u
                 console.log('Error saving milestone');
             }
         } else {
-            const savedNote = await UserModel.addNote(userId, goal.id, data);
-            if (savedNote) {
-                // Assuming `updateGoalData` is your method to update the goal's state
-                const updatedGoal = {
-                    ...goal,
-                    notes: goal.notes ? [...goal.notes, dataToShow] : [dataToShow],
+            const { success, noteId } = await UserModel.addNote(userId, goal.id, data);
+            if (success) {
+                const updatedDataToShow = {
+                    ...dataToShow, // Spread the existing properties
+                    id: noteId     // Add the 'id' property
                 };
-
-                updateGoalData(updatedGoal);
-
-                onOverlayContentChange('lrg');
-                resetFormFields();
+            //   const dataToShow = { ...data, id: noteId }; // Include the noteId in the dataToShow object
+              const updatedGoal = {
+                ...goal,
+                notes: goal.notes ? [...goal.notes, updatedDataToShow] : [updatedDataToShow],
+              };
+              updateGoalData(updatedGoal);
+              onOverlayContentChange('lrg');
+              resetFormFields();
             } else {
-                console.log('Error saving note');
+              console.log('Error saving note');
             }
-        }
+          }
     };
 
     function resetFormFields() {
         setTitle('');
         setDesc('');
-        setMilestoneTU('');
+        // setMilestoneTU('');
         setMilestoneTV('');
         setMilestoneU('');
         setTitleBorderColor('#000');
@@ -166,12 +171,12 @@ const MilestoneLrgGoalO = ({ xOut, goal, onOverlayContentChange, mode, userId, u
                             value={milestoneU}
                             onChangeText={setMilestoneU}
                         />
-                        <TextInput
+                        {/* <TextInput
                             style={[reusableStyles.textInput, { height: 44, borderColor: 'black', borderWidth: 1, marginTop: 9 }, reusableStyles.lessRounded]}
                             placeholder="Target Date"
                             value={milestoneTU}
                             onChangeText={setMilestoneTU}
-                        />
+                        /> */}
                     </>
                 )}
             </View>
