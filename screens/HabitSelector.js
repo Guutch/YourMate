@@ -81,7 +81,7 @@ const handleHabitSave = async () => {
         }
     };
     return (
-        <View style={[reusableStyles.container,]}>
+        <View style={[reusableStyles.container, {alignItems: 'center'}]}>
             {/* Header Text */}
             <Text style={signUpSwipe.text}>What's Your Habit</Text>
             <Text style={signUpSwipe.description}>Your Mate is here for YOU</Text>
@@ -112,7 +112,7 @@ const handleHabitSave = async () => {
             </Overlay>
 
             {/* Porn Group */}
-            <View style={{ marginBottom: 9 }}>
+            <View style={{ marginBottom: 9, marginTop: 15 }}>
                 <TouchableOpacity
                     style={[
                         reusableStyles.textInput,
@@ -228,7 +228,7 @@ const handleHabitSave = async () => {
             </View>
 
             {/* Other Group */}
-            <View style={{ marginBottom: 9 }}>
+            {/* <View style={{ marginBottom: 9 }}>
                 <TouchableOpacity
                     style={[
                         reusableStyles.textInput,
@@ -253,8 +253,7 @@ const handleHabitSave = async () => {
                     </Text>
                 </TouchableOpacity>
 
-                {/* Repeat for other views */}
-            </View>
+            </View> */}
 
             {/* Continue Button */}
             <TouchableOpacity
@@ -262,7 +261,6 @@ const handleHabitSave = async () => {
                     reusableStyles.button,
                     {
                         backgroundColor: selected ? '#0077FF' : '#B0C4DE',
-                        marginTop: 15,
                         borderWidth: 1,
                         width: 335
                     }

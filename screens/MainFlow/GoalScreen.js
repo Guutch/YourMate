@@ -44,12 +44,12 @@ const GoalScreen = ({ navigation, route }) => {
     const handleStartDateChange = (event, selectedDate) => {
         setShowStartDatePicker(false);
         if (selectedDate) {
-          setStartDate(selectedDate);
-          if (selectedDate > targetDate) {
-            setTargetDate(selectedDate);
-          }
+            setStartDate(selectedDate);
+            if (selectedDate > targetDate) {
+                setTargetDate(selectedDate);
+            }
         }
-      };
+    };
 
     const handleTargetDateChange = (event, selectedDate) => {
         setShowTargetDatePicker(false);
@@ -382,13 +382,13 @@ const GoalScreen = ({ navigation, route }) => {
                 >
                     {overlayContent === 'options' && (
                         <>
-                            <Text style={{ padding: 20 }}>What would you like to do?</Text>
+                            <Text style={{ padding: 20, color: '#000' }}>What would you like to do?</Text>
                             <TouchableOpacity
                                 style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center' }]}
                                 onPress={() => setOverlayContent('completed')}
                             >
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                    <Text>{isCompleted ? 'Unmark as Completed' : 'Mark as Completed'}</Text>
+                                    <Text style={{color: '#000'}}>{isCompleted ? 'Unmark as Completed' : 'Mark as Completed'}</Text>
                                     <FontAwesome5 name="chevron-right" size={15} color="#000" />
                                 </View>
                             </TouchableOpacity>
@@ -398,7 +398,7 @@ const GoalScreen = ({ navigation, route }) => {
                             >
                                 {/* <Text>Delete Goal</Text> */}
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                    <Text>Delete Goal</Text>
+                                    <Text style={{color: '#000'}}>Delete Goal</Text>
                                     <FontAwesome5 name="chevron-right" size={15} color="#000" />
                                 </View>
                             </TouchableOpacity>
@@ -407,7 +407,16 @@ const GoalScreen = ({ navigation, route }) => {
                                 onPress={() => setOverlayContent('modify')}
                             >
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                    <Text>Modify Goal</Text>
+                                    <Text style={{color: '#000'}}>Modify Goal Details</Text>
+                                    <FontAwesome5 name="chevron-right" size={15} color="#000" />
+                                </View>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center', marginTop: 15 }]}
+                                onPress={() => setOverlayContent('modifyDate')}
+                            >
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                    <Text style={{color: '#000'}}>Modify Goal Dates</Text>
                                     <FontAwesome5 name="chevron-right" size={15} color="#000" />
                                 </View>
                             </TouchableOpacity>
@@ -417,7 +426,7 @@ const GoalScreen = ({ navigation, route }) => {
 
                     {overlayContent === 'completed' && (
                         <>
-                            <Text style={{ padding: 20 }}>{isCompleted ? (
+                            <Text style={{ padding: 20, color: '#000' }}>{isCompleted ? (
                                 <>
                                     Are you sure you want to{" "}
                                     <Text style={{ color: 'red', fontWeight: 'bold' }}>reverse</Text> the completion?
@@ -437,7 +446,7 @@ const GoalScreen = ({ navigation, route }) => {
                                 onPress={isCompleted ? () => markGoalAsUncompleted(selectedGoalId) : () => markGoalAsCompleted(selectedGoalId)}
                             >
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                    <Text>Yes</Text>
+                                    <Text style={{color: '#000'}}>Yes</Text>
                                     <FontAwesome5 name="chevron-right" size={15} color="#000" />
                                 </View>
                             </TouchableOpacity>
@@ -446,7 +455,7 @@ const GoalScreen = ({ navigation, route }) => {
                                 onPress={() => setOverlayContent('options')}
                             >
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                    <Text>No</Text>
+                                    <Text style={{color: '#000'}}>No</Text>
                                     <FontAwesome5 name="chevron-right" size={15} color="#000" />
                                 </View>
                             </TouchableOpacity>
@@ -458,6 +467,75 @@ const GoalScreen = ({ navigation, route }) => {
                             <Text style={{ color: '#000', fontSize: 18 }}>{getrandomMotivationMessage()}</Text>
                         </View>
                     )}
+                    {overlayContent === 'modifyDate' && (
+                        <View style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
+                            {tempMessage ? (
+                                <Text style={{ color: 'green', marginBottom: 10, fontWeight: 'bold', fontSize: 24 }}>
+                                    {tempMessage}
+                                </Text>
+                            ) : (
+                                <Text style={{ color: '#000', marginBottom: 10, fontWeight: 'bold', fontSize: 24 }}>
+                                    Modify Dates
+                                </Text>
+                            )}
+                            <TouchableOpacity
+                                style={[reusableStyles.textInput, reusableStyles.lessRounded,
+                                    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }]}
+                                onPress={() => setShowStartDatePicker(true)}
+                            >
+                                <Text style={[reusableStyles.headerText, { fontSize: 20 }]}>Starting Date</Text>
+                                <Text style={[reusableStyles.headerText, { fontSize: 20, fontWeight: 'normal' }]}>
+                                    {startDate.toDateString()}
+                                </Text>
+                            </TouchableOpacity>
+                            {showStartDatePicker && (
+                                <DateTimePicker
+                                    value={temporaryStartDate}
+                                    mode="date"
+                                    display="default"
+                                    onChange={handleStartDateChange}
+                                />
+                            )}
+
+                            {/* Target Date */}
+                            <TouchableOpacity
+                                style={[reusableStyles.textInput, reusableStyles.lessRounded
+                                    , { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }]}
+                                onPress={() => setShowTargetDatePicker(true)}
+                                disabled={!temporaryStartDate}
+                            >
+                                <Text style={[reusableStyles.headerText, { fontSize: 20 }]}>Target Date</Text>
+                                <Text style={[reusableStyles.headerText, { fontSize: 20, fontWeight: 'normal' }]}>
+                                    {targetDate ? targetDate.toDateString() : 'Select a date'}
+                                </Text>
+                            </TouchableOpacity>
+                            {showTargetDatePicker && (
+                                <DateTimePicker
+                                    value={temporaryTargetDate || temporaryStartDate}
+                                    mode="date"
+                                    display="default"
+                                    onChange={handleTargetDateChange}
+                                    minimumDate={temporaryStartDate}
+                                />
+                            )}
+                            <TouchableOpacity
+                                style={[reusableStyles.textInput, reusableStyles.lessRounded, { backgroundColor: '#0077ff', alignSelf: 'center' }]}
+                                onPress={updateGoal}
+                            >
+                                <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                                    <Text style={{ textAlign: 'center', fontWeight: 'bold', color: '#fff' }}>Save Changes</Text>
+                                </View>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[reusableStyles.textInput, reusableStyles.lessRounded, { backgroundColor: '#0077ff', alignSelf: 'center', marginTop: 5 }]}
+                                onPress={() => setOverlayContent('options')}
+                            >
+                                <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                                    <Text style={{ textAlign: 'center', fontWeight: 'bold', color: '#fff' }}>Go Back</Text>
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+                    )}
                     {overlayContent === 'modify' && (
                         <View style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
                             {tempMessage ? (
@@ -466,9 +544,11 @@ const GoalScreen = ({ navigation, route }) => {
                                 </Text>
                             ) : (
                                 <Text style={{ color: '#000', marginBottom: 10, fontWeight: 'bold', fontSize: 24 }}>
-                                    Modify Goal
+                                    Modify Details
                                 </Text>
                             )}
+                            
+                            <Text style={{marginTop: 5, color: '#000'}}>Title</Text>
                             <TextInput
                                 style={[
                                     reusableStyles.textInput,
@@ -479,6 +559,7 @@ const GoalScreen = ({ navigation, route }) => {
                                 onChangeText={(text) => setSelectedGoal({ ...selectedGoal, goal: text })}
                                 placeholder="Title"
                             />
+                            <Text style={{marginTop: 5, color: '#000'}}>Starting Value</Text>
                             <TextInput
                                 style={[
                                     reusableStyles.textInput,
@@ -495,6 +576,7 @@ const GoalScreen = ({ navigation, route }) => {
                                 placeholder="Starting Value"
                                 keyboardType="numeric"
                             />
+                            <Text style={{marginTop: 5, color: '#000'}}>Target Value</Text>
                             <TextInput
                                 style={[
                                     reusableStyles.textInput,
@@ -511,6 +593,7 @@ const GoalScreen = ({ navigation, route }) => {
                                 placeholder="Target Value"
                                 keyboardType="numeric"
                             />
+                            <Text style={{marginTop: 5, color: '#000'}}>Units</Text>
                             <TextInput
                                 style={[
                                     reusableStyles.textInput,
@@ -521,45 +604,7 @@ const GoalScreen = ({ navigation, route }) => {
                                 placeholder="Unit"
                             />
                             <TouchableOpacity
-  style={[reusableStyles.textInput, reusableStyles.commonView, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}
-  onPress={() => setShowStartDatePicker(true)}
->
-  <Text style={[reusableStyles.headerText, { fontSize: 20 }]}>Starting Date</Text>
-  <Text style={[reusableStyles.headerText, { fontSize: 20, fontWeight: 'normal' }]}>
-    {startDate.toDateString()}
-  </Text>
-</TouchableOpacity>
-{showStartDatePicker && (
-  <DateTimePicker
-    value={temporaryStartDate}
-    mode="date"
-    display="default"
-    onChange={handleStartDateChange}
-  />
-)}
-
-{/* Target Date */}
-<TouchableOpacity
-  style={[reusableStyles.textInput, reusableStyles.commonView, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}
-  onPress={() => setShowTargetDatePicker(true)}
-  disabled={!temporaryStartDate}
->
-  <Text style={[reusableStyles.headerText, { fontSize: 20 }]}>Target Date</Text>
-  <Text style={[reusableStyles.headerText, { fontSize: 20, fontWeight: 'normal' }]}>
-    {targetDate ? targetDate.toDateString() : 'Select a date'}
-  </Text>
-</TouchableOpacity>
-{showTargetDatePicker && (
-  <DateTimePicker
-    value={temporaryTargetDate || temporaryStartDate}
-    mode="date"
-    display="default"
-    onChange={handleTargetDateChange}
-    minimumDate={temporaryStartDate}
-  />
-)}
-                            <TouchableOpacity
-                                style={[reusableStyles.textInput, reusableStyles.lessRounded, { backgroundColor: '#0077ff', alignSelf: 'center' }]}
+                                style={[reusableStyles.textInput, reusableStyles.lessRounded, { backgroundColor: '#0077ff', alignSelf: 'center', marginTop: 5 }]}
                                 onPress={updateGoal}
                             >
                                 <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
@@ -579,23 +624,23 @@ const GoalScreen = ({ navigation, route }) => {
 
                     {overlayContent === 'delete' && (
                         <>
-                            <Text style={{ padding: 20 }}>Are you sure you want to<Text style={{ color: 'red', fontWeight: 'bold' }}> delete </Text>your goal?</Text>
+                            <Text style={{ padding: 20, color: '#000' }}>Are you sure you want to<Text style={{ color: 'red', fontWeight: 'bold' }}> delete </Text>your goal?</Text>
                             <TouchableOpacity
                                 style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center' }]}
                                 onPress={() => handleDeleteGoal(selectedGoalId)}
                             >
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                    <Text>Yes</Text>
+                                    <Text style={{color: '#000'}}>Yes</Text>
                                     <FontAwesome5 name="chevron-right" size={15} color="#000" />
                                 </View>
 
                             </TouchableOpacity>
                             <TouchableOpacity
-                                style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center' }]}
+                                style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center', marginTop: 9 }]}
                                 onPress={() => setOverlayContent('options')}
                             >
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                    <Text>No</Text>
+                                    <Text style={{color: '#000'}}>No</Text>
                                     <FontAwesome5 name="chevron-right" size={15} color="#000" />
                                 </View>
                             </TouchableOpacity>

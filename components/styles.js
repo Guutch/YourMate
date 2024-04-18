@@ -147,15 +147,14 @@ const communityMain = StyleSheet.create({
         height: 50
     },
     friendBox: {
-        height: 100,
-        width: '100%',
-        // flexDirection: 'colu',
+        height: 125,
+        width: 125,
         justifyContent: 'center',
         alignItems: 'center',
-        // backgroundColor: '#f0f0f0',
         borderWidth: 2,
         borderColor: 'black',
         borderRadius: 5,
+        marginLeft: 5
         // marginBottom: 10,
       },
     nameContainer: {

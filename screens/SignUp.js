@@ -30,6 +30,8 @@ const SignUp = ({ navigation }) => {
     const [hasMinLength, setHasMinLength] = useState(false);
     const [hasUpperAndLower, setHasUpperAndLower] = useState(false);
 
+    const nonAcceptableChars = /[!@#$%^&*()+=\[\]{};:"\\|<>\/?]/;
+
     const updatePasswordCriteria = (password) => {
         setHasNumberOrSymbol(/[0-9!@#$%^&*]/.test(password));
         setHasMinLength(password.length >= 8);
@@ -74,7 +76,6 @@ const SignUp = ({ navigation }) => {
     };
 
     const validateInput = (inputName, value) => {
-        // if (value === '' || value === undefined) {
         // Set the corresponding error message state
         switch (inputName) {
             case 'firstName':
@@ -82,25 +83,41 @@ const SignUp = ({ navigation }) => {
                     setFirstNameError('First name is required');
                     return true;
                 }
-                if (/\d/.test(value)) { // Check for numbers in the first name
+                if (nonAcceptableChars.test(value)) {
+                    setFirstNameError('First name cannot contain special characters');
+                    return true;
+                  }
+                  
+                  if (/\d/.test(value)) {
                     setFirstNameError('First name cannot contain numbers');
                     return true;
-                }
+                  }
+                
                 break;
             case 'lastName':
                 if (value === '' || value === undefined) {
                     setLastNameError('Last name is required');
                     return true;
                 }
-                if (/\d/.test(value)) { // Check for numbers in the first name
+                if (nonAcceptableChars.test(value)) {
+                    setLastNameError('Last name cannot contain special characters');
+                    return true;
+                  }
+                  
+                  if (/\d/.test(value)) {
                     setLastNameError('Last name cannot contain numbers');
                     return true;
-                }
+                  }
                 break;
             case 'username':
                 console.log(value)
                 if (value.length < 3) {
                     setUsernameError('Username must be at least 3 characters');
+                    return true;
+                }
+                const specialCharsRegex = /[!@#$%^&*(),.?":{}|<>]/;
+                if (specialCharsRegex.test(value)) {
+                    setUsernameError('Username cannot contain special characters');
                     return true;
                 }
                 // Add check here to see if username is taken
@@ -114,8 +131,6 @@ const SignUp = ({ navigation }) => {
                         return true;
                     }
                 }
-
-                // Add check here to see if email is taken
                 break;
             case 'password':
                 if (!value) {
@@ -148,28 +163,37 @@ const SignUp = ({ navigation }) => {
 
     const handleSignUp = async () => {
         try {
-          const user = await UserModel.createUser(
-            firstName,
-            lastName,
-            username,
-            email,
-            password
-          );
-          console.log('User created:', user);
-          // Handle successful user creation
-          navigation.navigate('HabitSelector');
+            console.log('Sign up process started....'); // Log initiation  
+
+            const user = await UserModel.createUser(
+                firstName,
+                lastName,
+                username,
+                email,
+                password
+            );
+
+            console.log('User created:', user);
+            console.log('UserModel.createUser call successful'); // Log success 
+
+            // Handle successful user creation
+            navigation.navigate('HabitSelector');
+
         } catch (error) {
-          console.error('Error creating user:', error);
-          // Handle error
-          if (error.message === 'Email already in use') {
-            setEmailError('Email is already taken');
-          } else if (error.message === 'Username already in use') {
-            setUsernameError('Username is already taken');
-          } else {
-            Alert.alert('Error', error.message);
-          }
+            console.log("USERNAME TEST", error.message)
+            console.error('Error creating user:', error);
+
+            // Specific error handling
+            if (error.message === 'Email already in use') {
+                setEmailError('Email is already taken');
+            } else if (error.message === 'Username already in use.') {
+                setUsernameError('Username is already taken');
+            } else {
+                Alert.alert('Error', error.message);
+            }
         }
-      };
+    };
+
 
     const validation = () => {
         let isFormInvalid = false;

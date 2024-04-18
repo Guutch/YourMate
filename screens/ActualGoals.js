@@ -98,7 +98,7 @@ const ActualGoals = ({ route, navigation }) => {
 
 
     return (
-        <View style={[reusableStyles.container]}>
+        <View style={[reusableStyles.container, {alignItems: 'center'}]}>
             {/* Header Text */}
             <View style={{ marginBottom: 18 }}>
                 <Text style={[signUpSwipe.text, { textAlign: 'center' }]}>Add Your Goal</Text>
@@ -109,7 +109,6 @@ const ActualGoals = ({ route, navigation }) => {
 
             {/* Other Group */}
             <View style={{ marginBottom: 9 }}>
-                {/* Auto populate */}
                 {goalsToDisplay.map((goal, index) => (
                     <TouchableOpacity
                         key={index} // It's better to use unique IDs if you have them
@@ -129,24 +128,6 @@ const ActualGoals = ({ route, navigation }) => {
                         </Text>
                     </TouchableOpacity>
                 ))}
-                {/* Custom */}
-                {/* <TouchableOpacity
-                    
-                    style={[
-                        reusableStyles.textInput,
-                        reusableStyles.commonView,
-                    ]}
-                // Add onPress if you need to handle tapping on individual goals
-                >
-                    <Text
-                        style={[
-                            reusableStyles.headerText,
-                            { fontSize: 20 }
-                        ]}
-                    >
-                        Other - Need to code this
-                    </Text>
-                </TouchableOpacity> */}
             </View>
 
         </View>

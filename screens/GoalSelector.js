@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StatusBar, TextInput } from 'react-native';
 import { reusableStyles, goalStyles, signUp, signUpSwipe } from '../components/styles'; // Adjust the path
-import { Overlay } from 'react-native-elements';
 
 const GoalSelector = ({ route, navigation }) => {
-    const { selected, showOverlay, setShowOverlay, fromMain, inputValue } = route.params;
+    const { selected, fromMain, inputValue } = route.params;
 
-    console.log(inputValue)
+    console.log("navigation")
+    console.log(navigation)
 
     const [color, setColor] = useState('blue');
 
@@ -21,7 +21,7 @@ const GoalSelector = ({ route, navigation }) => {
                             // onPress={() => navigation.setParams({ color: 'red' })}
                             style={{ padding: 10, borderRadius: 5 }}
                         >
-                            <Text style={{ color: 'Black', textAlign: 'center', fontSize: 16 }}>
+                            <Text style={{ color: '#000', textAlign: 'center', fontSize: 16 }}>
                                 Skip
                             </Text>
                         </TouchableOpacity>
@@ -52,30 +52,9 @@ const GoalSelector = ({ route, navigation }) => {
         navigation.navigate('ActualGoals', { category, fromMain, selected })
     };
 
-    const handleSkipPress = () => {
-        setOverlayVisible(true);
-    };
-
-    // Function to navigate to the next screen
-    const navigateToNextScreen = () => {
-        // Your navigation logic
-        setShowOverlay(false); // Hide overlay after navigation
-    };
-
     return (
         <View style={[reusableStyles.container]}>
 
-            {/* {showOverlay && (
-        <Overlay isVisible={showOverlay} onBackdropPress={() => setShowOverlay(false)}>
-          <Text>Are you sure you want to skip?</Text>
-          <TouchableOpacity onPress={navigateToNextScreen}>
-            <Text>Yes</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => setShowOverlay(false)}>
-            <Text>No</Text>
-          </TouchableOpacity>
-        </Overlay>
-      )} */}
 
             {/* Header Text */}
             <View>

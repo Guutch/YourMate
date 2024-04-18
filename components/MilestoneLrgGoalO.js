@@ -81,7 +81,6 @@ const MilestoneLrgGoalO = ({ xOut, goal, onOverlayContentChange, mode, userId, u
                     ...dataToShow, // Spread the existing properties
                     id: noteId     // Add the 'id' property
                 };
-            //   const dataToShow = { ...data, id: noteId }; // Include the noteId in the dataToShow object
               const updatedGoal = {
                 ...goal,
                 notes: goal.notes ? [...goal.notes, updatedDataToShow] : [updatedDataToShow],
@@ -128,7 +127,7 @@ const MilestoneLrgGoalO = ({ xOut, goal, onOverlayContentChange, mode, userId, u
     };
 
     return (
-        <View>
+        <View >
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Text style={[reusableStyles.headerText, { marginBottom: 9 }]}>
                     {mode === 'milestone' ? 'Add Milestone' : 'Add Note'}
@@ -139,7 +138,7 @@ const MilestoneLrgGoalO = ({ xOut, goal, onOverlayContentChange, mode, userId, u
                 </View>
             </View>
 
-            <Text>Required</Text>
+            <Text style={{color: '#000', fontWeight: 'bold'}}>Required</Text>
 
             <TextInput
                 style={[reusableStyles.textInput, { height: 44, borderColor: descBorderColor, borderWidth: 1, marginTop: 9 }, reusableStyles.lessRounded]}
@@ -158,7 +157,7 @@ const MilestoneLrgGoalO = ({ xOut, goal, onOverlayContentChange, mode, userId, u
             <View>
                 {mode === "milestone" && (
                     <>
-                        <Text style={{ marginTop: 10 }}>Additional</Text>
+                        <Text style={{ marginTop: 10, color: '#000', fontWeight: 'bold' }}>Additional</Text>
                         <TextInput
                             style={[reusableStyles.textInput, { height: 44, borderColor: 'black', borderWidth: 1, marginTop: 9 }, reusableStyles.lessRounded]}
                             placeholder="Target Value"

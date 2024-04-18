@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useLayoutEffect } from 'react';
-import { View, Text, TouchableOpacity, FlatList, TextInput, Keyboard, ScrollView, Platform, Touchable } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, TextInput, ScrollView, Platform, Touchable } from 'react-native';
 import { reusableStyles, signUp, homeMain, journalStyles } from '../../components/styles'; // Adjust the path
 
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -49,8 +49,8 @@ const JournalScreen = ({ navigation }) => {
 
     const removeJournal = async (itemToRemove) => {
         try {
-
-            await UserModel.addJournal(userId, itemToRemove)
+            console.log(itemToRemove)
+            await UserModel.removeJournal(userId, itemToRemove.id)
 
             setJournals((prevJournals) =>
                 prevJournals.filter((journal) => journal.id !== itemToRemove.id)
@@ -183,7 +183,7 @@ const JournalScreen = ({ navigation }) => {
                         onPress={() => {
                             // Navigate to the next screen
                             // addJournal(); // Replace 'NextScreen' with the actual screen name you want to navigate to
-                            navigation.navigate('MilestoneInfo'); // Replace 'NextScreen' with the actual screen name you want to navigate to
+                            setShowOverlay(true) // Replace 'NextScreen' with the actual screen name you want to navigate to
                         }}
                         style={{
                             padding: 10,
@@ -221,135 +221,148 @@ const JournalScreen = ({ navigation }) => {
                     }}
                     overlayStyle={[reusableStyles.overlay, { height: "100%" }]}
                 >
-                    {/* Top Banner */}
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 10 }}>
-                        <TouchableOpacity style={{}} onPress={() => addJournal()}>
-                            <Text>SAVE</Text>
-                        </TouchableOpacity>
-
-                        {/* Title Container */}
-                        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                            <Text style={{ fontSize: 20 }}>Add a journal entry</Text>
-                        </View>
-
-                        <TouchableOpacity style={{}} onPress={() => xOutOfOverlay()}>
-                            <FontAwesome5 name="times" size={30} color="#000" />
-                        </TouchableOpacity>
-                    </View>
-                    {/* Journal Content */}
-                    <View style={{ justifyContent: 'center', paddingHorizontal: 20 }}>
-
-                        {/* Add title */}
-                        <Text>Add a title</Text>
-                        <TextInput
-                            style={[reusableStyles.textInput, titleError ? journalStyles.errorInput : null]}
-                            value={journalTitle}
-                            onChangeText={onTitleChange}
-                        />
-
-                        {/* Add desc */}
-                        <Text>Add a description</Text>
-                        <TextInput
-                            style={[reusableStyles.textInput, descError ? journalStyles.errorInput : null]}
-                            value={journalDesc}
-                            onChangeText={onDescChange}
-                        />
-
-                        {/* Triggers today */}
-                        <Text style={{ alignSelf: 'flex-start' }}>Did anything trigger you today?</Text>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignSelf: 'stretch' }}>
-                            <TouchableOpacity
-                                style={[
-                                    reusableStyles.textInput,
-                                    signUp.halfInput,
-                                    {
-                                        borderColor: selections.trigger === 'yes' ? 'blue' : '#000', // Correctly apply for "Yes"
-                                    }
-                                ]}
-                                onPress={() => handleSelection('trigger', 'yes')}>
-                                <Text>Yes</Text>
+                    <ScrollView>
+                        {/* Top Banner */}
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 10 }}>
+                            <TouchableOpacity onPress={() => addJournal()}>
+                                <Text style={{color: "#000"}}>SAVE</Text>
                             </TouchableOpacity>
 
-                            <TouchableOpacity
-                                style={[
-                                    reusableStyles.textInput,
-                                    signUp.halfInput,
-                                    {
-                                        borderColor: selections.trigger === 'no' ? 'blue' : '#000', // Correctly apply for "No"
-                                    }
-                                ]}
-                                onPress={() => handleSelection('trigger', 'no')}>
-                                <Text>No</Text>
+                            {/* Title Container */}
+                            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                                <Text style={{ fontSize: 20, color: "#000" }}>Add a journal entry</Text>
+                            </View>
+
+                            <TouchableOpacity style={{}} onPress={() => xOutOfOverlay()}>
+                                <FontAwesome5 name="times" size={30} color="#000" />
                             </TouchableOpacity>
 
                         </View>
-                        <Text style={{ alignSelf: 'flex-start' }}>If 'Yes', please comment</Text>
-                        <TextInput
-                            style={reusableStyles.textInput}
-                            value={triggerComment}
-                            onChangeText={setTriggerComment}
-                        />
-                        <Text style={{ alignSelf: 'flex-start' }}>Did you engage in a habit of yours</Text>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignSelf: 'stretch' }}>
-                            <TouchableOpacity
-                                style={[
-                                    reusableStyles.textInput,
-                                    signUp.halfInput,
-                                    {
-                                        borderColor: selections.engage === 'yes' ? 'blue' : '#000', // Correctly apply for "Yes"
-                                    }
-                                ]}
-                                onPress={() => handleSelection('engage', 'yes')}>
-                                <Text>Yes</Text>
-                            </TouchableOpacity>
+                        {/* Journal Content */}
+                        <View style={{ justifyContent: 'center', paddingHorizontal: 20 }}>
 
-                            <TouchableOpacity
-                                style={[
-                                    reusableStyles.textInput,
-                                    signUp.halfInput,
-                                    {
-                                        borderColor: selections.engage === 'no' ? 'blue' : '#000', // Correctly apply for "No"
-                                    }
-                                ]}
-                                onPress={() => handleSelection('engage', 'no')}>
-                                <Text>No</Text>
-                            </TouchableOpacity>
+                            {/* Add title */}
+                            <Text style={{color: "#000", marginTop: 9, marginBottom: 4}}>Add a title</Text>
+                            <TextInput
+                                style={[reusableStyles.textInput, titleError ? journalStyles.errorInput : null, reusableStyles.lessRounded]}
+                                value={journalTitle}
+                                onChangeText={onTitleChange}
+                            />
 
+                            {/* Add desc */}
+                            <Text style={{color: "#000", marginTop: 9, marginBottom: 4}}>Add a description</Text>
+                            <TextInput
+                                style={[reusableStyles.textInput, descError ? journalStyles.errorInput : null, reusableStyles.lessRounded]}
+                                value={journalDesc}
+                                onChangeText={onDescChange}
+                            />
+
+                            {/* Triggers today */}
+                            <Text style={{ alignSelf: 'flex-start', color: "#000", marginTop: 9, marginBottom: 4 }}>Did anything trigger you today?</Text>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignSelf: 'stretch' }}>
+                                <TouchableOpacity
+                                    style={[
+                                        reusableStyles.textInput,
+                                        signUp.halfInput,
+                                        reusableStyles.lessRounded,
+                                        {
+                                            borderColor: selections.trigger === 'yes' ? 'blue' : '#000', // Correctly apply for "Yes"
+                                        }
+                                    ]}
+                                    onPress={() => handleSelection('trigger', 'yes')}>
+                                    <Text style={{color: "#000"}}>Yes</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    style={[
+                                        reusableStyles.textInput,
+                                        signUp.halfInput,
+                                        reusableStyles.lessRounded,
+                                        {
+                                            borderColor: selections.trigger === 'no' ? 'blue' : '#000', // Correctly apply for "No"
+                                        }
+                                    ]}
+                                    onPress={() => handleSelection('trigger', 'no')}>
+                                    <Text style={{color: "#000"}}>No</Text>
+                                </TouchableOpacity>
+
+                            </View>
+                            <Text style={{ alignSelf: 'flex-start', color: "#000", marginTop: 9, marginBottom: 4 }}>If 'Yes', please comment</Text>
+                            <TextInput
+                                style={[reusableStyles.textInput, reusableStyles.lessRounded]}
+                                value={triggerComment}
+                                onChangeText={setTriggerComment}
+                            />
+                            <Text style={{ alignSelf: 'flex-start', color: "#000", marginTop: 9, marginBottom: 4 }}>Did you engage in a habit of yours</Text>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignSelf: 'stretch' }}>
+                                <TouchableOpacity
+                                    style={[
+                                        reusableStyles.textInput,
+                                        signUp.halfInput,
+                                        reusableStyles.lessRounded,
+                                        {
+                                            borderColor: selections.engage === 'yes' ? 'blue' : '#000', // Correctly apply for "Yes"
+                                        }
+                                    ]}
+                                    onPress={() => handleSelection('engage', 'yes')}>
+                                    <Text style={{color: "#000"}}>Yes</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    style={[
+                                        reusableStyles.textInput,
+                                        signUp.halfInput,
+                                        reusableStyles.lessRounded,
+                                        {
+                                            borderColor: selections.engage === 'no' ? 'blue' : '#000', // Correctly apply for "No"
+                                        }
+                                    ]}
+                                    onPress={() => handleSelection('engage', 'no')}>
+                                    <Text style={{color: "#000"}}>No</Text>
+                                </TouchableOpacity>
+
+                            </View>
+
+                            <Text style={{ alignSelf: 'flex-start', color: "#000", marginTop: 9, marginBottom: 4 }}>Have you made any progress towards any goals today?</Text>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignSelf: 'stretch' }}>
+                                <TouchableOpacity
+                                    style={[
+                                        reusableStyles.textInput,
+                                        signUp.halfInput,
+                                        reusableStyles.lessRounded,
+                                        {
+                                            borderColor: selections.progress === 'yes' ? 'blue' : '#000', // Correctly apply for "Yes"
+                                        }
+                                    ]}
+                                    onPress={() => handleSelection('progress', 'yes')}>
+                                    <Text style={{color: "#000"}}>Yes</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    style={[
+                                        reusableStyles.textInput,
+                                        signUp.halfInput,
+                                        reusableStyles.lessRounded,
+                                        {
+                                            borderColor: selections.progress === 'no' ? 'blue' : '#000', // Correctly apply for "No"
+                                            color: "#000"
+                                        }
+                                    ]}
+                                    onPress={() => handleSelection('progress', 'no')}>
+                                    <Text style={{color: "#000"}}>No</Text>
+                                </TouchableOpacity>
+                            </View>
+                            <Text style={{ alignSelf: 'flex-start', color: "#000", marginTop: 9, marginBottom: 4 }}>If 'Yes', what progress did you make</Text>
+                            <TextInput
+                                style={[reusableStyles.textInput, reusableStyles.lessRounded]}
+                                value={progressComment}
+                                onChangeText={setProgressComment}
+                            />
                         </View>
 
-                        <Text style={{ alignSelf: 'flex-start' }}>Have you made any progress towards any goals today?</Text>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignSelf: 'stretch' }}>
-                            <TouchableOpacity
-                                style={[
-                                    reusableStyles.textInput,
-                                    signUp.halfInput,
-                                    {
-                                        borderColor: selections.progress === 'yes' ? 'blue' : '#000', // Correctly apply for "Yes"
-                                    }
-                                ]}
-                                onPress={() => handleSelection('progress', 'yes')}>
-                                <Text>Yes</Text>
-                            </TouchableOpacity>
 
-                            <TouchableOpacity
-                                style={[
-                                    reusableStyles.textInput,
-                                    signUp.halfInput,
-                                    {
-                                        borderColor: selections.progress === 'no' ? 'blue' : '#000', // Correctly apply for "No"
-                                    }
-                                ]}
-                                onPress={() => handleSelection('progress', 'no')}>
-                                <Text>No</Text>
-                            </TouchableOpacity>
-                        </View>
-                        <Text style={{ alignSelf: 'flex-start' }}>If 'Yes', what progress did you make</Text>
-                        <TextInput
-                            style={reusableStyles.textInput}
-                            value={progressComment}
-                            onChangeText={setProgressComment}
-                        />
-                    </View>
+
+                    </ScrollView>
 
 
                 </Overlay>
@@ -359,7 +372,7 @@ const JournalScreen = ({ navigation }) => {
             {/* <TouchableOpacity style={reusableStyles.textInput} onPress={addJournal}></TouchableOpacity> */}
             {journals.length === 0 ? (
                 <View style={homeMain.noBlocksContainer}>
-                    <Text>Press '+' to add a Journal piece</Text>
+                    <Text style={{color: '#000'}}>Press '+' to add a Journal piece</Text>
                 </View>
             ) : (
                 <FlatList

@@ -1,13 +1,9 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
-import { auth, firestore } from './firebase';
+const admin = require('firebase-admin');
 
-// MUST READ
-// TRIED TO CREATE A USER BUT THEN I GOT HIS ERROR
-//  ERROR  Error creating user: [ReferenceError: Property 'firestore' doesn't exist]
-// ERROR  Error creating user: [ReferenceError: Property 'firestore' doesn't exist]
-// BUT IT DOES CREATE THE USER IN THE AUTHENTICATION BIT
+import { auth, firestore } from './firebase';
 
 class UserModel {
   static async createUser(firstName, lastName, username, email, password) {
@@ -21,7 +17,7 @@ class UserModel {
       // Check if the username is already in use
       const usernameQuery = await firestore.collection('users').where('username', '==', username).get();
       if (!usernameQuery.empty) {
-        throw new Error('Username already in use');
+        throw new Error('Username already in use.');
       }
 
       // If email and username are available, create the user
@@ -30,20 +26,26 @@ class UserModel {
       const userId = user.uid;
 
       // Create a document in the "users" collection with the user's data
-      await firestore.collection('users').doc(userId).set({
-        firstName,
-        lastName,
-        username,
-        email,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      });
+      try {
+        await firestore.collection('users').doc(userId).set({
+          firstName,
+          lastName,
+          username,
+          email,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+        return user;
+      } catch (docCreationError) {
+        console.error('Error creating user document:', docCreationError); 
+        throw docCreationError; // specific document creation issues
+      } 
 
-      return user;
     } catch (error) {
-      console.error('Error creating user:', error);
+      // console.error('Error creating user:', error);
       throw error;
     }
   }
+
 
   static async changePassword(currentPassword, newPassword) {
     try {
@@ -880,6 +882,57 @@ class UserModel {
     }
   };
 
+  static async updateBlockTitleInFirebase(userId, blockId, newTitle) {
+    try {
+      const blockRef = firebase
+        .firestore()
+        .collection('users')
+        .doc(userId)
+        .collection('blocks')
+        .doc(blockId);
+  
+      // Update the block document with the new title
+      await blockRef.update({ title: newTitle });
+    } catch (error) {
+      console.error('Error updating block title:', error);
+      throw error;
+    }
+  }
+  
+  static async updateBlockDurationInFirebase(userId, blockId, newDuration) {
+    try {
+      const blockRef = firebase
+        .firestore()
+        .collection('users')
+        .doc(userId)
+        .collection('blocks')
+        .doc(blockId);
+  
+      // Update the block document with the new duration
+      await blockRef.update({ duration: newDuration });
+    } catch (error) {
+      console.error('Error updating block duration:', error);
+      throw error;
+    }
+  }
+
+  static async updateBlockStartingTimeInFirebase(userId, blockId, newStartingTime) {
+    try {
+      const blockRef = firebase
+        .firestore()
+        .collection('users')
+        .doc(userId)
+        .collection('blocks')
+        .doc(blockId);
+  
+      // Update the block document with the new starting time
+      await blockRef.update({ startingTime: newStartingTime });
+    } catch (error) {
+      console.error('Error updating block starting time:', error);
+      throw error;
+    }
+  }
+
 
   static async fetchUserGoals(userId) {
     try {
@@ -1080,6 +1133,27 @@ class UserModel {
     }
   }
 
+  static async removeStatus(userId, journalId) {
+    try {
+      const userRef = firebase.firestore().collection('users').doc(userId);
+      const journalRef = userRef.collection('statuses').doc(journalId);
+  
+      // Check if the journal exists
+      const journalSnapshot = await journalRef.get();
+      if (!journalSnapshot.exists) {
+        console.log('Status does not exist');
+        return;
+      }
+  
+      // Remove the journal document
+      await journalRef.delete();
+      console.log('Status removed successfully');
+    } catch (error) {
+      console.error('Error removing status:', error);
+      throw error;
+    }
+  }
+
   static async addBlock(userId, blockData) {
     try {
       const blockRef = await firebase
@@ -1159,25 +1233,73 @@ class UserModel {
 
   static async updateEmail(userId, newEmail) {
     try {
-      // Check for existing email
+      // Check for existing email (Optional - if applicable to your project)
       const emailExistsQuery = firestore.collection('users').where('email', '==', newEmail).limit(1);
       const emailExistsSnapshot = await emailExistsQuery.get();
-
       if (!emailExistsSnapshot.empty) {
         return false; // Email already exists
       }
-
-      // Update the email if unique
-      await firestore.collection('users').doc(userId).update({
-        email: newEmail,
+  
+      // Update the email in Firebase Authentication using Admin SDK
+      await admin.auth().updateUser(userId, {
+        email: newEmail
       });
-
+  
+      // Update the email in Firestore (if you track it there)
+      await firestore.collection('users').doc(userId).update({ email: newEmail });
+  
       return true; // Update successful
     } catch (error) {
       console.error('Error updating email:', error);
-      return false; // Handle unexpected errors 
+      return false; 
     }
   }
+
+  // static async updateEmail(email) {
+  //   try {
+  //     // Get the currently authenticated user
+  //     const user = firebase.auth().currentUser;
+  
+  //     if (!user) {
+  //       return { error: 'No user is currently authenticated' };
+  //     }
+  
+  //     // Check if the provided email is different from the current email
+  //     if (user.email === email) {
+  //       return { success: true, updatedEmailIdentifier: user.uid };
+  //     }
+  
+  //     // Get the user's authentication credentials
+  //     const credential = firebase.auth.EmailAuthProvider.credential(user.email, '');
+      
+  //     // Re-authenticate the user with the credentials
+  //     await user.reauthenticateWithCredential(credential);
+  
+  //     // Update the user's email
+  //     await user.updateEmail(email);
+  
+  //     // Get the updated user's email identifier (UID)
+  //     const updatedEmailIdentifier = user.uid;
+  
+  //     // Update the user's email in the Firebase Authentication user object
+  //     await firebase.auth().updateCurrentUser(user);
+  
+  //     // Sign out the user after updating the email
+  //     await firebase.auth().signOut();
+  
+  //     return { success: true, updatedEmailIdentifier };
+  //   } catch (error) {
+  //     console.error('Error updating email:', error);
+  
+  //     if (error.code === 'auth/email-already-in-use') {
+  //       return { error: 'The email address is already in use by another account' };
+  //     } else if (error.code === 'auth/invalid-email') {
+  //       return { error: 'The email address is not valid' };
+  //     } else {
+  //       return { error: 'An error occurred while updating the email' };
+  //     }
+  //   }
+  // }
 
 }
 

@@ -24,22 +24,18 @@ const HomeScreen = ({ navigation }) => {
     const [showOverlay, setShowOverlay] = useState(false);
     const [upcomingBlocksCount, setUpcomingBlocksCount] = useState(0);
     const [title, setTitle] = useState('Session');
-    // const [blockedGroup, setBlockedGroup] = useState([]); // For setting group
     const [blocks, setBlocks] = useState([]); // Blocks on screen
-    // const [difficulty, setDifficulty] = useState(true); // true == medium. false == hard
 
     const [selectedDate, setSelectedDate] = useState(new Date()); // Initialise to today's date
-    // const [selectedStartDate, setSelectedStartDate] = useState(new Date()); // Today's date as default
 
 
     const currentDate = new Date();
-    const currentDateString = currentDate.toISOString().split('T')[0];
     const formattedDate = format(selectedDate, 'EEEE | MMM do yyyy');
 
     const [habits, setHabits] = useState([])
 
     // this was just to tesst time the time circles. Need to remove this
-    const startTime = new Date(new Date().getTime() - 3000000);
+    // const startTime = new Date(new Date().getTime() - 3000000);
 
     const [overlayContent, setOverlayContent] = useState('solo'); // 'options', 'solo', or 'delete'
 
@@ -69,7 +65,7 @@ const HomeScreen = ({ navigation }) => {
             const data = getUserData();
             if (data.habit) {
                 fetchHabits()
-                setUserData({habit: ''})
+                setUserData({ habit: '' })
             }
         }, [])
     );
@@ -83,23 +79,21 @@ const HomeScreen = ({ navigation }) => {
             console.log('Error fetching habits:', error);
         }
     };
-    
+
     useEffect(() => {
         fetchHabits();
     }, []);
 
-    useEffect(() => {
-        const fetchBlocks = async () => {
-            try {
-                const blocksData = await UserModel.fetchUserBlocks(userId);
-                setBlocks(blocksData);
-                // console.log("blocks")
-                // console.log(blocksData)
-            } catch (error) {
-                console.log('Error fetching blocks:', error);
-            }
-        };
+    const fetchBlocks = async () => {
+        try {
+            const blocksData = await UserModel.fetchUserBlocks(userId);
+            setBlocks(blocksData);
+        } catch (error) {
+            console.log('Error fetching blocks:', error);
+        }
+    };
 
+    useEffect(() => {
         fetchBlocks();
     }, [userId]);
 
@@ -139,7 +133,6 @@ const HomeScreen = ({ navigation }) => {
     const [days, setDays] = useState(getDaysInMonth(currentYear, currentMonth));
 
     const [selectedBlock, setSelectedBlock] = useState(null);
-    // const days = getDaysInMonth(year, month);
 
     const [selectedHour, setSelectedHour] = useState(0);
     const [selectedMinute, setSelectedMinute] = useState(45);
@@ -161,18 +154,12 @@ const HomeScreen = ({ navigation }) => {
     const hours = [...Array(24).keys()]; // Array of hours 0-23
     const minutes = [...Array(60).keys()].slice(1); // Array of minutes 0-59
 
-    // Ensure selectedDate is in the correct format, similar to how you store it in blocks
     const selectedDateStr = selectedDate.toISOString().split('T')[0];
-    // console.log("selectedDateStr!!!!!!!!!!!!!!!")
-    // console.log(selectedDateStr)
 
     // Filter blocks for the selected date
     const blocksForSelectedDate = blocks && blocks.length > 0
         ? blocks.filter(block => block.date === selectedDateStr)
         : [];
-
-    // console.log("blocksForSelectedDate!!!!!!!!!!!")
-    // console.log(blocksForSelectedDate)
 
 
     const confirmSelection = () => {
@@ -183,18 +170,9 @@ const HomeScreen = ({ navigation }) => {
             setInitialSelectedStartMinute(selectedStartMinute);
         }
 
-        // Log selected time for debugging purposes
-        // console.log(`Selected Time: ${selectedStartHour} hours and ${selectedStartMinute} minutes`);
-
         // Common actions to perform after confirming selection
         setOverlayContent('solo');
     };
-
-
-    // const formatDate = (date) => {
-    //     const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    //     return date.toLocaleDateString('en-US', options);
-    // };
 
     const formatTime = (hour, minute) => {
         const formattedHour = hour.toString().padStart(2, '0');
@@ -227,7 +205,7 @@ const HomeScreen = ({ navigation }) => {
 
         setShowOverlay(false); // Hide the overlay
         setOverlayContent('solo'); // Reset the overlay content to 'options'
-        setTitle('Session');
+
 
         const newBlock = {
             date: selectedDate.toISOString().split('T')[0], // Store only the date part
@@ -261,18 +239,15 @@ const HomeScreen = ({ navigation }) => {
                 }
             });
             console.log('Blocks state updated');
+            setTitle('Session');
+            setSelectedHour(0)
+            setSelectedMinute(45)
+
             // setUpcomingBlocksCount(prevCount => prevCount + 1); // Increment the count of upcoming blocks, if needed
         } catch (error) {
             console.log('Error adding block:', error); // Handle the error as needed
         }
     };
-
-
-    useEffect(() => {
-        // Perform actions that depend on the initial selectedHour and selectedMinute
-        // This is just a placeholder; adjust according to your actual needs
-        console.log(`Initial hour: ${selectedHour}, Initial minute: ${selectedMinute}`);
-    }, []); // Empty dependency array means this runs once on mount
 
 
     const formatHour = (hour) => {
@@ -362,7 +337,7 @@ const HomeScreen = ({ navigation }) => {
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => {
-                            // Navigate to the next screen
+                            // Navigate
                             navigation.navigate('Settings'); // Replace  'NextScreen' with the actual screen name you want to navigate to
                         }}
                         style={{
@@ -388,7 +363,37 @@ const HomeScreen = ({ navigation }) => {
 
     const [isModifying, setIsModifying] = useState(false);
 
+    const updateSelectedBlock = async (updatedProperties, modificationType) => {
+        const updatedBlock = { ...selectedBlock, ...updatedProperties };
+        const updatedBlocks = blocks.map((block) =>
+            block.id === selectedBlock.id ? updatedBlock : block
+        );
 
+        try {
+            switch (modificationType) {
+                case 'title':
+                    // Call the Firebase function to update the block title.
+                    await UserModel.updateBlockTitleInFirebase(userId, selectedBlock.id, updatedBlock.title);
+                    break;
+                case 'duration':
+                    // Call the Firebase function to update the block duration
+                    await UserModel.updateBlockDurationInFirebase(userId, selectedBlock.id, updatedBlock.duration);
+                    break;
+                case 'startingTime':
+                    await UserModel.updateBlockStartingTimeInFirebase(userId, selectedBlock.id, updatedBlock.startingTime);
+                    break;
+                default:
+                    break;
+            }
+
+            setBlocks(updatedBlocks);
+            fetchBlocks();
+            setOverlayContent('blockOpts');
+        } catch (error) {
+            console.error('Error updating block data:', error);
+            // Handle the error, e.g., show an error message to the user
+        }
+    };
 
     return (
         <View style={[reusableStyles.container]}>
@@ -414,19 +419,20 @@ const HomeScreen = ({ navigation }) => {
                                 </Text>
                                 <View style={{ flexDirection: 'column', justifyContent: 'space-around', marginVertical: 10, paddingHorizontal: 10 }}>
                                     <TouchableOpacity
-                                        style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginTop: 10 }]}
+                                        style={[reusableStyles.textInput, reusableStyles.moreRounded, { marginVertical: 10 }]}
                                         onPress={async () => {
                                             console.log(currentHabit);
                                             try {
                                                 await UserModel.updateHabitTime(userId, currentHabit.id);
                                                 setShowOverlay(false);
+                                                setOverlayContent('solo');
                                                 fetchHabits()
                                             } catch (error) {
                                                 // Handle the error appropriately 
                                             }
                                         }}
                                     >
-                                        <Text style={{ textAlign: 'center' }}>Yes</Text>
+                                        <Text style={{ textAlign: 'center', color: "#000" }}>Yes</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity
                                         style={[reusableStyles.textInput, reusableStyles.moreRounded]}
@@ -434,7 +440,7 @@ const HomeScreen = ({ navigation }) => {
                                             setShowOverlay(false); // Close the overlay on 'No' press
                                         }}
                                     >
-                                        <Text style={{ textAlign: 'center' }}>No</Text>
+                                        <Text style={{ textAlign: 'center', color: "#000" }}>No</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
@@ -452,11 +458,14 @@ const HomeScreen = ({ navigation }) => {
                                 <TouchableOpacity
                                     onPress={() => {
                                         if (isModifying) {
-                                            // Update the existing block
-                                            const updatedBlock = { ...selectedBlock, title };
-                                            const updatedBlocks = blocks.map((block) => (block.id === selectedBlock.id ? updatedBlock : block));
-                                            setBlocks(updatedBlocks);
-                                            setOverlayContent('blockOpts');
+                                            // Update block title
+                                            if (isModifying) {
+                                                updateSelectedBlock({ title }, 'title');
+                                            }
+                                            // const updatedBlock = { ...selectedBlock, title };
+                                            // const updatedBlocks = blocks.map((block) => (block.id === selectedBlock.id ? updatedBlock : block));
+                                            // setBlocks(updatedBlocks);
+                                            // setOverlayContent('blockOpts');
                                         } else {
                                             // Create a new block
                                             const newBlock = { id: Date.now(), title, duration: 0, startTime: '00:00' };
@@ -486,8 +495,9 @@ const HomeScreen = ({ navigation }) => {
                                     <Text >Duration</Text>
                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                         <Text style={{ marginRight: 10 }}>
-                                            {selectedHour} : {selectedMinute}
+                                            {selectedHour} : {selectedMinute < 10 ? '0' + selectedMinute : selectedMinute}
                                         </Text>
+
                                         <FontAwesome5 name="chevron-right" size={15} color="#000" />
                                     </View>
                                 </View>
@@ -518,7 +528,6 @@ const HomeScreen = ({ navigation }) => {
                             </View>
                         </>
                     )}
-                    {/*  */}
                     {overlayContent === 'delete' && (
                         <>
                             <Text style={{ padding: 20 }}>Are you sure you want to<Text style={{ color: 'red', fontWeight: 'bold' }}> delete </Text>this block?</Text>
@@ -546,25 +555,25 @@ const HomeScreen = ({ navigation }) => {
                                     setTitle(selectedBlock.title);
                                 }}
                             >
-                                <Text>Modify Block's Name</Text>
+                                <Text style={{ color: '#000' }}>Modify Block's Name</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center', marginBottom: 10 }]}
                                 onPress={() => setOverlayContent('duration')}
                             >
-                                <Text>Modify Block's Duration</Text>
+                                <Text style={{ color: '#000' }}>Modify Block's Duration</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center', marginBottom: 10 }]}
                                 onPress={() => setOverlayContent('when')}
                             >
-                                <Text>Modify Block's Starting Time</Text>
+                                <Text style={{ color: '#000' }}>Modify Block's Starting Time</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[reusableStyles.textInput, reusableStyles.lessRounded, { alignSelf: 'center' }]}
                                 onPress={() => setOverlayContent('delete')}
                             >
-                                <Text>Delete Block</Text>
+                                <Text style={{ color: '#000' }}>Delete Block</Text>
                             </TouchableOpacity>
                         </>
                     )}
@@ -636,19 +645,21 @@ const HomeScreen = ({ navigation }) => {
                                     style={[reusableStyles.textInput, signUp.halfInput, { borderRadius: 40 }]}
                                     onPress={() => {
                                         if (isModifying) {
-                                            // Update the existing block's starting time
-                                            const updatedBlock = {
-                                                ...selectedBlock,
-                                                startingTime: { hours: selectedStartHour, minutes: selectedStartMinute }
-                                            };
-                                            const updatedBlocks = blocks.map((block) =>
-                                                block.id === selectedBlock.id ? updatedBlock : block
+                                            // // Update the existing block's starting time
+                                            updateSelectedBlock(
+                                                { startingTime: { hours: selectedStartHour, minutes: selectedStartMinute } },
+                                                'startingTime'
                                             );
-                                            setBlocks(updatedBlocks);
-                                            setOverlayContent('blockOpts'); // Navigate back to the block options
+                                            // const updatedBlock = {
+                                            //     ...selectedBlock,
+                                            //     startingTime: { hours: selectedStartHour, minutes: selectedStartMinute }
+                                            // };
+                                            // const updatedBlocks = blocks.map((block) =>
+                                            //     block.id === selectedBlock.id ? updatedBlock : block
+                                            // );
+                                            // setBlocks(updatedBlocks);
+                                            // setOverlayContent('blockOpts'); // Navigate back to the block options
                                         } else {
-                                            // Logic for handling new block creation or other actions when not modifying
-                                            // This part remains unchanged
                                             confirmSelection()
                                         }
                                     }}
@@ -707,7 +718,7 @@ const HomeScreen = ({ navigation }) => {
                                     style={[reusableStyles.textInput, signUp.halfInput, { borderRadius: 40 }]}
                                     onPress={() => {
                                         if (isModifying) {
-                                            // Reset to the block's current duration values if modifying
+                                            // Update block duration
                                             setSelectedHour(selectedBlock.duration.hours);
                                             setSelectedMinute(selectedBlock.duration.minutes);
                                         } else {
@@ -727,15 +738,17 @@ const HomeScreen = ({ navigation }) => {
                                     onPress={() => {
                                         if (isModifying) {
                                             // Update the existing block's duration
-                                            const updatedBlock = {
-                                                ...selectedBlock,
-                                                duration: { hours: selectedHour, minutes: selectedMinute }
-                                            };
-                                            const updatedBlocks = blocks.map((block) =>
-                                                block.id === selectedBlock.id ? updatedBlock : block
-                                            );
-                                            setBlocks(updatedBlocks);
-                                            setOverlayContent('blockOpts'); // Navigate back to the block options
+                                            updateSelectedBlock({ duration: { hours: selectedHour, minutes: selectedMinute } }, 'duration');
+
+                                            // const updatedBlock = {
+                                            //     ...selectedBlock,
+                                            //     duration: { hours: selectedHour, minutes: selectedMinute }
+                                            // };
+                                            // const updatedBlocks = blocks.map((block) =>
+                                            //     block.id === selectedBlock.id ? updatedBlock : block
+                                            // );
+                                            // setBlocks(updatedBlocks);
+                                            // setOverlayContent('blockOpts'); // Navigate back to the block options
                                         } else {
                                             // Include logic here for what happens when a new duration is confirmed and not modifying
                                             // For instance, creating a new block or any other appropriate action
@@ -792,8 +805,6 @@ const HomeScreen = ({ navigation }) => {
                             item.getFullYear() === selectedDate.getFullYear();
                         return (
                             <TouchableOpacity onPress={() => {
-                                // console.log(item.getDay()); // Log the item before updating state
-                                // console.log(item); // Log the item before updating state
                                 setSelectedDate(item);
                             }}>
                                 <DayItem
@@ -858,7 +869,6 @@ const HomeScreen = ({ navigation }) => {
                         data={blocksForSelectedDate} // Use the filtered blocks here
                         renderItem={renderItem} // Assuming renderItem is defined elsewhere to handle rendering each block
                         keyExtractor={(item) => item.id}
-                        // Updated keyExtractor to use index
                         ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
                     />
 

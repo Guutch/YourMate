@@ -52,7 +52,7 @@ const GoalItem = ({ goalData, onItemPress, onGoalPress, deeperLook, isCompleted 
       ) : (
         <View style={[reusableStyles.textInput, { height: 128, marginBottom: 10 }, reusableStyles.lessRounded]}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text>{goalData.goal}</Text>
+            <Text style={{ color: '#000' }}>{goalData.goal}</Text>
             {deeperLook === false && (
               <TouchableOpacity onPress={() => onItemPress(goalData.id)} style={goalMain.settings}>
                 <FontAwesome5 name="ellipsis-h" size={15} color="#000" />

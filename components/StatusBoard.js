@@ -1,22 +1,31 @@
 import React, { useEffect, useState, useLayoutEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 import UserModel from '../firebase/UserModel'
 
-const StatusBoard = ({ statuses, onStatusPress }) => {
+const StatusBoard = ({ statuses, onStatusPress, removeStatus, loggedUserName }) => {
     // You no longer need useState here for 'theStatuses'
 
     // Render each status within a date group
     const renderStatus = ({ item }) => (
-        <TouchableOpacity
+        <View
             style={styles.statusContainer}
             onPress={() => onStatusPress(item)}
         >
             <Text style={styles.statusText}>
-                {item.username ? item.username : "Anonymous"} - {new Date(item.timestamp).toLocaleTimeString()}
+                {item.username}- {new Date(item.timestamp).toLocaleTimeString()}
             </Text>
             <Text style={styles.statusText}>{item.message}</Text>
-        </TouchableOpacity>
+            {item.username === loggedUserName && (
+                <TouchableOpacity
+                    style={{ position: 'absolute', bottom: 5, right: 5 }}
+                    onPress={() => removeStatus(item)}
+                >
+                    <FontAwesome5 name="times" size={15} color="red" />
+                </TouchableOpacity>
+            )}
+        </View>
     );
 
     // Render each group of statuses
@@ -29,7 +38,7 @@ const StatusBoard = ({ statuses, onStatusPress }) => {
                 keyExtractor={(status) => status.id.toString()}
                 scrollEnabled={true}
                 showsHorizontalScrollIndicator={false}
-                showsVerticalScrollIndicator={false} // Typo corrected: showsVerticalScrollIndicator
+                showsVerticalScrollIndicator={false}
             />
         </View>
     );
@@ -43,14 +52,18 @@ const StatusBoard = ({ statuses, onStatusPress }) => {
     return (
         <View style={styles.container}>
             <Text style={styles.heading}>Status Board</Text>
-            <FlatList
-                data={groupData}
-                renderItem={renderGroup}
-                keyExtractor={(item) => item.title}
-                scrollEnabled={true}
-                showsHorizontalScrollIndicator={false}
-                showsVerticalScrollIndicator={false}
-            />
+            {groupData.length > 0 ? (
+                <FlatList
+                    data={groupData}
+                    renderItem={renderGroup}
+                    keyExtractor={(item) => item.title}
+                    scrollEnabled={true}
+                    showsHorizontalScrollIndicator={false}
+                    showsVerticalScrollIndicator={false}
+                />
+            ) : (
+                <Text style={{alignSelf: 'center'}}>No statuses, post or add a mate!</Text>
+            )}
         </View>
     );
 };
@@ -80,7 +93,6 @@ const styles = StyleSheet.create({
     statusContainer: {
         marginBottom: 5,
         padding: 10,
-        // backgroundColor: '#f5f5f5',
         borderWidth: 2,
         borderColor: 'black',
         borderRadius: 5,

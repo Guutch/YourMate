@@ -82,16 +82,16 @@ const MilestoneAdd = ({ navigation, route }) => {
     navigation.setOptions({
       headerRight: () => (
         <View style={{ flexDirection: 'row' }}>
-         {milestoneTitle && milestoneDesc ? (
-    <TouchableOpacity
-      onPress={() => handleMilestoneSave()}
-      style={{ padding: 10, borderRadius: 5 }}
-    >
-      <Text style={{ color: "Black", textAlign: "center", fontSize: 16 }}>
-        {fromMain ? "Add" : "Next"}
-      </Text>
-    </TouchableOpacity>
-  ) : null}
+          {milestoneTitle && milestoneDesc ? (
+            <TouchableOpacity
+              onPress={() => handleMilestoneSave()}
+              style={{ padding: 10, borderRadius: 5 }}
+            >
+              <Text style={{ color: "#000", textAlign: "center", fontSize: 16 }}>
+                {fromMain ? "Add" : "Next"}
+              </Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
       ),
     });
@@ -116,10 +116,12 @@ const MilestoneAdd = ({ navigation, route }) => {
   return (
     <View style={[reusableStyles.container]}>
       {/* Header Text */}
-      <Text style={[reusableStyles.headerText, { marginBottom: 9 }]}>
+      <View style={{ alignItems: 'center' }}>
+      <Text style={[reusableStyles.headerText, { marginBottom: 15 }]}>
         Add Milestone
       </Text>
-      <Text>Required</Text>
+
+      <Text style={{color: '#000', fontWeight: 'bold'}}>Required</Text>
       <TextInput style={[reusableStyles.textInput, , { height: 44, borderColor: 'black', borderWidth: 1, marginTop: 9 }, reusableStyles.lessRounded]}
         placeholder={"Title"}
         onChangeText={handleTitleChange}
@@ -134,7 +136,7 @@ const MilestoneAdd = ({ navigation, route }) => {
       >
       </TextInput>
 
-      <Text>Optional</Text>
+      <Text style={{color: '#000', fontWeight: 'bold', marginTop: 9}}>Optional</Text>
       <TextInput style={[reusableStyles.textInput, { height: 44, borderColor: 'black', borderWidth: 1, marginTop: 18 }, reusableStyles.lessRounded]}
         placeholder={"Target Value"}
         onChangeText={(text) => setMilestoneTV(text)}
@@ -147,15 +149,10 @@ const MilestoneAdd = ({ navigation, route }) => {
       >
 
       </TextInput>
-      {/* <TextInput style={[reusableStyles.textInput, { height: 44, borderColor: 'black', borderWidth: 1, marginTop: 18 }, reusableStyles.lessRounded]}
-        placeholder={"Target Date"}
-        onChangeText={(text) => setMilestoneTU(text)}
-      >
-
-      </TextInput> */}
       {showValidationError && (
         <Text>TITLE AND/OR DESCRIPTION MISSING</Text>
       )}
+      </View>
     </View>
   );
 };

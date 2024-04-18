@@ -149,7 +149,7 @@ const ActualGoals = ({ route, navigation }) => {
                         // )}
                         style={{ padding: 10, borderRadius: 5 }}
                     >
-                        <Text style={{ color: 'Black', textAlign: 'center', fontSize: 16 }}>
+                        <Text style={{ color: '#000', textAlign: 'center', fontSize: 16 }}>
                             {fromMain ? 'Add' : 'Next'}
                         </Text>
                     </TouchableOpacity>

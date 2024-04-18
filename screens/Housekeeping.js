@@ -1,35 +1,36 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, KeyboardAvoidingView, TextInput, Keyboard, ScrollView, Platform } from 'react-native';
-import { reusableStyles, landing, signUp } from '../components/styles'; // Adjust the path
+import { View, Text, TouchableOpacity, Image, TextInput, Keyboard, ScrollView, Platform } from 'react-native';
+import { reusableStyles, landing, signUpSwipe } from '../components/styles'; // Adjust the path
 
 
 const HouseKeeping = ({ route, navigation }) => {
-    // Destructure the params from the route object
-    const { fromMain, addGoal, word, selected } = route.params;
-  
-    console.log("Selected")
-    console.log(selected)
+  const { fromMain, addGoal, word, selected } = route.params;
 
-    return (
-      <View style={[reusableStyles.container]}>
-        {/* Header Text */}
-        <Text style={[reusableStyles.headerText, { marginBottom: 9 }]}>
-          Before diving into the {selected} app, we invite you to take a quick assessment
-        </Text>
+  return (
+    <View style={[reusableStyles.container, {alignItems: 'center', justifyContent: 'space-around'}]}>
+      {/* Header Text */}
+      {/* <Text style={[reusableStyles.headerText, { marginBottom: 9 }]}>
+        Before diving into the app, you're to take a quick assessment
+      </Text> */}
+      <View style={{ alignItems: 'center' }}>
+      <Text style={signUpSwipe.text}>Before diving into the app</Text>
+      <Text style={signUpSwipe.description}>you're inivited to take a quick assessment</Text>
+      
+      <Image source={require('../components/assets/blob.png')} />
         <TouchableOpacity
           style={[
             reusableStyles.textInput,
             reusableStyles.moreRounded,
-            { backgroundColor: '#0077FF' },
+            { backgroundColor: '#0077FF', marginTop: 15 },
           ]}
-          onPress={() => navigation.navigate('Assessment', {isSignUp: true, habit: selected})}
+          onPress={() => navigation.navigate('Assessment', { isSignUp: true, habit: selected })}
         >
           <Text style={{ textAlign: 'center', fontWeight: 'bold', color: '#fff' }}>
             Do the assessment
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[reusableStyles.textInput, reusableStyles.moreRounded, { backgroundColor: '#0077FF' },]}
+          style={[reusableStyles.textInput, reusableStyles.moreRounded, { backgroundColor: '#0077FF', marginTop: 9 }]}
           onPress={() => navigation.navigate('MainFlow', { fromMain, addGoal, word, selected })}
         >
           <Text style={{ textAlign: 'center', fontWeight: 'bold', color: '#fff' }}>
@@ -37,7 +38,9 @@ const HouseKeeping = ({ route, navigation }) => {
           </Text>
         </TouchableOpacity>
       </View>
-    );
-  };
-  
-  export default HouseKeeping;
+
+    </View>
+  );
+};
+
+export default HouseKeeping;

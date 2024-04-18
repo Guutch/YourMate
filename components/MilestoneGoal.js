@@ -44,8 +44,8 @@ const MilestoneGoal = ({ title, onFlagPress, onDeletePress, milestone, goal }) =
     >
       <View style={{ flexDirection: 'row' }}>
         <View style={{ marginLeft: 5, flex: 3 }}>
-          <Text>Title: {title}</Text>
-          <Text>Desc: {milestone.description}</Text>
+          <Text style={{color: '#000'}}>Title: {title}</Text>
+          <Text style={{color: '#000'}}>Desc: {milestone.description}</Text>
           {milestone.milestoneTV !== "" && <Text>Target Value: {milestone.milestoneTV}</Text>}
           {milestone.milestoneU !== "" && <Text>Target Unit: {milestone.milestoneU}</Text>}
         </View>

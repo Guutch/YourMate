@@ -31,73 +31,72 @@ const LargeGoalOverview = ({ xOut, goal, onOverlayContentChange, userId, updateG
     onOverlayContentChange('note');
   };
 
-  const handleCancel = () => {
-    onOverlayContentChange('lrg');
-  };
 
   const handleFlagPress = async (milestone, goal) => {
-    console.log("milestone((((((l((")
-    console.log(milestone)
-    console.log(goal.id)
+    try {
 
-    const newStatus = milestone.status === 'Ongoing' ? 'Completed' : 'Ongoing';
-    console.log("New status = ", newStatus);
+      const newStatus = milestone.status === 'Ongoing' ? 'Completed' : 'Ongoing';
+      console.log("New status = ", newStatus);
 
-    // Ensure database update is successful
-    const isStatusUpdated = await UserModel.updateMilestoneStatus(userId, goal, milestone, newStatus);
+      // Ensure database update is successful
+      const isStatusUpdated = await UserModel.updateMilestoneStatus(userId, goal, milestone, newStatus);
 
-    if (isStatusUpdated) {
+      if (isStatusUpdated) {
         const goalMilestones = goal.milestones;
         for (let i = 0; i < goalMilestones.length; i++) {
-            if (goalMilestones[i].id === milestone.id) {
-                goalMilestones[i].status = newStatus; 
-                break; // Assuming milestone IDs are unique
-            }
+          if (goalMilestones[i].id === milestone.id) {
+            goalMilestones[i].status = newStatus;
+            break; // Assuming milestone IDs are unique
+          }
         }
 
         // Call the parent component's function 
-        onUpdateGoalMilestones(goal.id, goalMilestones); 
-    } else {
+        onUpdateGoalMilestones(goal.id, goalMilestones);
+      } else {
         console.error('Error updating milestone status');
+      }
+    } catch (error) {
+
     }
-};
 
-
-
-const handleDeleteMilestone = async (milestone) => {
-  console.log("Here")
-  // 1. Remove from the frontend
-  const updatedGoal = {
-    ...goal,
-    milestones: goal.milestones.filter((m) => m !== milestone),
   };
-  updateGoalData(updatedGoal);
 
-  // 2. Remove from the backend
-  const goalId = goal.id; // Assuming `goal` has an `id` property
-  const isDeleted = await UserModel.deleteMilestoneFromBackend(userId, goalId, milestone);
-  if (!isDeleted) {
-    console.log('Error deleting milestone from backend');
-  }
-};
 
-const handleDeleteNote = async (note) => {
-  console.log("note")
-  console.log(note)
-  // 1. Remove from the frontend
-  const updatedGoal = {
-    ...goal,
-    notes: goal.notes.filter((n) => n !== note),
+
+  const handleDeleteMilestone = async (milestone) => {
+    console.log("Here")
+    // 1. Remove from the frontend
+    const updatedGoal = {
+      ...goal,
+      milestones: goal.milestones.filter((m) => m !== milestone),
+    };
+    updateGoalData(updatedGoal);
+
+    // 2. Remove from the backend
+    const goalId = goal.id; // Assuming `goal` has an `id` property
+    const isDeleted = await UserModel.deleteMilestoneFromBackend(userId, goalId, milestone);
+    if (!isDeleted) {
+      console.log('Error deleting milestone from backend');
+    }
   };
-  updateGoalData(updatedGoal);
 
-  // 2. Remove from the backend
-  const goalId = goal.id; // Assuming `goal` has an `id` property
-  const isDeleted = await UserModel.deleteNoteFromBackend(userId, goalId, note);
-  if (!isDeleted) {
-    console.log('Error deleting note from backend');
-  }
-};
+  const handleDeleteNote = async (note) => {
+    console.log("note")
+    console.log(note)
+    // 1. Remove from the frontend
+    const updatedGoal = {
+      ...goal,
+      notes: goal.notes.filter((n) => n !== note),
+    };
+    updateGoalData(updatedGoal);
+
+    // 2. Remove from the backend
+    const goalId = goal.id; // Assuming `goal` has an `id` property
+    const isDeleted = await UserModel.deleteNoteFromBackend(userId, goalId, note);
+    if (!isDeleted) {
+      console.log('Error deleting note from backend');
+    }
+  };
 
   return (
     <ScrollView>
@@ -106,28 +105,28 @@ const handleDeleteNote = async (note) => {
 
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 10 }}>
           <View>
-            <Text style={{color: "#000"}}>Goal Details</Text>
+            <Text style={{ color: "#000", fontWeight: 'bold' }}>Goal Details</Text>
           </View>
 
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{color: "#fff"}}>The Goal</Text>
+            <Text style={{ color: "#fff" }}>The Goal</Text>
           </View>
 
-          <TouchableOpacity style={{}} onPress={() => xOut()}>
+          <TouchableOpacity onPress={() => xOut()}>
             <FontAwesome5 name="times" size={30} color="#000" />
           </TouchableOpacity>
         </View>
 
-        <Text>Milestones</Text>
+        <Text style={{ color: "#000", fontWeight: 'bold', marginBottom: 9 }}>Milestones</Text>
         {/* <Text>Milestones - title -{goal.title} </Text>   */}
-        <GoalItem goalData={goal} deeperLook={true}/>
+        <GoalItem goalData={goal} deeperLook={true} />
 
         {/* Milestone rectangles */}
         <View style={{ marginTop: 10 }}>
           <View style={{ marginTop: 10 }}>
             <View style={[reusableStyles.button, { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: "white", padding: 10, borderColor: "#000", borderWidth: 2 }]}>
-              <Text>Started the goal</Text>
-              <Text>{goal.date.toLocaleDateString('en-GB')}</Text>
+              <Text style={{color: '#000'}}>Started the goal</Text>
+              <Text style={{color: '#000'}}>{goal.date.toLocaleDateString('en-GB')}</Text>
               {/* Conditionally render MilestoneGoal if milestones exist */}
 
             </View>
@@ -149,15 +148,15 @@ const handleDeleteNote = async (note) => {
 
             )}
             <View style={[reusableStyles.button, { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: "white", padding: 10, borderColor: "#000", borderWidth: 2 }]}>
-              <Text>Target Date</Text>
-              <Text>{goal.targetDate.toLocaleDateString('en-GB')}</Text>
+              <Text style={{color: '#000'}}>Target Date</Text>
+              <Text style={{color: '#000'}}>{goal.targetDate.toLocaleDateString('en-GB')}</Text>
             </View>
           </View>
         </View>
       </View>
       {/* Notes */}
       <View style={{ borderBottomWidth: 1, padding: 10, borderBottomColor: 'black', justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Notes</Text>
+        <Text style={{color: '#000', fontWeight: 'bold'}}>Notes</Text>
         {goal.notes && goal.notes.length > 0 ? (
           goal.notes.map((note, index) => (
             <NoteComponent
@@ -169,51 +168,51 @@ const handleDeleteNote = async (note) => {
             />
           ))
         ) : (
-          <Text>There are no notes.</Text>
+          <Text style={{color: '#000'}}>There are no notes.</Text>
         )}
 
       </View>
       {/* Buttons */}
-      <View style={{ 
-        flexDirection: 'row', 
+      <View style={{
+        flexDirection: 'row',
         justifyContent: 'center', // Center elements horizontally
         flexWrap: 'wrap',
         marginTop: 5,
-        padding: 10 
-       }}> 
-       
-    <TouchableOpacity 
-        style={[
-            reusableStyles.button, 
-            { 
-                backgroundColor: "white", 
-                padding: 10, 
-                borderColor: "#000", 
-                borderWidth: 2,
-                marginBottom: 10 // Add margin for spacing
-            }
-        ]} 
-        onPress={handleMilestoneButtonPress}
-    >
-        <Text>Add a milestone</Text>
-    </TouchableOpacity>
+        padding: 10
+      }}>
 
-    <TouchableOpacity 
-        style={[
-            reusableStyles.button, 
-            { 
-                backgroundColor: "white", 
-                padding: 10, 
-                borderColor: "#000", 
-                borderWidth: 2, 
-                marginBottom: 10 // Add margin for spacing
+        <TouchableOpacity
+          style={[
+            reusableStyles.button,
+            {
+              backgroundColor: "white",
+              padding: 10,
+              borderColor: "#000",
+              borderWidth: 2,
+              marginBottom: 10 // Add margin for spacing
             }
-        ]}
-        onPress={handleNoteButtonPress}
-    >
-        <Text>Add a note</Text>
-    </TouchableOpacity>
-</View>
+          ]}
+          onPress={handleMilestoneButtonPress}
+        >
+          <Text style={{ color: '#000' }}>Add a milestone</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            reusableStyles.button,
+            {
+              backgroundColor: "white",
+              padding: 10,
+              borderColor: "#000",
+              borderWidth: 2,
+              marginBottom: 10 // Add margin for spacing
+            }
+          ]}
+          onPress={handleNoteButtonPress}
+        >
+          <Text style={{ color: '#000' }}>Add a note</Text>
+        </TouchableOpacity>
+      </View>
 
 
     </ScrollView>

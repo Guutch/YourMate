@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { reusableStyles } from '../components/styles'; // Adjust the path
 
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import UserModel from '../firebase/UserModel';
 
 
 
@@ -13,12 +14,13 @@ const SignIn = ({ navigation }) => {
 
   const auth = getAuth();
 
-  const handleSignIn = () => {
+
+
+  const handleSignIn = async () => {
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         // Sign-in successful.
         console.log("Signed in successfully:", userCredential.user);
-        // Navigate to the MainFlow
         navigation.navigate('MainFlow');
       })
       .catch((error) => {
@@ -30,7 +32,7 @@ const SignIn = ({ navigation }) => {
   };
 
   const handleChange = (setter) => (value) => {
-    setError(''); // Clear any existing error
+    setError(''); // Clear existing error
     setter(value); // Update the state with the new value
   };
 
@@ -40,7 +42,6 @@ const SignIn = ({ navigation }) => {
       <Text style={[reusableStyles.headerText, { marginBottom: 9 }]}>
         Log in to Your Mate
       </Text>
-
 
       {/* Email Group */}
       <View style={{ marginBottom: 9 }}>

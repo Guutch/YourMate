@@ -10,7 +10,7 @@ import { Overlay } from 'react-native-elements';
 
 import { app } from '../../firebase/firebase'
 import { getAuth } from 'firebase/auth';
-
+import FriendsList from '../../components/FriendsList';
 import UserModel from '../../firebase/UserModel'
 
 import { getUserData, setUserData } from '../../components/DataManager';
@@ -142,12 +142,13 @@ const CommunityScreen = ({ navigation }) => {
                             id: otherUserId,
                             firstName: userData.firstName,
                             lastName: userData.lastName,
-                            userName: userData.userName,
+                            userName: userData.username,
                         };
                     })
                 );
-                console.log("mates");
-                console.log(friends);
+                for (const friend of friends) {
+                    console.log("Friend:", friend);
+                  }
 
                 setFriends(friends);
             } catch (error) {
@@ -159,50 +160,74 @@ const CommunityScreen = ({ navigation }) => {
     }, [currentUserId]);
 
 
+    const fetchData = async () => {
+        try {
+            const fetchedStatuses = await UserModel.fetchStatuses(currentUserId, friends);
+            console.log("fetchedStatuses", fetchedStatuses)
+            const formattedStatuses = fetchedStatuses.map(status => {
+                const originalDate = new Date(status.timestamp.seconds * 1000);
+                const dateWithAddedHour = new Date(originalDate.getTime() + 3600000); // Add 1 hour in milliseconds
+              
+                const formattedDate = dateWithAddedHour.toISOString().substring(0, 19).replace('T', ' ');
+                return { ...status, timestamp: formattedDate };
+              });
+            // Group statuses by date after formatting
+            const groupedStatuses = groupStatusesByDate(formattedStatuses);
+            console.log("groupedStatuses")
+            console.log(groupedStatuses)
+            setStatuses(groupedStatuses);
+        } catch (error) {
+            console.error('Error fetching statusess:', error);
+        }
+    };
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const fetchedStatuses = await UserModel.fetchStatuses(currentUserId, friends);
-                console.log("fetchedStatuses", fetchedStatuses)
-                const formattedStatuses = fetchedStatuses.map(status => {
-                    const date = new Date(status.timestamp.seconds * 1000);
-                    const formattedDate = date.toISOString().substring(0, 19).replace('T', ' ');
-                    return { ...status, timestamp: formattedDate };
-                });
-                // Group statuses by date after formatting
-                const groupedStatuses = groupStatusesByDate(formattedStatuses);
-                console.log("groupedStatuses")
-                console.log(groupedStatuses)
-                setStatuses(groupedStatuses);
-            } catch (error) {
-                console.error('Error fetching statusess:', error);
-            }
-        };
-        // console.log("Thehgsuyth")
-
         fetchData();
-    }, [currentUserId, friends, userName]); // Dependencies for refetching
+    }, [currentUserId, friends, userName]); // for refetching
 
     // Function to group statuses by date
     const groupStatusesByDate = (statuses) => {
-        return statuses.reduce((groups, status) => {
-            const date = new Date(status.timestamp);
-            const formattedDate = `${date.toLocaleString('default', { weekday: 'short' })} - ${date.toLocaleString('default', { month: 'long' })} ${date.getDate()} ${date.getFullYear()}`;
-
-            if (!groups[formattedDate]) {
-                groups[formattedDate] = [];
-            }
-            groups[formattedDate].push(status);
-            return groups;
+        const groups = statuses.reduce((acc, status) => {
+          const date = new Date(status.timestamp);
+          const formattedDate = `${date.toLocaleString('default', { weekday: 'short' })} - ${date.toLocaleString('default', { month: 'long' })} ${date.getDate()} ${date.getFullYear()}`;
+      
+          if (!acc[formattedDate]) {
+            acc[formattedDate] = [];
+          }
+      
+          acc[formattedDate].push(status);
+          return acc;
         }, {});
-    };
+      
+        const groupedStatuses = Object.entries(groups).reduce((acc, [date, statuses]) => {
+          acc[date] = statuses.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+          return acc;
+        }, {});
+      
+        const sortedDates = Object.keys(groupedStatuses).sort((a, b) => new Date(b) - new Date(a));
+      
+        const result = {};
+        sortedDates.forEach(date => {
+          result[date] = groupedStatuses[date];
+        });
+      
+        return result;
+      };
+
+    const removeStatus = async (itemToRemove) => {
+        try {
+            console.log(itemToRemove)
+            await UserModel.removeStatus(currentUserId, itemToRemove.id)
+
+            fetchData();
+        } catch (error) {
+            console.error("Error removing status:", error);
+        }
+    }
 
     // const handleAccept = async (request) => {
     //     console.log(request)
     const handleAccept = async (requestId, receiverId, senderId) => {
-        console.log("requestId", requestId);
-        console.log("receiverId", receiverId);
         try {
           const newFriend = await UserModel.handleAccept(requestId, senderId);
           if (newFriend) {
@@ -222,6 +247,7 @@ const CommunityScreen = ({ navigation }) => {
                 (request) => request.id !== requestId
               ),
             }));
+            fetchData()
           }
         } catch (error) {
           console.error("Error accepting friend request in component:", error);
@@ -230,7 +256,6 @@ const CommunityScreen = ({ navigation }) => {
 
 
     const handleRejectOrCancel = async (requestId, requestType) => {
-        console.log("Hi");
         try {
             await UserModel.handleReject(requestId);
             // Update the requests state to filter out the cancelled/rejected request
@@ -249,7 +274,7 @@ const CommunityScreen = ({ navigation }) => {
                 }
                 return currentRequests; // Return unmodified state if requestType doesn't match
             });
-
+            fetchData()
         } catch (error) {
             console.error('Error rejecting/canceling friend request:', error);
         }
@@ -306,19 +331,6 @@ const CommunityScreen = ({ navigation }) => {
         setOverlayContent('options');
     }
 
-    // useEffect(() => {
-    //     const fetchBlockedUsers = async () => {
-    //         try {
-    //             const blockedUsers = await UserModel.fetchBlockedUsers(currentUserId);
-    //             setBlocks(blockedUsers);
-    //         } catch (error) {
-    //             console.error('Error fetching blocked users:', error);
-    //         }
-    //     };
-
-    //     fetchBlockedUsers();
-    // }, [currentUserId]);
-
     const handleUnblockUser = async (blockedUser) => {
         // Implement the unblock functionality here
         console.log('Unblocking user:', blockedUser);
@@ -362,9 +374,6 @@ const CommunityScreen = ({ navigation }) => {
             // Retrieve the user document from Firestore
             //   const userDoc = await firestore.collection('users').doc(currentUserId).get();
 
-            //   // Get the username from the user document
-            //   const userName = userDoc.data().username;
-
             // Assuming UserModel.saveStatusToBackend posts the status to the backend
             await UserModel.saveStatusToBackend(currentUserId, statusMessage);
 
@@ -399,42 +408,6 @@ const CommunityScreen = ({ navigation }) => {
             // Handle the error appropriately
         }
     };
-
-    // const handlePostStatus = async () => {
-    //     try {
-    //         // Assuming UserModel.saveStatusToBackend posts the status to the backend
-    //         await UserModel.saveStatusToBackend(currentUserId, statusMessage, userName);
-
-    //         // Form the new status object
-    //         const newStatus = {
-    //             id: Date.now().toString(), // Temporary ID, replace with backend-generated ID if available
-    //             username: userName,
-    //             timestamp: new Date().toISOString(),
-    //             message: statusMessage,
-    //         };
-
-    //         // Reset the status message input and potentially dismiss overlays here
-    //         setStatusMessage('');
-    //         setOverlayContent('options');
-    //         setShowOverlay(false);
-
-    //         // Append and re-group statuses
-    //         setStatuses(prevStatuses => {
-    //             // Flatten the grouped statuses back into an array
-    //             const flattenedStatuses = Object.values(prevStatuses).flat();
-
-    //             // Append the new status
-    //             flattenedStatuses.unshift(newStatus);
-
-    //             // Re-group statuses including the new one
-    //             return groupStatusesByDate(flattenedStatuses);
-    //         });
-
-    //     } catch (error) {
-    //         console.error('Error posting status:', error);
-    //         // Handle the error appropriately
-    //     }
-    // };
 
 
     const handleSearchUser = async () => {
@@ -484,6 +457,11 @@ const CommunityScreen = ({ navigation }) => {
         // You may want to reset the title or perform additional actions here
     };
 
+    const renderItem = ({ item }) => (
+        <View >
+          <Text >{item.firstName}</Text>
+        </View>
+      );
 
     return (
         <View style={[reusableStyles.container]}>
@@ -598,7 +576,7 @@ const CommunityScreen = ({ navigation }) => {
                     )}
                     {overlayContent === 'options' && (
                         <>
-                            <Text style={{ padding: 20 }}>
+                            <Text style={{ padding: 20, color: '#000' }}>
                                 {requestSuccess ? "Mate request sent, what would you like to do now?" : "How would you like to proceed?"}
                             </Text>
 
@@ -698,13 +676,13 @@ const CommunityScreen = ({ navigation }) => {
                     {overlayContent === 'review' && (
                         <>
                             <View>
-                                <Text>Sent Requests (Pending)</Text>
+                                <Text style={{color: '#000', fontWeight: 'bold', fontSize: 16}}>Sent Requests (Pending)</Text>
                                 {requests.sentRequests.length > 0 ? (
                                     requests.sentRequests.map(request => (
                                         <View key={request.id} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 10 }}>
-                                            <Text>To: {request.receiverName || 'Loading...'}</Text>
+                                            <Text style={{color: '#000'}}>To: {request.receiverName || 'Loading...'}</Text>
                                             <TouchableOpacity onPress={() => handleRejectOrCancel(request.id, 'sent')}>
-                                                <Text>Cancel</Text>
+                                                <Text style={{color: 'red', fontWeight: 'bold'}}>Cancel</Text>
                                             </TouchableOpacity>
                                         </View>
                                     ))
@@ -712,23 +690,23 @@ const CommunityScreen = ({ navigation }) => {
                                     <Text style={{ textAlign: 'center', padding: 10 }}>There are no sent requests.</Text>
                                 )}
 
-                                <Text>Received Requests</Text>
+                                <Text style={{color: '#000', fontWeight: 'bold', fontSize: 16}}>Received Requests</Text>
                                 {requests.receivedRequests.length > 0 ? (
                                     requests.receivedRequests.map(request => (
                                         <View key={request.id} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 10 }}>
-                                            <Text>From: {request.senderName || 'Loading...'}</Text>
+                                            <Text style={{color: '#000'}}>From: {request.senderName || 'Loading...'}</Text>
                                             <View>
                                                 <TouchableOpacity onPress={() => handleAccept(request.id, request.receiver, request.sender)}>
-                                                    <Text>Accept</Text>
+                                                    <Text tyle={{color: 'green', fontWeight: 'bold'}}>Accept</Text>
                                                 </TouchableOpacity>
                                                 <TouchableOpacity onPress={() => handleRejectOrCancel(request.id, 'received')}>
-                                                    <Text>Reject</Text>
+                                                    <Text tyle={{color: 'red', fontWeight: 'bold'}}>Reject</Text>
                                                 </TouchableOpacity>
                                             </View>
                                         </View>
                                     ))
                                 ) : (
-                                    <Text style={{ textAlign: 'center', padding: 10 }}>There are no received requests.</Text>
+                                    <Text style={{ textAlign: 'center', padding: 10, color: '#000' }}>There are no received requests.</Text>
                                 )}
                             </View>
 
@@ -799,35 +777,15 @@ const CommunityScreen = ({ navigation }) => {
                     color: 'black'
                 }}>Friends</Text>
                 {friends.length === 0 ? (
-                    <Text style={{ textAlign: 'center', marginTop: 10 }}>You have not got any friends currently.</Text>
+                    <Text style={{ textAlign: 'center', marginTop: 10 }}>You have not got any mates currently.</Text>
                 ) : (
-                    // friends.map((friend, index) => (
-                    <FlatList
-                        data={friends}
-                        keyExtractor={(item, index) => index.toString()}
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        showsVericalScrollIndicator={false}
-                        renderItem={({ item }) => (
-                            <View style={communityMain.friendBox}>
-                                <View style={communityMain.userCircle}>
-                                    <FontAwesome5 name="user" size={30} color="#000"
-                                        onPress={() => pressedFriend(item)} />
-                                </View>
-                                <View style={communityMain.nameContainer}>
-                                    <Text style={communityMain.userName}>{`${item.firstName} ${item.lastName}`}</Text>
-                                </View>
-                            </View>
-                        )}
-                    />
-                    // ))
+                        <FriendsList friends={friends} pressedFriend={pressedFriend}/>
                 )}
             </View>
 
-            {/* Friends Quest piece */}
+            {/* Statuses piece */}
             <View style={{ flex: 1, marginTop: 10, padding: 10 }}>
-                {/* <Text>Status Board</Text> */}
-                <StatusBoard statuses={statuses} onStatusPress={handleStatusPress} currentUserId={currentUserId} mates={friends} />
+                <StatusBoard statuses={statuses} onStatusPress={handleStatusPress} removeStatus={removeStatus} loggedUserName={userName}/>
             </View>
 
         </View>

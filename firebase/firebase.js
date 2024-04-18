@@ -1,9 +1,8 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
-// Import any other Firebase services you need
 
-// Your web app's Firebase configuration
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBY7okhN4uyFBu93oaIn5cs24plpgKIEQE",
   authDomain: "yourmate-26000.firebaseapp.com",
@@ -14,9 +13,8 @@ const firebaseConfig = {
   measurementId: "G-Z3CSM8RV0N"
 };
 
-// Initialize Firebase
+// Initialise Firebase
 const app = firebase.initializeApp(firebaseConfig);
 
 export const auth = firebase.auth(app);
 export const firestore = firebase.firestore(app);
-// Export any other Firebase services you need
