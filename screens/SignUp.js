@@ -173,6 +173,16 @@ const SignUp = ({ navigation }) => {
                 password
             );
 
+            if (user === 'Email already in use') {
+                setEmailError('Email is already taken');
+                return;
+            }
+
+            if (user === 'Username already in use.') {
+                setUsernameError('Username is already taken');
+                return;
+            } 
+
             console.log('User created:', user);
             console.log('UserModel.createUser call successful'); // Log success 
 
@@ -184,13 +194,13 @@ const SignUp = ({ navigation }) => {
             console.error('Error creating user:', error);
 
             // Specific error handling
-            if (error.message === 'Email already in use') {
-                setEmailError('Email is already taken');
-            } else if (error.message === 'Username already in use.') {
-                setUsernameError('Username is already taken');
-            } else {
-                Alert.alert('Error', error.message);
-            }
+            // if (error.message === 'Email already in use') {
+            //     setEmailError('Email is already taken');
+            // } else if (error.message === 'Username already in use.') {
+            //     setUsernameError('Username is already taken');
+            // } else {
+            //     Alert.alert('Error', error.message);
+            // }
         }
     };
 

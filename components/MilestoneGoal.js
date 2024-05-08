@@ -46,8 +46,8 @@ const MilestoneGoal = ({ title, onFlagPress, onDeletePress, milestone, goal }) =
         <View style={{ marginLeft: 5, flex: 3 }}>
           <Text style={{color: '#000'}}>Title: {title}</Text>
           <Text style={{color: '#000'}}>Desc: {milestone.description}</Text>
-          {milestone.milestoneTV !== "" && <Text>Target Value: {milestone.milestoneTV}</Text>}
-          {milestone.milestoneU !== "" && <Text>Target Unit: {milestone.milestoneU}</Text>}
+          {milestone.milestoneTV !== "" && <Text style={{color: '#000'}}>Target Value: {milestone.milestoneTV}</Text>}
+          {milestone.milestoneU !== "" && <Text style={{color: '#000'}}>Target Unit: {milestone.milestoneU}</Text>}
         </View>
 
         <View style={{ flexDirection: 'row', flex: 1, alignItems: 'center' }}>

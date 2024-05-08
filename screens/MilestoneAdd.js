@@ -1,43 +1,34 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, KeyboardAvoidingView, TextInput, Keyboard, ScrollView, Platform } from 'react-native';
-import { reusableStyles, landing, signUp } from '../components/styles'; // Adjust the path
+import { View, Text, TouchableOpacity, TextInput } from 'react-native';
+import { reusableStyles } from '../components/styles'; // Adjust the path
 import { setJustCreatedGoal, setJustCreatedM } from '../components/GoalStore'
-
 import UserModel from '../firebase/UserModel';
 import { app } from '../firebase/firebase'
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { getAuth } from 'firebase/auth';
+
 const auth = getAuth(app);
+
 const MilestoneAdd = ({ navigation, route }) => {
-  const { goal, fromMain, selected, goalId } = route.params;
+  const { fromMain, selected, goalId } = route.params;
   const [milestoneTitle, setMilestoneTitle] = useState('');
   const [milestoneDesc, setMilestoneDesc] = useState('');
   const [milestoneTV, setMilestoneTV] = useState('');
   const [milestoneU, setMilestoneU] = useState('');
-  // const [milestoneTU, setMilestoneTU] = useState('');
   const [showValidationError, setShowValidationError] = useState(false);
 
   // Allows for the goal to be created on the UI
-  // setGlobalData({title: goal});
   setJustCreatedGoal(true)
 
-  console.log("goalId")
-  console.log(goalId)
-
-  console.log("fromMain")
-  console.log(fromMain)
-
   const handleMilestoneSave = async () => {
-    console.log(milestoneTitle)
-    console.log(milestoneDesc)
+    // If the required data is missing we show a validation error
     if (milestoneTitle.trim() === '' || milestoneDesc.trim() === '') {
       setShowValidationError(true);
     } else {
-      // Perform your save operation here
+      // Performs save operation
       setShowValidationError(false);
     }
 
-
-
+    // Try-catch blck to handle backend updates
     try {
       const user = auth.currentUser;
       if (user) {
@@ -45,22 +36,20 @@ const MilestoneAdd = ({ navigation, route }) => {
 
         console.log(milestoneTitle)
 
+        // Milestone data packaged into object for the backend
         const milestoneData = {
-          title: milestoneTitle, // Use the values from your state variables
+          title: milestoneTitle, 
           description: milestoneDesc,
           milestoneTV: milestoneTV,
           milestoneU: milestoneU,
-          // milestoneTU: milestoneTU,
           status: 'Ongoing'
         };
 
-        console.log("milestoneData")
-        console.log(milestoneData)
-
+        // Milestone data gets stored in the backend
         await UserModel.addMilestone(userId, goalId, milestoneData);
         setJustCreatedM(true)
 
-        //   Navigate to the next screen after saving the goal
+        // Navigate to the next screen
         navigation.navigate(
           fromMain ? 'MainFlow' : 'Housekeeping',
           {

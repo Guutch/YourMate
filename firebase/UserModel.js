@@ -8,17 +8,20 @@ import { auth, firestore } from './firebase';
 class UserModel {
   static async createUser(firstName, lastName, username, email, password) {
     try {
-      // Check if the email is already in use
-      const emailQuery = await firestore.collection('users').where('email', '==', email).get();
-      if (!emailQuery.empty) {
-        throw new Error('Email already in use');
-      }
 
       // Check if the username is already in use
       const usernameQuery = await firestore.collection('users').where('username', '==', username).get();
       if (!usernameQuery.empty) {
-        throw new Error('Username already in use.');
+        return 'Username already in use.'
       }
+
+      // Check if the email is already in use
+      const emailQuery = await firestore.collection('users').where('email', '==', email).get();
+      if (!emailQuery.empty) {
+        return 'Email already in use'
+      }
+
+      
 
       // If email and username are available, create the user
       const userCredential = await auth.createUserWithEmailAndPassword(email, password);
@@ -46,10 +49,15 @@ class UserModel {
     }
   }
 
-
+  // This function is responsible for changing the user's password
+  // Before changing the password, we verify if the password entered is correct
+  // Either 'true' is returned or an error message that then gets displayed to the front end
   static async changePassword(currentPassword, newPassword) {
     try {
+      // Get the currently authenticated user
       const user = firebase.auth().currentUser;
+
+      // Create a credential object with the user's details
       const credential = await firebase.auth.EmailAuthProvider.credential(
         user.email,
         currentPassword
@@ -61,13 +69,14 @@ class UserModel {
       // Update the password
       await user.updatePassword(newPassword);
 
-      return true; // Password changed successfully
+      // Password changed successfully
+      return true; 
     } catch (error) {
-      // console.error('Error changing password:', error);
-      // return false;
+      // Check if the error was caused by a wrong password being entered
       if (error.code === 'auth/wrong-password') {
         return { error: 'Incorrect current password' };
       }
+      // Return a generic error message
       return { error: 'An error occurred while changing the password' };
     }
   }
@@ -1007,18 +1016,15 @@ class UserModel {
       const milestones = milestonesQuery.docs.map((milestoneDoc) => ({
         id: milestoneDoc.id,
         ...milestoneDoc.data(),
-        createdAt: milestoneDoc.data().createdAt.toDate(), // Assuming createdAt is a Firestore timestamp
+        createdAt: milestoneDoc.data().createdAt.toDate(),
       }));
 
       const notesQuery = await goalDocRef.collection('notes').get();
       const notes = notesQuery.docs.map((noteDoc) => ({
         id: noteDoc.id,
         ...noteDoc.data(),
-        createdAt: noteDoc.data().createdAt.toDate(), // Assuming createdAt is a Firestore timestamp
+        createdAt: noteDoc.data().createdAt.toDate(),
       }));
-
-      console.log("milestones!!!!")
-      console.log(milestones)
 
       return {
         id: goalDocRef.id,

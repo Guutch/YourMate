@@ -16,7 +16,7 @@ const HouseKeeping = ({ route, navigation }) => {
       <Text style={signUpSwipe.text}>Before diving into the app</Text>
       <Text style={signUpSwipe.description}>you're inivited to take a quick assessment</Text>
       
-      <Image source={require('../components/assets/blob.png')} />
+      <Image source={require('../components/assets/blob.png')} style={{ transform: [{ rotate: '127deg' }] }}/>
         <TouchableOpacity
           style={[
             reusableStyles.textInput,

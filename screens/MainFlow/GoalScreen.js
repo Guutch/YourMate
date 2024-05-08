@@ -1,31 +1,27 @@
-import React, { useEffect, useState, useLayoutEffect } from 'react';
-import { View, Text, TouchableOpacity, FlatList, TextInput, ScrollView, Platform } from 'react-native';
-import { reusableStyles, goalMain, homeMain } from '../../components/styles'; // Adjust the path
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, FlatList, TextInput} from 'react-native';
+import { reusableStyles } from '../../components/styles';
+import { useFocusEffect } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import GoalItem from '../../components/GoalItem'
 import MilestoneLrgGoalO from '../../components/MilestoneLrgGoalO'
-import firebase from 'firebase/app';
 import 'firebase/firestore';
 import { app } from '../../firebase/firebase'
 import { getAuth } from 'firebase/auth';
-
 import UserModel from '../../firebase/UserModel'
-
-import { getGlobalData, getJustCreatedGoal, setJustCreatedGoal, setJustCreatedM } from '../../components/GoalStore';
-
 import { Overlay } from 'react-native-elements';
 import LargeGoalOverview from '../../components/LargeGoalOverlay';
-
 import motivationMessages from '../../components/motivation'
+import { getGlobalData, getJustCreatedGoal, setJustCreatedGoal, setJustCreatedM } from '../../components/GoalStore';
 
 const auth = getAuth(app);
-const GoalScreen = ({ navigation, route }) => {
+const GoalScreen = ({ navigation}) => {
+    // UseStates initialised
     const [showOverlay, setShowOverlay] = useState(false);
-    const [overlayContent, setOverlayContent] = useState('options'); // 'options', 'completed', or 'delete'
-    const [goals, setGoals] = useState([]); // Blocks on screen
-    const [completedGoals, setCompletedGoals] = useState([]); // Blocks on screen
+    const [overlayContent, setOverlayContent] = useState('options'); 
+    const [goals, setGoals] = useState([]); 
+    const [completedGoals, setCompletedGoals] = useState([]); 
     const [selectedGoal, setSelectedGoal] = useState(null);
     const [selectedGoalId, setSelectedGoalId] = useState(null);
     const [isCompleted, setIsCompleted] = useState(false);
@@ -37,10 +33,10 @@ const GoalScreen = ({ navigation, route }) => {
     const [temporaryStartDate, setTemporaryStartDate] = useState('');
     const [temporaryTargetDate, setTemporaryTargetDate] = useState('');
 
-
-
+    // User's ID stored
     const userUID = auth.currentUser.uid;
 
+    // Function handles the start date change the user makes
     const handleStartDateChange = (event, selectedDate) => {
         setShowStartDatePicker(false);
         if (selectedDate) {
@@ -51,7 +47,8 @@ const GoalScreen = ({ navigation, route }) => {
         }
     };
 
-    const handleTargetDateChange = (event, selectedDate) => {
+    // Function handles the target date change the user makes
+    const handleTargetDateChange = ( selectedDate) => {
         setShowTargetDatePicker(false);
         if (selectedDate && selectedDate >= startDate) {
             setTargetDate(selectedDate);
@@ -59,18 +56,16 @@ const GoalScreen = ({ navigation, route }) => {
     };
 
     // This will work everytime the screen comes in focus
-    // Need boolean to check if we need to add something from within create goal etc
+    // Boolean checks if we need to add something
     useFocusEffect(
+        // Code to run every time the screen is focused
         React.useCallback(() => {
-            // Code to run every time the screen is focused
-            // console.log("Here ")
 
+            // If a new goal has been created, we action this if statement
             if (getJustCreatedGoal()) {
-                // console.log("New goal createdd: ", getGlobalData());
-                const newGoal = getGlobalData(); // This is now an object
-                // console.log("newGoal");
-                // console.log(newGoal);
+                const newGoal = getGlobalData(); // Returns Goal Object
 
+                // The new goal and milestones are put into the useState so that it can be displayed to the front end
                 UserModel.newGoalMile(newGoal.id, userUID)
                     .then((goalWithMilestoneData) => {
                         if (goalWithMilestoneData) {
@@ -83,13 +78,7 @@ const GoalScreen = ({ navigation, route }) => {
 
                 setJustCreatedGoal(false); // Reset the flag
                 setJustCreatedM(false); // Reset the flag
-            } else {
-                console.log("Nothing to see mate");
             }
-            return () => {
-                // Cleanup actions if needed
-                console.log("There")
-            };
         }, [])
     );
 

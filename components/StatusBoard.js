@@ -14,7 +14,7 @@ const StatusBoard = ({ statuses, onStatusPress, removeStatus, loggedUserName }) 
             onPress={() => onStatusPress(item)}
         >
             <Text style={styles.statusText}>
-                {item.username}- {new Date(item.timestamp).toLocaleTimeString()}
+                {item.username} - {new Date(item.timestamp).toLocaleTimeString()}
             </Text>
             <Text style={styles.statusText}>{item.message}</Text>
             {item.username === loggedUserName && (
@@ -62,7 +62,7 @@ const StatusBoard = ({ statuses, onStatusPress, removeStatus, loggedUserName }) 
                     showsVerticalScrollIndicator={false}
                 />
             ) : (
-                <Text style={{alignSelf: 'center'}}>No statuses, post or add a mate!</Text>
+                <Text style={{alignSelf: 'center', color: '#000'}}>No statuses, post or add a mate!</Text>
             )}
         </View>
     );

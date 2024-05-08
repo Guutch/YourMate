@@ -1,5 +1,5 @@
-// UserDataManager.js
 let userHabit = '';
+let userRemoveHabit = '';
 let userFirstName = '';
 let userLastName = '';
 let userUsername = '';
@@ -7,6 +7,7 @@ let userUsername = '';
 export const getUserData = () => {
   const data = {
     habit: userHabit,
+    removeHabit: userRemoveHabit,
     firstName: userFirstName,
     lastName: userLastName,
     username: userUsername,
@@ -23,6 +24,7 @@ export const getUserData = () => {
 
 export const setUserData = (data) => {
   if (data.habit) userHabit = data.habit;
+  if (data.removeHabit) userRemoveHabit = data.removeHabit;
   if (data.firstName) userFirstName = data.firstName;
   if (data.lastName) userLastName = data.lastName;
   if (data.username) userUsername = data.username;

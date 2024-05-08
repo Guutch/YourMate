@@ -31,33 +31,30 @@ const SignUpSwipe = ({ navigation }) => {
             {/* Screen 1 */}
             <View style={signUpSwipe.slide} key="slide1">
                 <Text style={signUpSwipe.text}>Track Habits</Text>
-                <Text style={signUpSwipe.description}>Grow with others in the community</Text>
+                <Text style={signUpSwipe.description}>Beat them to the curb</Text>
                 <Image source={require('../components/assets/blob.png')} />
-                {/* <TouchableOpacity style={reusableStyles.button} onPress={() => navigation.navigate('HabitSelector')}>
-                    <Text style={reusableStyles.buttonText}>Let's Go!</Text>
-                </TouchableOpacity> */}
             </View>
 
             {/* Screen 2 */}
             <View style={signUpSwipe.slide2} key="slide2">
                 <Text style={signUpSwipe.text}>Set Goals</Text>
-                <Text style={signUpSwipe.description}>Grow with others in the community</Text>
-                <Image source={require('../components/assets/blob.png')} />
+                <Text style={signUpSwipe.description}>Aim for the stars</Text>
+                <Image source={require('../components/assets/blob.png')}  style={{ transform: [{ rotate: '300deg' }] }}/>
 
             </View>
 
             {/* Screen 3 */}
             <View style={signUpSwipe.slide}>
                 <Text style={signUpSwipe.text}>Discover Tools</Text>
-                <Text style={signUpSwipe.description}>Grow with others in the community</Text>
-                <Image source={require('../components/assets/blob.png')} />
+                <Text style={signUpSwipe.description}>For the greatest chance possible</Text>
+                <Image source={require('../components/assets/blob.png')}  style={{ transform: [{ rotate: '45deg' }] }}/>
             </View>
 
             {/* Screen 4 */}
             <View style={signUpSwipe.slide}>
                 <Text style={signUpSwipe.text}>Connect And Grow</Text>
                 <Text style={signUpSwipe.description}>Grow with others in the community</Text>
-                <Image source={require('../components/assets/blob.png')} />
+                <Image source={require('../components/assets/blob.png')}  style={{ transform: [{ rotate: '90deg' }] }}/>
                 <TouchableOpacity style={reusableStyles.button} onPress={() => navigation.navigate('SignUp')}>
                     <Text style={reusableStyles.buttonText}>Let's Go!</Text>
                 </TouchableOpacity>

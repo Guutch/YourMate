@@ -14,7 +14,6 @@ const MilestoneLrgGoalO = ({ xOut, goal, onOverlayContentChange, mode, userId, u
     const [descPlaceholder, setDescPlaceholder] = useState(mode === 'milestone' ? 'Milestone Description' : 'Note Description');
     const [milestoneTV, setMilestoneTV] = useState('');
     const [milestoneU, setMilestoneU] = useState('');
-    // const [milestoneTU, setMilestoneTU] = useState('');
 
     const handleSaveAndClose = async () => {
         let isValid = true;
@@ -138,7 +137,8 @@ const MilestoneLrgGoalO = ({ xOut, goal, onOverlayContentChange, mode, userId, u
                 </View>
             </View>
 
-            <Text style={{color: '#000', fontWeight: 'bold'}}>Required</Text>
+<View style={{alignSelf: 'center'}}>
+    <Text style={{color: '#000', fontWeight: 'bold'}}>Required</Text>
 
             <TextInput
                 style={[reusableStyles.textInput, { height: 44, borderColor: descBorderColor, borderWidth: 1, marginTop: 9 }, reusableStyles.lessRounded]}
@@ -153,10 +153,13 @@ const MilestoneLrgGoalO = ({ xOut, goal, onOverlayContentChange, mode, userId, u
                 onChangeText={handleDescChange}
                 multiline
             />
+</View>
+            
 
             <View>
                 {mode === "milestone" && (
                     <>
+                    <View style={{alignSelf: 'center'}}>
                         <Text style={{ marginTop: 10, color: '#000', fontWeight: 'bold' }}>Additional</Text>
                         <TextInput
                             style={[reusableStyles.textInput, { height: 44, borderColor: 'black', borderWidth: 1, marginTop: 9 }, reusableStyles.lessRounded]}
@@ -176,6 +179,7 @@ const MilestoneLrgGoalO = ({ xOut, goal, onOverlayContentChange, mode, userId, u
                             value={milestoneTU}
                             onChangeText={setMilestoneTU}
                         /> */}
+                        </View>
                     </>
                 )}
             </View>

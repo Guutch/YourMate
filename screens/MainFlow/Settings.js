@@ -268,7 +268,7 @@ const Settings = ({ navigation }) => {
             const updatedHabits = await UserModel.fetchUserHabit(userId);
             setHabits(updatedHabits);
             setSelectedHabitToRemove([]);
-            setUserData({ habit: 'yes' })
+            setUserData({ removeHabit: 'yes' })
           } catch (error) {
             console.error('Error removing habits:', error);
             isValid = false;
@@ -478,19 +478,31 @@ const Settings = ({ navigation }) => {
     }
   };
 
+  const numOfCompletedBlocks = (blocks) => { 
+    let completed = 0;
+    const todaysDate = new Date();
+    console.log("todaysDate")
+    console.log(todaysDate.getMonth())
+  }
+
   const numberOfCompleted = (blocks) => {
     let completed = 0;
     const todaysDate = new Date();
+    console.log("todaysDate")
+    console.log(todaysDate.getMonth())
+
+    // BLOCK DATE GOES FROM 0 TO 11 WITH 0 BEING JAN AND 11 BEING DECEMER
 
     for (const block of blocks) {
       const blockDate = new Date(block.date);
-      // console.log("Block: ", block);
+      console.log("Block: ", block);
+      console.log("Block Month: ", blockDate.getMonth());
 
       // Get yesterday's date
       const yesterdayDate = new Date();
       yesterdayDate.setDate(yesterdayDate.getDate() - 1);
 
-      // Check if the dates match (only the date portion)
+      // Check if the dates match (only the date portion).
       if (
         blockDate.getFullYear() === todaysDate.getFullYear() &&
         blockDate.getMonth() === todaysDate.getMonth() &&
@@ -503,7 +515,7 @@ const Settings = ({ navigation }) => {
         blockEndTime.setMinutes(blockStartTime.getMinutes() + block.duration.minutes);
         blockEndTime.setHours(blockEndTime.getHours() + block.duration.hours);
 
-        // Compare blockEndTime with the current time
+        // Compare blockEndTime with the current time.
         const currentTime = new Date();
         if (blockEndTime < currentTime) {
           console.log(`Block with ID ${block.id} ended in the past`);

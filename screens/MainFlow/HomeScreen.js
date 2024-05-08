@@ -60,16 +60,6 @@ const HomeScreen = ({ navigation }) => {
 
     const currentHabit = habits[currentHabitIndex];
 
-    useFocusEffect(
-        React.useCallback(() => {
-            const data = getUserData();
-            if (data.habit) {
-                fetchHabits()
-                setUserData({ habit: '' })
-            }
-        }, [])
-    );
-
     const fetchHabits = async () => {
         try {
             const habitsData = await UserModel.fetchUserHabit(userId);
@@ -80,18 +70,41 @@ const HomeScreen = ({ navigation }) => {
         }
     };
 
-    useEffect(() => {
-        fetchHabits();
-    }, []);
-
     const fetchBlocks = async () => {
         try {
             const blocksData = await UserModel.fetchUserBlocks(userId);
+            console.log("Here")
+            console.log(blocksData)
             setBlocks(blocksData);
         } catch (error) {
             console.log('Error fetching blocks:', error);
         }
     };
+    
+    useFocusEffect(
+        React.useCallback(() => {
+            const data = getUserData();
+            console.log(data)
+            if (data.habit) {
+                console.log("Here")                
+                setUserData({ removeHabit: '' })
+                fetchHabits()
+            }
+            if (data.removeHabit) {
+                console.log("THHere")                
+                setUserData({ removeHabit: '' })
+                fetchHabits()
+            }
+        }, [])
+    );
+
+
+
+    useEffect(() => {
+        fetchHabits();
+    }, []);
+
+
 
     useEffect(() => {
         fetchBlocks();
@@ -492,9 +505,9 @@ const HomeScreen = ({ navigation }) => {
                                 onPress={() => setOverlayContent('duration')}
                             >
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                    <Text >Duration</Text>
+                                    <Text style={{color: '#000'}}>Duration</Text>
                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <Text style={{ marginRight: 10 }}>
+                                        <Text style={{ marginRight: 10, color: '#000' }}>
                                             {selectedHour} : {selectedMinute < 10 ? '0' + selectedMinute : selectedMinute}
                                         </Text>
 
@@ -508,9 +521,9 @@ const HomeScreen = ({ navigation }) => {
                                 onPress={() => setOverlayContent('when')}
                             >
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                    <Text>Starting time</Text>
+                                    <Text style={{color: '#000'}}>Starting time</Text>
                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <Text style={{ marginRight: 10 }}>
+                                        <Text style={{ marginRight: 10, color: '#000' }}>
                                             {formatTime(selectedInitialStartHour, selectedInitialStartMinute)}
                                         </Text>
                                         <FontAwesome5 name="chevron-right" size={15} color="#000" />
@@ -579,7 +592,7 @@ const HomeScreen = ({ navigation }) => {
                     )}
                     {overlayContent === 'when' && (
                         <View>
-                            <Text style={homeMain.title}>Starting time</Text>
+                            <Text style={[homeMain.title, {color: '#000'}]}>Starting time</Text>
                             <View style={homeMain.pickerContainer}>
                                 <ScrollView style={homeMain.scrollPicker}>
                                     {hours.map((hour) => (
@@ -673,7 +686,7 @@ const HomeScreen = ({ navigation }) => {
                     )}
                     {overlayContent === 'duration' && (
                         <View>
-                            <Text style={homeMain.title}>Duration</Text>
+                            <Text style={[homeMain.title, {color: '#000'}]}>Duration</Text>
                             <View style={homeMain.pickerContainer}>
                                 <ScrollView style={homeMain.scrollPicker}>
                                     {hours.map((hour) => (

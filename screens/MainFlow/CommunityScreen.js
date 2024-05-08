@@ -148,7 +148,7 @@ const CommunityScreen = ({ navigation }) => {
                 );
                 for (const friend of friends) {
                     console.log("Friend:", friend);
-                  }
+                }
 
                 setFriends(friends);
             } catch (error) {
@@ -167,10 +167,10 @@ const CommunityScreen = ({ navigation }) => {
             const formattedStatuses = fetchedStatuses.map(status => {
                 const originalDate = new Date(status.timestamp.seconds * 1000);
                 const dateWithAddedHour = new Date(originalDate.getTime() + 3600000); // Add 1 hour in milliseconds
-              
+
                 const formattedDate = dateWithAddedHour.toISOString().substring(0, 19).replace('T', ' ');
                 return { ...status, timestamp: formattedDate };
-              });
+            });
             // Group statuses by date after formatting
             const groupedStatuses = groupStatusesByDate(formattedStatuses);
             console.log("groupedStatuses")
@@ -188,31 +188,31 @@ const CommunityScreen = ({ navigation }) => {
     // Function to group statuses by date
     const groupStatusesByDate = (statuses) => {
         const groups = statuses.reduce((acc, status) => {
-          const date = new Date(status.timestamp);
-          const formattedDate = `${date.toLocaleString('default', { weekday: 'short' })} - ${date.toLocaleString('default', { month: 'long' })} ${date.getDate()} ${date.getFullYear()}`;
-      
-          if (!acc[formattedDate]) {
-            acc[formattedDate] = [];
-          }
-      
-          acc[formattedDate].push(status);
-          return acc;
+            const date = new Date(status.timestamp);
+            const formattedDate = `${date.toLocaleString('default', { weekday: 'short' })} - ${date.toLocaleString('default', { month: 'long' })} ${date.getDate()} ${date.getFullYear()}`;
+
+            if (!acc[formattedDate]) {
+                acc[formattedDate] = [];
+            }
+
+            acc[formattedDate].push(status);
+            return acc;
         }, {});
-      
+
         const groupedStatuses = Object.entries(groups).reduce((acc, [date, statuses]) => {
-          acc[date] = statuses.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-          return acc;
+            acc[date] = statuses.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            return acc;
         }, {});
-      
+
         const sortedDates = Object.keys(groupedStatuses).sort((a, b) => new Date(b) - new Date(a));
-      
+
         const result = {};
         sortedDates.forEach(date => {
-          result[date] = groupedStatuses[date];
+            result[date] = groupedStatuses[date];
         });
-      
+
         return result;
-      };
+    };
 
     const removeStatus = async (itemToRemove) => {
         try {
@@ -229,30 +229,30 @@ const CommunityScreen = ({ navigation }) => {
     //     console.log(request)
     const handleAccept = async (requestId, receiverId, senderId) => {
         try {
-          const newFriend = await UserModel.handleAccept(requestId, senderId);
-          if (newFriend) {
-            // Add the new friend to the friends state
-            newFriend.id = senderId; 
-            console.log("New Friend", newFriend);
-            setFriends((currentFriends) => {
-              const updatedFriends = [...currentFriends, newFriend];
-              console.log("Updated Friends", updatedFriends); // Log the updated friends here
-              return updatedFriends;
-            });
-      
-            // Remove the accepted request from the receivedRequests array
-            setRequests((currentRequests) => ({
-              ...currentRequests,
-              receivedRequests: currentRequests.receivedRequests.filter(
-                (request) => request.id !== requestId
-              ),
-            }));
-            fetchData()
-          }
+            const newFriend = await UserModel.handleAccept(requestId, senderId);
+            if (newFriend) {
+                // Add the new friend to the friends state
+                newFriend.id = senderId;
+                console.log("New Friend", newFriend);
+                setFriends((currentFriends) => {
+                    const updatedFriends = [...currentFriends, newFriend];
+                    console.log("Updated Friends", updatedFriends); // Log the updated friends here
+                    return updatedFriends;
+                });
+
+                // Remove the accepted request from the receivedRequests array
+                setRequests((currentRequests) => ({
+                    ...currentRequests,
+                    receivedRequests: currentRequests.receivedRequests.filter(
+                        (request) => request.id !== requestId
+                    ),
+                }));
+                fetchData()
+            }
         } catch (error) {
-          console.error("Error accepting friend request in component:", error);
+            console.error("Error accepting friend request in component:", error);
         }
-      };
+    };
 
 
     const handleRejectOrCancel = async (requestId, requestType) => {
@@ -459,9 +459,9 @@ const CommunityScreen = ({ navigation }) => {
 
     const renderItem = ({ item }) => (
         <View >
-          <Text >{item.firstName}</Text>
+            <Text >{item.firstName}</Text>
         </View>
-      );
+    );
 
     return (
         <View style={[reusableStyles.container]}>
@@ -640,12 +640,20 @@ const CommunityScreen = ({ navigation }) => {
                                     onPress={async () => {
                                         try {
                                             const blockedUsers = await UserModel.fetchBlockedUsers(currentUserId);
+                                            console.log("blockedUsers")
+                                            console.log(blockedUsers)
                                             const blockedUserData = [];
-
+                                            let userData;
                                             // Fetch user data for each blocked user
                                             for (const blockedUser of blockedUsers) {
                                                 if (blockedUser.blockedBy === currentUserId) {
-                                                    const userData = await UserModel.fetchUserData(blockedUser.receiver);
+
+                                                    if (blockedUser.receiver != currentUserId) {
+                                                        userData = await UserModel.fetchUserData(blockedUser.receiver);
+                                                    } else {
+                                                        userData = await UserModel.fetchUserData(blockedUser.sender);
+                                                    }
+
                                                     const userName = userData
                                                         ? `${userData.firstName} ${userData.lastName.charAt(0)}.`
                                                         : 'Unknown User';
@@ -653,6 +661,7 @@ const CommunityScreen = ({ navigation }) => {
                                                 }
                                             }
 
+                                            console.log(blockedUserData)
                                             setBlockedUsers(blockedUserData);
                                             setOverlayContent('blocks');
                                             //   setShowBlockedUsersOverlay(true);
@@ -676,13 +685,13 @@ const CommunityScreen = ({ navigation }) => {
                     {overlayContent === 'review' && (
                         <>
                             <View>
-                                <Text style={{color: '#000', fontWeight: 'bold', fontSize: 16}}>Sent Requests (Pending)</Text>
+                                <Text style={{ color: '#000', fontWeight: 'bold', fontSize: 16 }}>Sent Requests (Pending)</Text>
                                 {requests.sentRequests.length > 0 ? (
                                     requests.sentRequests.map(request => (
                                         <View key={request.id} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 10 }}>
-                                            <Text style={{color: '#000'}}>To: {request.receiverName || 'Loading...'}</Text>
+                                            <Text style={{ color: '#000' }}>To: {request.receiverName || 'Loading...'}</Text>
                                             <TouchableOpacity onPress={() => handleRejectOrCancel(request.id, 'sent')}>
-                                                <Text style={{color: 'red', fontWeight: 'bold'}}>Cancel</Text>
+                                                <Text style={{ color: 'red', fontWeight: 'bold' }}>Cancel</Text>
                                             </TouchableOpacity>
                                         </View>
                                     ))
@@ -690,17 +699,17 @@ const CommunityScreen = ({ navigation }) => {
                                     <Text style={{ textAlign: 'center', padding: 10 }}>There are no sent requests.</Text>
                                 )}
 
-                                <Text style={{color: '#000', fontWeight: 'bold', fontSize: 16}}>Received Requests</Text>
+                                <Text style={{ color: '#000', fontWeight: 'bold', fontSize: 16 }}>Received Requests</Text>
                                 {requests.receivedRequests.length > 0 ? (
                                     requests.receivedRequests.map(request => (
                                         <View key={request.id} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 10 }}>
-                                            <Text style={{color: '#000'}}>From: {request.senderName || 'Loading...'}</Text>
+                                            <Text style={{ color: '#000' }}>From: {request.senderName || 'Loading...'}</Text>
                                             <View>
                                                 <TouchableOpacity onPress={() => handleAccept(request.id, request.receiver, request.sender)}>
-                                                    <Text tyle={{color: 'green', fontWeight: 'bold'}}>Accept</Text>
+                                                    <Text style={{ color: 'green', fontWeight: 'bold' }}>Accept</Text>
                                                 </TouchableOpacity>
                                                 <TouchableOpacity onPress={() => handleRejectOrCancel(request.id, 'received')}>
-                                                    <Text tyle={{color: 'red', fontWeight: 'bold'}}>Reject</Text>
+                                                    <Text style={{ color: 'red', fontWeight: 'bold' }}>Reject</Text>
                                                 </TouchableOpacity>
                                             </View>
                                         </View>
@@ -716,7 +725,7 @@ const CommunityScreen = ({ navigation }) => {
                     {overlayContent === 'blocks' && (
                         <>
                             <View>
-                                <Text>Blocked Users</Text>
+                                <Text style={{ color: '#000', fontWeight: 'bold' }}>Blocked Users</Text>
                                 {blockedUsers.length > 0 ? (
                                     blockedUsers.map((blockedUser) => (
                                         <View
@@ -728,11 +737,11 @@ const CommunityScreen = ({ navigation }) => {
                                                 padding: 10,
                                             }}
                                         >
-                                            <Text>{blockedUser.userName}</Text>
+                                            <Text style={{ color: '#000' }}>{blockedUser.userName}</Text>
                                             <TouchableOpacity
                                                 onPress={() => handleUnblockUser(blockedUser)}
                                             >
-                                                <Text>Unblock</Text>
+                                                <Text style={{ color: 'red', fontWeight: 'bold' }}>Unblock</Text>
                                             </TouchableOpacity>
                                         </View>
                                     ))
@@ -777,15 +786,15 @@ const CommunityScreen = ({ navigation }) => {
                     color: 'black'
                 }}>Friends</Text>
                 {friends.length === 0 ? (
-                    <Text style={{ textAlign: 'center', marginTop: 10 }}>You have not got any mates currently.</Text>
+                    <Text style={{ textAlign: 'center', marginTop: 10, color: '#000' }}>You have not got any mates currently.</Text>
                 ) : (
-                        <FriendsList friends={friends} pressedFriend={pressedFriend}/>
+                    <FriendsList friends={friends} pressedFriend={pressedFriend} />
                 )}
             </View>
 
             {/* Statuses piece */}
             <View style={{ flex: 1, marginTop: 10, padding: 10 }}>
-                <StatusBoard statuses={statuses} onStatusPress={handleStatusPress} removeStatus={removeStatus} loggedUserName={userName}/>
+                <StatusBoard statuses={statuses} onStatusPress={handleStatusPress} removeStatus={removeStatus} loggedUserName={userName} />
             </View>
 
         </View>

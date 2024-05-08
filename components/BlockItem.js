@@ -90,8 +90,8 @@ const BlockItem = ({ title, time, block, onItemPress }) => {
             >
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                     <View style={{ justifyContent: 'center' }}>
-                        <Text>{title}</Text>
-                        <Text>{formattedTime}</Text>
+                        <Text style={{color: '#000'}}>{title}</Text>
+                        <Text style={{color: '#000'}}>{formattedTime}</Text>
                     </View>
                     <FontAwesome5 name="chevron-right" size={15} color="#000" />
                 </View>
